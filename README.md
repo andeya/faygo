@@ -1,7 +1,5 @@
 
-#ThinkGo Web Framework
-
-[![GoDoc](https://godoc.org/github.com/henrylee2cn/thinkgo?status.svg)](https://godoc.org/github.com/henrylee2cn/thinkgo)
+#ThinkGo Web Framework  [![GoDoc](https://godoc.org/github.com/henrylee2cn/thinkgo?status.svg)](https://godoc.org/github.com/henrylee2cn/thinkgo)
 
 ![ThinkGo Admin](https://github.com/henrylee2cn/thinkgo/raw/master/doc/favicon.png)
 
