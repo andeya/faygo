@@ -13,6 +13,7 @@ ThinkGo 是一款 Go 语言编写的 web 快速开发框架。它基于开源框
 
 ##目录结构
 
+```
 ├─main.go 主文件
 │ 
 ├─core 框架目录
@@ -48,6 +49,7 @@ ThinkGo 是一款 Go 语言编写的 web 快速开发框架。它基于开源框
 ├─model 模型目录
 ├─conf 配置文件目录
 └─uploads 上传根目录
+```
 
 ## 安装
 1. Download and install it:
