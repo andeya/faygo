@@ -52,15 +52,9 @@ ThinkGo 是一款 Go 语言编写的 web 快速开发框架。它基于开源框
 ```
 
 ## 安装
-1. Download and install it:
 
 ```sh
 go get github.com/henrylee2cn/thinkgo
-```
-2. Import it in your code:
-
-```go
-import "github.com/henrylee2cn/thinkgo"
 ```
 
 ##使用说明
