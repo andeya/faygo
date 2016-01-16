@@ -56,6 +56,9 @@ ThinkGo 是一款 Go 语言编写的 web 快速开发框架。它基于开源框
 ```sh
 go get github.com/henrylee2cn/thinkgo
 ```
+```
+解压 application.zip 至项目根目录（示例）
+```
 
 ##使用说明
 
