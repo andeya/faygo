@@ -5,6 +5,7 @@
 
 ThinkGo 是一款 Go 语言编写的 web 快速开发框架。它基于开源框架 Gin 进行二次开发，旨在实现一种类 ThinkPHP 的高可用、高效率的 web 框架。在此感谢 [Gin](https://github.com/gin-gonic/gin) 和 [httprouter](https://github.com/julienschmidt/httprouter)。它最显著的特点是模块、控制器、操作三段式的标准 MVC 架构，且模块与插件的目录结构完全一致，令开发变得非常简单灵活。
 
+* 官方QQ群：Go 网络编程 42730308    [![Go 网络编程群](http://pub.idqqimg.com/wpa/images/group.png)](http://jq.qq.com/?_wv=1027&k=fzi4p1)
 
 ![ThinkGo Admin](https://github.com/henrylee2cn/thinkgo/raw/master/doc/server.jpg)
 
