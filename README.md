@@ -76,7 +76,6 @@ import (
 func main() {
     core.ThinkGoDefault().
     // 以下为可选设置
-    Use(middleware1,middleware2,middleware3,...).
     TemplateDelims("{{{","}}}").
     TemplateSuffex(".html").
     TemplateFuncs(map[string]interface{}).
