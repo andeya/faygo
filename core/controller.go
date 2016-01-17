@@ -46,7 +46,7 @@ func (this *BaseController) AutoInit(method string, ctx *Context, name string, c
 			VIEW_PACKAGE,
 			module.Themes.Cur,
 			name,
-			callfunc) + App.tplSuffex
+			callfunc) + ThinkGo.TplSuffex
 
 		this.Data = H{
 			// 定义模板中"__PUBLIC__"静态文件前缀

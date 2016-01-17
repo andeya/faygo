@@ -36,7 +36,7 @@ func AddonPrepare(m *Module) *Addon {
 	m.id = strings.TrimSuffix(filepath.Base(file), ".go")
 
 	// 初始化
-	m.RouterGroup = App.Engine.Group(m.id)
+	m.RouterGroup = ThinkGo.Engine.Group(m.id)
 
 	a := &Addon{
 		Module: m,
@@ -50,7 +50,7 @@ func AddonPrepare(m *Module) *Addon {
 // 顺序插入插件
 func insertAddon(a *Addon) {
 	// 添加至插件索引列表
-	App.Addons.Map[a.id] = a
+	ThinkGo.Addons.Map[a.id] = a
 
 	// 添加至插件有序列表
 	var (
@@ -58,7 +58,7 @@ func insertAddon(a *Addon) {
 		class []string
 	)
 
-	for _, as := range App.Addons.Slice {
+	for _, as := range ThinkGo.Addons.Slice {
 		c := as[0].Class
 		class = append(class, c)
 		if c != a.Class {
@@ -79,14 +79,14 @@ func insertAddon(a *Addon) {
 	}
 
 	if len(class) == 0 {
-		App.Addons.Slice = append(App.Addons.Slice, []*Addon{a})
+		ThinkGo.Addons.Slice = append(ThinkGo.Addons.Slice, []*Addon{a})
 		return
 	}
 
 	for k, v := range class {
 		if v > a.Class {
-			x := append([][]*Addon{{a}}, App.Addons.Slice[k:]...)
-			App.Addons.Slice = append(App.Addons.Slice[:k], x...)
+			x := append([][]*Addon{{a}}, ThinkGo.Addons.Slice[k:]...)
+			ThinkGo.Addons.Slice = append(ThinkGo.Addons.Slice[:k], x...)
 			break
 		}
 	}

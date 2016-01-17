@@ -5,6 +5,7 @@
 package core
 
 import (
+	"log"
 	"net"
 	"net/http"
 	"os"
@@ -104,6 +105,8 @@ func newEngine() *Engine {
 	engine.pool.New = func() interface{} {
 		return engine.allocateContext()
 	}
+	// 添加默认中间件
+	engine.Use(Recovery(), Logger())
 
 	return engine
 }
@@ -250,7 +253,11 @@ func (engine *Engine) Run(addr ...string) (err error) {
 	defer func() { debugPrintError(err) }()
 
 	address := resolveAddress(addr)
-	debugPrint("Listening and serving HTTP on %s\n", address)
+	if IsDebugging() {
+		debugPrint("Listening and serving HTTP on %s\n", address)
+	} else {
+		log.Printf("[TG] "+"Listening and serving HTTP on %s\n", address)
+	}
 	err = http.ListenAndServe(address, engine)
 	return
 }
@@ -259,7 +266,11 @@ func (engine *Engine) Run(addr ...string) (err error) {
 // It is a shortcut for http.ListenAndServeTLS(addr, certFile, keyFile, router)
 // Note: this method will block the calling goroutine undefinitelly unless an error happens.
 func (engine *Engine) RunTLS(addr string, certFile string, keyFile string) (err error) {
-	debugPrint("Listening and serving HTTPS on %s\n", addr)
+	if IsDebugging() {
+		debugPrint("Listening and serving HTTPS on %s\n", addr)
+	} else {
+		log.Printf("[TG] "+"Listening and serving HTTPS on %s\n", addr)
+	}
 	defer func() { debugPrintError(err) }()
 
 	err = http.ListenAndServeTLS(addr, certFile, keyFile, engine)
@@ -270,7 +281,11 @@ func (engine *Engine) RunTLS(addr string, certFile string, keyFile string) (err 
 // through the specified unix socket (ie. a file).
 // Note: this method will block the calling goroutine undefinitelly unless an error happens.
 func (engine *Engine) RunUnix(file string) (err error) {
-	debugPrint("Listening and serving HTTP on unix:/%s", file)
+	if IsDebugging() {
+		debugPrint("Listening and serving HTTP on unix:/%s", file)
+	} else {
+		log.Printf("[TG] "+"Listening and serving HTTP on unix:/%s", file)
+	}
 	defer func() { debugPrintError(err) }()
 
 	os.Remove(file)

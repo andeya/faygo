@@ -1,11 +1,9 @@
 package main
 
 import (
-	_ "github.com/henrylee2cn/thinkgo/application"
-	_ "github.com/henrylee2cn/thinkgo/common/deploy"
-	"github.com/henrylee2cn/thinkgo/core"
+	"github.com/henrylee2cn/thinkgo/deploy"
 )
 
 func main() {
-	core.ThinkGoDefault().Run(":8080")
+	deploy.Deploy()
 }

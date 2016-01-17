@@ -48,7 +48,7 @@ func ModulePrepare(m *Module) *Module {
 	m.id = strings.TrimSuffix(filepath.Base(file), ".go")
 
 	// 初始化
-	m.RouterGroup = App.Engine.Group(m.id)
+	m.RouterGroup = ThinkGo.Engine.Group(m.id)
 
 	// 登记并排序
 	insertModule(m)
@@ -135,6 +135,8 @@ func (this *Module) OPTIONS(pattern string, controllerOrhandler ...interface{}) 
 // 公用路由注册方法
 // 注：路由规则"/ReadMail/:id" 将被自动转为 "/read_mail/:id"
 // 注：路由规则"read" 将被自动转为 "/read"
+// 注：当为"home"模块时，同时在根目录注册路由
+
 var re = regexp.MustCompile("^([/]?[a-zA-Z0-9_]+)([\\./\\?])?")
 
 func (this *Module) router(method, pattern string, controllerOrhandler []interface{}) {
@@ -179,18 +181,37 @@ func (this *Module) router(method, pattern string, controllerOrhandler []interfa
 		log.Panicln(`[ERROR] 配置路由规则: "` + this.RouterGroup.BasePath() + method + `" 须且仅须设置1个控制器`)
 	}
 
-	callMethod := reflect.ValueOf(this.RouterGroup).MethodByName(method)
-	hfsv := reflect.ValueOf(hfs)
-	if callfunc == "index" && a[2] != "/" {
-		// 允许省略index
-		p := path.Join(cName, pattern[len(a[1]):])
-		p = strings.Replace(p, "/?", "?", -1)
-		callMethod.CallSlice([]reflect.Value{reflect.ValueOf(p), hfsv})
-		if cName == "index" {
-			callMethod.CallSlice([]reflect.Value{reflect.ValueOf(pattern[len(a[1]):]), hfsv})
+	{
+		callMethod := reflect.ValueOf(this.RouterGroup).MethodByName(method)
+		// 当为"home"模块时，添加注册根路由
+		var defaultCallMethod reflect.Value
+		if this.RouterGroup.BasePath() == "/home" {
+			defaultCallMethod = reflect.ValueOf(ThinkGo).MethodByName(method)
+		}
+		hfsv := reflect.ValueOf(hfs)
+		if callfunc == "index" && a[2] != "/" {
+			// 允许省略index
+			p := path.Join(cName, pattern[len(a[1]):])
+			p = strings.Replace(p, "/?", "?", -1)
+			param := []reflect.Value{reflect.ValueOf(p), hfsv}
+			callMethod.CallSlice(param)
+			if defaultCallMethod != (reflect.Value{}) {
+				defaultCallMethod.CallSlice(param)
+			}
+			if cName == "index" {
+				param = []reflect.Value{reflect.ValueOf(pattern[len(a[1]):]), hfsv}
+				callMethod.CallSlice(param)
+				if defaultCallMethod != (reflect.Value{}) {
+					defaultCallMethod.CallSlice(param)
+				}
+			}
+		}
+		param := []reflect.Value{reflect.ValueOf(path.Join(cName, pattern)), hfsv}
+		callMethod.CallSlice(param)
+		if defaultCallMethod != (reflect.Value{}) {
+			defaultCallMethod.CallSlice(param)
 		}
 	}
-	callMethod.CallSlice([]reflect.Value{reflect.ValueOf(path.Join(cName, pattern)), hfsv})
 }
 
 // 返回闭包操作
@@ -227,7 +248,7 @@ func (this *Module) newHandler(method, callfunc string, c Controller) (_name, _c
 // 顺序插入插件
 func insertModule(m *Module) {
 	// 添加至插件索引列表
-	App.Modules.Map[m.id] = m
+	ThinkGo.Modules.Map[m.id] = m
 
 	// 添加至插件有序列表
 	var (
@@ -235,7 +256,7 @@ func insertModule(m *Module) {
 		class []string
 	)
 
-	for _, ms := range App.Modules.Slice {
+	for _, ms := range ThinkGo.Modules.Slice {
 		c := ms[0].Class
 		class = append(class, c)
 		if c != m.Class {
@@ -256,14 +277,14 @@ func insertModule(m *Module) {
 	}
 
 	if len(class) == 0 {
-		App.Modules.Slice = append(App.Modules.Slice, []*Module{m})
+		ThinkGo.Modules.Slice = append(ThinkGo.Modules.Slice, []*Module{m})
 		return
 	}
 
 	for k, v := range class {
 		if v > m.Class {
-			x := append([][]*Module{{m}}, App.Modules.Slice[k:]...)
-			App.Modules.Slice = append(App.Modules.Slice[:k], x...)
+			x := append([][]*Module{{m}}, ThinkGo.Modules.Slice[k:]...)
+			ThinkGo.Modules.Slice = append(ThinkGo.Modules.Slice[:k], x...)
 			break
 		}
 	}
