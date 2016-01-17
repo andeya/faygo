@@ -65,7 +65,7 @@ go install
 $ thinkgo new appname
 ```
 
-[x]以热编译模式运行（在项目目录下运行cmd）
+4.以热编译模式运行（在项目目录下运行cmd）
 ```sh
 $ thinkgo run
 ```
