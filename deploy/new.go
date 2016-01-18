@@ -173,6 +173,9 @@ func createApp(cmd *Command, args []string) int {
 	fmt.Println(path.Join(apppath, "deploy", "favicon_windows.go"))
 	writetofile(path.Join(apppath, "deploy", "favicon_windows.go"), strings.Replace(favicon_windowsgo, "{{.Appname}}", strings.Join(strings.Split(apppath[len(appsrcpath)+1:], string(path.Separator)), "/"), -1))
 
+	fmt.Println(path.Join(apppath, "deploy", "favicon.go"))
+	writetofile(path.Join(apppath, "deploy", "favicon.go"), strings.Replace(favicongo, "{{.Appname}}", strings.Join(strings.Split(apppath[len(appsrcpath)+1:], string(path.Separator)), "/"), -1))
+
 	fmt.Println(path.Join(apppath, "deploy", "favicon", "favicon.ico"))
 	writetofile(path.Join(apppath, "deploy", "favicon", "favicon.ico"), string(MustAsset("favicon.ico")))
 
@@ -800,13 +803,15 @@ $(function() {
     });
 
 });`
+
 var favicon_windowsgo = `package deploy
 
 import (
 	_ "{{.Appname}}/deploy/favicon"
 )
-
 `
+var favicongo = `package deploy`
+
 var favicon_initgo = `package favicon
 `
 
