@@ -60,11 +60,6 @@ func (this *Module) GetId() string {
 	return this.id
 }
 
-// 获取url
-func (this *Module) GetUrl(pattern string) string {
-	return path.Join(this.id, pattern)
-}
-
 // 设置主题，自动设置传入的第1个主题为当前主题
 func (this *Module) SetThemes(themes ...*Theme) *Module {
 	if len(themes) == 0 {
