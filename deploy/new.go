@@ -654,7 +654,6 @@ var indexhtml = `<!DOCTYPE html>
     <title>{{{.TITLE}}}</title>
     <!-- Tell the browser to be responsive to screen width -->
     <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
-    <link href="{{{.__PUBLIC__}}}/bootstrap/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
     <link href="{{{.__PUBLIC__}}}/css/thinkgo.css" rel="stylesheet" type="text/css" />
     <script src="{{{.__PUBLIC__}}}/js/jquery.min.js"></script>
 </head>
