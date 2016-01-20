@@ -606,3 +606,19 @@ func TestContextGolangContext(t *testing.T) {
 	assert.Equal(t, c.Value("foo"), "bar")
 	assert.Nil(t, c.Value(1))
 }
+func TestContextSetCookie(t *testing.T) {
+	c, w, _ := createTestContext()
+	c.SetCookie("user", "user1", 1, "/", "localhost", true, true)
+	c.SetCookie("user", "user2", int32(1), "/", "localhost", 1)
+	c.SetCookie("user", "user3", int64(1))
+
+	c.Request, _ = http.NewRequest("GET", "/set", nil)
+	assert.Equal(t, c.GetCookie("Set-Cookie"), "user=thinkgo; Path=/; Domain=localhost; Max-Age=1; HttpOnly; Secure")
+}
+
+func TestContextGetCookie(t *testing.T) {
+	c, w, _ := createTestContext()
+	c.Request, _ = http.NewRequest("GET", "/get", nil)
+	c.Request.Header.Set("Cookie", "user=thinkgo")
+	assert.Equal(t, c.GetCookie("Cookie"), "thinkgo")
+}
