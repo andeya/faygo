@@ -197,6 +197,15 @@ func (this *IndexController) Index() {
 
 更多操作可以参考[Gin](https://github.com/gin-gonic/gin)的一些用法。
 
+
+##贡献者名单
+
+贡献者                          |贡献内容
+--------------------------------|--------------------------------------------------
+henrylee2cn|项目发起人 
+ikfmt|cookie功能 
+
+
 ##开源协议
 
 ThinkGo 项目采用商业应用友好的 [MIT](https://github.com/henrylee2cn/thinkgo/raw/master/doc/LICENSE) 协议发布。
