@@ -16,8 +16,7 @@ import (
 	"sync"
 	"time"
 
-	"golang.org/x/net/http2"
-
+	"github.com/henrylee2cn/thinkgo/core/http2"
 	"github.com/henrylee2cn/thinkgo/core/log"
 	"github.com/henrylee2cn/thinkgo/core/websocket"
 )

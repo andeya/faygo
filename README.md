@@ -53,8 +53,6 @@ ThinkGo 是一款 Go 语言编写的 web 快速开发框架。它基于开源框
 
 ## 安装
 
-0.下载依赖包 [[点击下载 ZIP]](https://github.com/pholcus/dependent/archive/master.zip) 并解压至 GOPATH/src 目录下
-
 1.下载框架源码
 ```sh
 go get github.com/henrylee2cn/thinkgo
