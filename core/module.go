@@ -4,7 +4,6 @@
 package core
 
 import (
-	"log"
 	"path"
 	"path/filepath"
 	"reflect"
@@ -20,11 +19,11 @@ type (
 		Name        string
 		Class       string
 		Description string
-		*Themes
-		id     string
-		status int
-		*RouterGroup
+		id          string
+		status      int
 		sync.Mutex
+		*Themes
+		*Group
 	}
 	// 登记模块列表
 	Modules struct {
@@ -33,6 +32,10 @@ type (
 		// 有序列表 [分组][Id]*Module
 		Slice [][]*Module
 	}
+)
+
+var (
+	re = regexp.MustCompile("^[/]?([a-zA-Z0-9_]+)([\\./\\?])?")
 )
 
 func newModules() *Modules {
@@ -45,10 +48,35 @@ func newModules() *Modules {
 // 初始化模块，文件名作为id，且文件名应与模块目录名、包名保存一致
 func ModulePrepare(m *Module) *Module {
 	_, file, _, _ := runtime.Caller(1)
-	m.id = strings.TrimSuffix(filepath.Base(file), ".go")
+	name := strings.TrimSuffix(filepath.Base(file), ".go")
+	if name == "home" {
+		m.id = "/"
+	} else {
+		m.id = "/" + name
+	}
 
-	// 初始化
-	m.RouterGroup = ThinkGo.Engine.Group(m.id)
+	// 创建分组并修改请求路径c.path "/[模块]/[控制器]/[操作]"为"/[模块]/[主题]/[控制器]/[操作]"
+	m.Group = ThinkGo.Echo.Group("/"+m.id, func(c *Context) error {
+		p := strings.Split(c.Path(), "/:")[0]
+		if p == "/" || p == "" {
+			c.SetPath("/index/index")
+		} else if strings.HasSuffix(p, "/index") {
+			l := 3
+			if c.Echo().Prefix() == "/" {
+				l = 2
+			}
+			num := l - strings.Count(p, "/")
+			if num > 0 {
+				c.SetPath(p + strings.Repeat("/index", num))
+			}
+		}
+		p = path.Join(m.id, m.Themes.Cur, strings.TrimPrefix(p, m.id))
+		// 插入主题字段
+		c.SetPath(p)
+		// 静态文件前缀
+		c.Set("__PUBLIC__", path.Join(PUBLIC_PREFIX, m.id, m.Themes.Cur))
+		return nil
+	})
 
 	// 登记并排序
 	insertModule(m)
@@ -80,50 +108,68 @@ func (this *Module) UseTheme(name string) *Module {
 }
 
 // 定义中间件
-func (this *Module) Use(middleware ...HandlerFunc) *Module {
-	this.RouterGroup.Use(middleware...)
+func (this *Module) Use(m ...Middleware) *Module {
+	this.Group.Use(m...)
 	return this
 }
 
 // @pattern: 方法名[/参数规则]
-func (this *Module) GET(pattern string, controllerOrhandler ...interface{}) *Module {
-	this.router("GET", pattern, controllerOrhandler)
+func (this *Module) CONNECT(pattern string, c Controller) *Module {
+	this.router(CONNECT, pattern, c)
 	return this
 }
 
 // @pattern: 方法名[/参数规则]
-func (this *Module) POST(pattern string, controllerOrhandler ...interface{}) *Module {
-	this.router("POST", pattern, controllerOrhandler)
+func (this *Module) DELETE(pattern string, c Controller) *Module {
+	this.router(DELETE, pattern, c)
 	return this
 }
 
 // @pattern: 方法名[/参数规则]
-func (this *Module) HEAD(pattern string, controllerOrhandler ...interface{}) *Module {
-	this.router("HEAD", pattern, controllerOrhandler)
+func (this *Module) GET(pattern string, c Controller) *Module {
+	this.router(GET, pattern, c)
 	return this
 }
 
 // @pattern: 方法名[/参数规则]
-func (this *Module) PUT(pattern string, controllerOrhandler ...interface{}) *Module {
-	this.router("PUT", pattern, controllerOrhandler)
+func (this *Module) HEAD(pattern string, c Controller) *Module {
+	this.router(HEAD, pattern, c)
 	return this
 }
 
 // @pattern: 方法名[/参数规则]
-func (this *Module) DELETE(pattern string, controllerOrhandler ...interface{}) *Module {
-	this.router("DELETE", pattern, controllerOrhandler)
+func (this *Module) OPTIONS(pattern string, c Controller) *Module {
+	this.router(OPTIONS, pattern, c)
 	return this
 }
 
 // @pattern: 方法名[/参数规则]
-func (this *Module) PATCH(pattern string, controllerOrhandler ...interface{}) *Module {
-	this.router("PATCH", pattern, controllerOrhandler)
+func (this *Module) PATCH(pattern string, c Controller) *Module {
+	this.router(PATCH, pattern, c)
 	return this
 }
 
 // @pattern: 方法名[/参数规则]
-func (this *Module) OPTIONS(pattern string, controllerOrhandler ...interface{}) *Module {
-	this.router("OPTIONS", pattern, controllerOrhandler)
+func (this *Module) POST(pattern string, c Controller) *Module {
+	this.router(POST, pattern, c)
+	return this
+}
+
+// @pattern: 方法名[/参数规则]
+func (this *Module) PUT(pattern string, c Controller) *Module {
+	this.router(PUT, pattern, c)
+	return this
+}
+
+// @pattern: 方法名[/参数规则]
+func (this *Module) TRACE(pattern string, c Controller) *Module {
+	this.router(TRACE, pattern, c)
+	return this
+}
+
+// @pattern: 方法名[/参数规则]
+func (this *Module) SOCKET(pattern string, c Controller) *Module {
+	this.router(SOCKET, pattern, c)
 	return this
 }
 
@@ -131,113 +177,101 @@ func (this *Module) OPTIONS(pattern string, controllerOrhandler ...interface{}) 
 // 注：路由规则"/ReadMail/:id" 将被自动转为 "/read_mail/:id"
 // 注：路由规则"read" 将被自动转为 "/read"
 // 注：当为"home"模块时，同时在根目录注册路由
-
-var re = regexp.MustCompile("^([/]?[a-zA-Z0-9_]+)([\\./\\?])?")
-
-func (this *Module) router(method, pattern string, controllerOrhandler []interface{}) {
+func (this *Module) router(method, pattern string, c Controller) {
 	this.Mutex.Lock()
 	defer func() {
 		recover()
 		this.Mutex.Unlock()
 	}()
-	if pattern[0] != '/' {
-		pattern = "/" + SnakeString(pattern)
-	} else {
-		pattern = "/" + SnakeString(pattern[1:])
-	}
-	pattern = strings.Replace(pattern, "/?", "?", -1)
-	pattern = strings.Trim(pattern, "?")
-	pattern = strings.TrimSuffix(pattern, "/")
-	a := re.FindStringSubmatch(pattern)
-	if len(a) < 3 {
-		log.Panicln(`[ERROR]  配置路由规则: 匹配规则 "` + pattern + `" 不正确`)
-	}
-	var (
-		hfs             = make([]HandlerFunc, len(controllerOrhandler))
-		countController int
-		cName           string
-		callfunc        = CamelString(strings.TrimPrefix(a[1], "/"))
-	)
-	for i, v := range controllerOrhandler {
-		c, ok := v.(Controller)
-		if ok {
-			cName, callfunc, hfs[i] = this.newHandler(method, callfunc, c)
-			countController++
-			continue
-		}
-		h, ok := v.(HandlerFunc)
-		if ok {
-			hfs[i] = h
-			continue
-		}
-		log.Panicln(`[ERROR] 配置路由规则: "` + this.RouterGroup.BasePath() + method + `" 指定了类型错误的操作`)
-	}
-	if countController != 1 {
-		log.Panicln(`[ERROR] 配置路由规则: "` + this.RouterGroup.BasePath() + method + `" 须且仅须设置1个控制器`)
-	}
+	pattern, a := dealPattern(pattern)
 
-	{
-		callMethod := reflect.ValueOf(this.RouterGroup).MethodByName(method)
-		// 当为"home"模块时，添加注册根路由
-		var defaultCallMethod reflect.Value
-		if this.RouterGroup.BasePath() == "/home" {
-			defaultCallMethod = reflect.ValueOf(ThinkGo).MethodByName(method)
+	cname, fname, h := this.newHandler(CamelString(a[1]), c)
+
+	echo := this.Group.Echo()
+	prefix := echo.Prefix()
+
+	if method != SOCKET {
+		add := echo.Match
+		if prefix == "/home" {
+			// 当为"home"模块时，添加注册根路由
+			add = ThinkGo.Echo.Match
 		}
-		hfsv := reflect.ValueOf(hfs)
-		if callfunc == "index" && a[2] != "/" {
-			// 允许省略index
-			p := path.Join(cName, pattern[len(a[1]):])
-			p = strings.Replace(p, "/?", "?", -1)
-			param := []reflect.Value{reflect.ValueOf(p), hfsv}
-			callMethod.CallSlice(param)
-			if defaultCallMethod != (reflect.Value{}) {
-				defaultCallMethod.CallSlice(param)
-			}
-			if cName == "index" {
-				param = []reflect.Value{reflect.ValueOf(pattern[len(a[1]):]), hfsv}
-				callMethod.CallSlice(param)
-				if defaultCallMethod != (reflect.Value{}) {
-					defaultCallMethod.CallSlice(param)
-				}
+
+		// 允许省略index
+		if fname == "index" && a[2] != "/" {
+			p := path.Join(cname, pattern[len(a[1])+1:])
+			// p = strings.Replace(p, "/?", "?", -1)
+			add([]string{method}, p, h)
+			if cname == "index" {
+				add([]string{method}, "/"+pattern[len(a[1])+1:], h)
 			}
 		}
-		param := []reflect.Value{reflect.ValueOf(path.Join(cName, pattern)), hfsv}
-		callMethod.CallSlice(param)
-		if defaultCallMethod != (reflect.Value{}) {
-			defaultCallMethod.CallSlice(param)
+		add([]string{method}, path.Join(cname, pattern), h)
+
+	} else {
+		add := echo.WebSocket
+		if prefix == "/home" {
+			// 当为"home"模块时，添加注册根路由
+			add = ThinkGo.Echo.WebSocket
 		}
+
+		// 允许省略index
+		if fname == "index" && a[2] != "/" {
+			p := path.Join(cname, pattern[len(a[1]):])
+			// p = strings.Replace(p, "/?", "?", -1)
+			add(p, h)
+			if cname == "index" {
+				add("/"+pattern[len(a[1]):], h)
+			}
+		}
+		add(path.Join(cname, pattern), h)
 	}
 }
 
 // 返回闭包操作
-func (this *Module) newHandler(method, callfunc string, c Controller) (_name, _callfunc string, hf HandlerFunc) {
-	var (
-		t   = reflect.TypeOf(c)
-		has bool
-	)
+func (this *Module) newHandler(fname string, c Controller) (_cname, _fname string, h HandlerFunc) {
+	t := reflect.TypeOf(c)
+	has := false
 	for i := t.NumMethod() - 1; i >= 0; i-- {
-		mName := t.Method(i).Name
-		if strings.EqualFold(mName, callfunc) {
-			callfunc = mName
+		mname := t.Method(i).Name
+		if strings.EqualFold(mname, fname) {
+			fname = mname
 			has = true
 			break
 		}
 	}
 	t = t.Elem()
 	if !has {
-		log.Panicln(`[ERROR]  配置路由规则: 指定方法名 "` + callfunc + `" 在控制器 [` + t.Name() + `] 不存在(忽略大小写)`)
+		ThinkGo.Logger().Fatal(`[ERROR]  配置路由规则: 指定方法名 "` + fname + `" 在控制器 [` + t.Name() + `] 不存在(忽略大小写)`)
 	}
 
-	_name = SnakeString(strings.TrimSuffix(t.Name(), "Controller"))
-	_callfunc = SnakeString(callfunc)
-	hf = func(ctx *Context) {
-		var newCiValue = reflect.New(t)
-		// 预处理
-		newCiValue.Interface().(Controller).AutoInit(method, ctx, _name, _callfunc, this)
-		// 开始执行
-		newCiValue.MethodByName(callfunc).Call([]reflect.Value{})
+	_cname = SnakeString(strings.TrimSuffix(t.Name(), "Controller"))
+	_fname = SnakeString(fname)
+	h = func(ctx *Context) error {
+		var newv = reflect.New(t)
+		newv.Interface().(Controller).AutoInit(ctx, this)
+		vs := newv.MethodByName(fname).Call([]reflect.Value{})
+		if len(vs) > 0 {
+			if err, ok := vs[0].Interface().(error); ok {
+				return err
+			}
+		}
+		return nil
 	}
 	return
+}
+
+func dealPattern(s string) (string, []string) {
+	s = strings.Trim(s, "/")
+	s = strings.Trim(s, "?")
+	// s = strings.Replace(s, "/?", "?", -1)
+	s = strings.Split(s, "?")[0]
+	a := re.FindStringSubmatch(s)
+	s = "/" + SnakeString(s)
+	if len(a) < 3 {
+		ThinkGo.Logger().Fatal(`[ERROR]  配置路由规则: 匹配规则 "` + s + `" 不正确`)
+	}
+	return s, a
 }
 
 // 顺序插入插件

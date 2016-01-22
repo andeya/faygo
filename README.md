@@ -3,7 +3,7 @@
 
 ![ThinkGo Admin](https://github.com/henrylee2cn/thinkgo/raw/master/doc/favicon.png)
 
-ThinkGo 是一款 Go 语言编写的 web 快速开发框架。它基于开源框架 Gin 进行二次开发，旨在实现一种类 ThinkPHP 的高可用、高效率的 web 框架。在此感谢 [Gin](https://github.com/gin-gonic/gin) 和 [httprouter](https://github.com/julienschmidt/httprouter)。它最显著的特点是模块、控制器、操作三段式的标准 MVC 架构，且模块与插件的目录结构完全一致，令开发变得非常简单灵活。
+ThinkGo 是一款 Go 语言编写的 web 快速开发框架。它基于开源框架 echo 进行二次开发，旨在实现一种类 ThinkPHP 的高可用、高效率的 web 框架。在此感谢 [echo](https://github.com/labstack/echo)。它最显著的特点是模块、控制器、操作三层架构的 MVC 架构及其智能路由。再加上对中间件及前端主题的支持，令开发变得异常简单与灵活。
 
 * 官方QQ群：Go-Web 编程 42730308    [![Go-Web 编程群](http://pub.idqqimg.com/wpa/images/group.png)](http://jq.qq.com/?_wv=1027&k=fzi4p1)
 
@@ -26,6 +26,9 @@ ThinkGo 是一款 Go 语言编写的 web 快速开发框架。它基于开源框
 │  │  ├─controller 公共控制器类目录
 │  │  ├─middleware 中间件目录
 │  │  └─model 公共数据模型目录
+│  │  └─view 公共视图文件目录
+│  │      ├─__public__ 资源文件目录
+│  │      └─xxx 模板文件(常用作Layout)
 │  │
 │  ├─module.go 模块定义文件
 │  ├─module 模块目录
@@ -50,6 +53,8 @@ ThinkGo 是一款 Go 语言编写的 web 快速开发框架。它基于开源框
 
 ## 安装
 
+0.下载依赖包 [[点击下载 ZIP]](https://github.com/pholcus/dependent/archive/master.zip) 并解压至 GOPATH/src 目录下
+
 1.下载框架源码
 ```sh
 go get github.com/henrylee2cn/thinkgo
@@ -67,6 +72,7 @@ $ thinkgo new appname
 
 4.以热编译模式运行（在项目目录下运行cmd）
 ```sh
+$ cd appname
 $ thinkgo run
 ```
 
@@ -79,7 +85,8 @@ package main
 
 import (
     "github.com/henrylee2cn/thinkgo/core"
-    
+    mw "github.com/henrylee2cn/thinkgo/core/middleware"
+
     _ "appname/application"
     _ "appname/application/common"
     _ "appname/deploy"
@@ -89,7 +96,7 @@ func main() {
     core.ThinkGo.
         // 以下为可选设置
         // 设置自定义的中间件列表
-        // Use(...).
+        Use(mw.Recover(), mw.Logger()).
         // 必须调用的启动服务
         Run()
 }
@@ -101,10 +108,10 @@ func main() {
 package application
 
 import (
+    "github.com/henrylee2cn/thinkgo/core"
     // "appname/application/common/middleware"
     _ "appname/application/home"
     . "appname/application/home/controller"
-    "github.com/henrylee2cn/thinkgo/core"
 )
 
 func init() {
@@ -123,14 +130,10 @@ func init() {
         // 指定当前主题
         UseTheme("default").
         // 中间件
-        //  Use(
-        //  middleware.BasicAuth(middleware.Accounts{
-        //      "foo":    "bar",
-        //      "manu":   "4321",
-        //  }),
-        // ).
+        // Use(...).
         // 注册路由
-        GET("/index", &IndexController{})
+        GET("/index", &IndexController{}).
+        GET("/layout/:a", &IndexController{})
 }
 ```
 
@@ -140,28 +143,24 @@ func init() {
 package middleware
 
 import (
-    "log"
-    "time"
+    "fmt"
+    "runtime"
     "github.com/henrylee2cn/thinkgo/core"
 )
-func Logger() core.HandlerFunc {
-    return func(c *core.Context) {
-        t := time.Now()
 
-        // Set example variable
-        c.Set("example", "12345")
-
-        // before request
-
-        c.Next()
-
-        // after request
-        latency := time.Since(t)
-        log.Print(latency)
-
-        // access the status we are sending
-        status := c.Writer.Status()
-        log.Println(status)
+func Recover() core.MiddlewareFunc {
+    return func(h core.HandlerFunc) core.HandlerFunc {
+        return func(c *core.Context) error {
+            defer func() {
+                if err := recover(); err != nil {
+                    trace := make([]byte, 1<<16)
+                    n := runtime.Stack(trace, true)
+                    c.Error(fmt.Errorf("panic recover\n %v\n stack trace %d bytes\n %s",
+                        err, n, trace[:n]))
+                }
+            }()
+            return h(c)
+        }
     }
 }
 ```
@@ -172,30 +171,31 @@ func Logger() core.HandlerFunc {
 package controller
 
 import (
-    "github.com/henrylee2cn/thinkgo/application/admin/common"
+    "fmt"
+    "appname/application/home"
 )
 
 type IndexController struct {
-    common.BaseController
+    home.BaseController
 }
 
 func (this *IndexController) Index() {
-    // 当路由规则为 `/admin/index/index?addon` 时，这样获取参数
-    id := this.Query("addon")
-    if id == "" {
-    // 当路由规则为 `/admin/index/index/:mail` 时，这样获取参数
-        id = this.Param("addon")
-    }
-    // 传入模板变量
-    this.Data["name"] = "henrylee2cn"
-    // 渲染模板并写回响应流
-    this.HTML()
+    fmt.Println(this.Query("a"))
+    this.Set("content", "Welcome To ThinkGo")
+    this.Render()
+}
+
+func (this *IndexController) Layout() {
+    fmt.Println(this.Param("a"))
+    this.Set("content", "Welcome To ThinkGo")
+    this.SetSection("__CONTENT__", this.Path())
+    this.RenderLayout("/common/layout")
 }
 ```
 
 ##FAQ
 
-更多操作可以参考[Gin](https://github.com/gin-gonic/gin)的一些用法。
+更多操作可以参考[echo](https://github.com/labstack/echo)的一些用法。
 
 
 ##贡献者名单

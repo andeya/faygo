@@ -4,95 +4,63 @@
 package core
 
 import (
+	"bytes"
+	"io/ioutil"
 	"net/http"
-	"path"
+
+	"github.com/henrylee2cn/thinkgo/core/template"
 )
 
 type (
 	// 控制器接口
 	Controller interface {
-		AutoInit(method string, ctx *Context, name string, callfunc string, module *Module) Controller
+		AutoInit(ctx *Context, module *Module) Controller
 	}
 	// 基础控制器
 	BaseController struct {
-		// 请求方法
-		method string
 		// 请求上下文
 		*Context
-		// 控制器名称
-		name string
-		// 本次调用的函数名称
-		callfunc string
 		// 所属模块
 		Module *Module
-		// 模板路径
-		tplpath string
-		// html模板变量
-		Data H
+		// 子模板
+		sectionTpl map[string]string
 	}
 )
 
 // 自动初始化
-func (this *BaseController) AutoInit(method string, ctx *Context, name string, callfunc string, module *Module) Controller {
-	this.method = method
+func (this *BaseController) AutoInit(ctx *Context, module *Module) Controller {
 	this.Context = ctx
-	this.name = name
-	this.callfunc = callfunc
 	this.Module = module
-
-	if method == "GET" {
-		this.tplpath = path.Join(APP_PACKAGE,
-			module.RouterGroup.BasePath(),
-			VIEW_PACKAGE,
-			module.Themes.Cur,
-			name,
-			callfunc) + ThinkGo.TplSuffex
-
-		this.Data = H{
-			// 定义模板中"__PUBLIC__"静态文件前缀
-			"__PUBLIC__": path.Join(PUBLIC_PREFIX, module.RouterGroup.BasePath(), module.Themes.Cur),
-		}
-	}
-
 	return this
 }
 
-// HTML renders the HTTP template specified by its file name.
-// It also updates the HTTP code and sets the Content-Type as "text/html".
-// See http://golang.org/doc/articles/wiki/
-func (this *BaseController) HTML(code ...int) {
+func (this *BaseController) Render(code ...int) {
 	if len(code) == 0 {
 		code = append(code, http.StatusOK)
 	}
-
-	this.Context.HTML(code[0], this.tplpath, this.Data)
+	this.Context.Render(code[0], this.Context.Path(), this.Context.GetAll())
 }
 
-// IndentedJSON serializes the given struct as pretty JSON (indented + endlines) into the response body.
-// It also sets the Content-Type as "application/json".
-// WARNING: we recommend to use this only for development propuses since printing pretty JSON is
-// more CPU and bandwidth consuming. Use Context.JSON() instead.
-func (this *BaseController) IndentedJSON(obj interface{}, code ...int) {
+func (this *BaseController) RenderLayout(layoutName string, code ...int) {
 	if len(code) == 0 {
 		code = append(code, http.StatusOK)
 	}
-	this.Context.IndentedJSON(code[0], obj)
+	render := this.Echo().Render
+	for k, v := range this.sectionTpl {
+		sectionBytes := bytes.NewBufferString("")
+		render(sectionBytes, v, this.Context.GetAll())
+		sectionContent, _ := ioutil.ReadAll(sectionBytes)
+		this.Set(k, template.HTML(sectionContent))
+	}
+	this.Context.Render(code[0], layoutName, this.Context.GetAll())
 }
 
-// JSON serializes the given struct as JSON into the response body.
-// It also sets the Content-Type as "application/json".
-func (this *BaseController) JSON(obj interface{}, code ...int) {
-	if len(code) == 0 {
-		code = append(code, http.StatusOK)
+func (this *BaseController) SetSection(position string, sectionName ...string) {
+	if len(sectionName) == 0 {
+		sectionName = append(sectionName, this.Path())
 	}
-	this.Context.JSON(code[0], obj)
-}
-
-// XML serializes the given struct as XML into the response body.
-// It also sets the Content-Type as "application/xml".
-func (this *BaseController) XML(obj interface{}, code ...int) {
-	if len(code) == 0 {
-		code = append(code, http.StatusOK)
+	if this.sectionTpl == nil {
+		this.sectionTpl = make(map[string]string)
 	}
-	this.Context.XML(code[0], obj)
+	this.sectionTpl[position] = sectionName[0]
 }

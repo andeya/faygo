@@ -5,8 +5,22 @@ package core
 
 import (
 	"fmt"
+	"path"
 	"regexp"
 )
+
+type Think struct {
+	*Echo
+	// 模块列表
+	Modules *Modules
+	// 模板引擎
+	*Template
+	// 配置信息
+	Config
+	// 框架信息
+	Author  string
+	Version string
+}
 
 // 重要配置，涉及项目架构，请勿修改
 const (
@@ -14,6 +28,8 @@ const (
 	APP_PACKAGE = "application"
 	// 视图文件目录名
 	VIEW_PACKAGE = "view"
+	// 公共目录
+	COMMON_PACKAGE = "common"
 	// 资源文件目录名
 	PUBLIC_PACKAGE = "__public__"
 	// 访问的资源文件url前缀
@@ -23,75 +39,69 @@ const (
 )
 
 // 全局运行实例
-var ThinkGo = func() *Think {
-	// 打印框架信息
-	fmt.Println(ThinkGoInfo())
+var (
+	ThinkGo = newThinkGo()
+)
 
-	config := readConfig()
-
-	// 设置运行模式，当传入参数为空时，使用环境变量 "THINKGO_MODE"
-	SetMode(config.RunMode)
-
+func newThinkGo() *Think {
 	t := &Think{
+		// 业务数据
+		Echo:    New().Group("/").Echo(),
+		Modules: newModules(),
+		Config:  getConfig(),
 		// 框架信息
 		Author:  AUTHOR,
 		Version: VERSION,
-		// 业务数据
-		Modules: newModules(),
-		Addons:  newAddons(),
-		Engine:  newEngine(),
-		Config:  config,
 	}
 
+	log := t.Logger()
+	log.SetPrefix("TG")
+
+	t.Echo.SetDebug(t.Config.Debug)
+	t.Echo.SetLogLevel(t.Config.LogLevel)
+	t.Template = NewRender()
+	t.Template.Delims(t.Config.TplLeft, t.Config.TplRight)
+	t.Template.SetBasepath(APP_PACKAGE)
+	t.Template.SetSuffix(t.Config.TplSuffix)
+	t.Template.SetDebug(t.Config.Debug)
+	t.Template.Prepare()
+	t.Echo.SetRenderer(t.Template)
+	t.servedir()
+	if t.Echo.Debug() {
+		for k, v := range t.Map() {
+			t.logger.Notice("	%-25s --> %-25s", k, v)
+		}
+	}
+	// t.Echo.SetBinder(b)
+	// t.Echo.SetHTTPErrorHandler(HTTPErrorHandler)
+	// t.Echo.SetLogOutput(w io.Writer)
+	// t.Echo.SetHTTPErrorHandler(h HTTPErrorHandler)
 	return t
-}()
-
-type Think struct {
-	*Engine
-	// 模块列表
-	Modules *Modules
-	// 插件列表
-	Addons *Addons
-	// 配置信息
-	Config
-	// 框架信息
-	Author  string
-	Version string
 }
 
-// 供main函数调用
-func (this *Think) Use(middleware ...HandlerFunc) *Think {
-	this.Engine.Use(middleware...)
-	return this
-}
-
-func (this *Think) TemplateFuncs(funcMap map[string]interface{}) *Think {
-	this.Engine.HTMLTemplateFuncs(funcMap)
-	return this
-}
-
-func (this *Think) Run() (err error) {
-	// 配置必须的静态文件服务器
-	this.Engine.StaticFile("/favicon.ico", "deploy/favicon/favicon.ico")
-	this.Engine.StaticFile("/uploads", UPLOADS_PACKAGE)
+func (this *Think) servedir() {
+	this.Echo.Favicon("deploy/favicon/favicon.ico")
+	this.Echo.ServeDir("/uploads", UPLOADS_PACKAGE)
+	this.Echo.ServeDir("/common", APP_PACKAGE+"/"+COMMON_PACKAGE+"/"+VIEW_PACKAGE+"/"+PUBLIC_PACKAGE)
 
 	var re = regexp.MustCompile(APP_PACKAGE + "(/[^/]+)/" + VIEW_PACKAGE + "(/[^/]+)/" + PUBLIC_PACKAGE)
 	for _, p := range WalkRelDirs(APP_PACKAGE, "/"+PUBLIC_PACKAGE) {
 		a := re.FindStringSubmatch(p)
-		if len(a) < 3 {
-			continue
+		if len(a) == 3 {
+			// public/[模块]/[主题]/
+			if a[1] == "/home" {
+				a[1] = "/"
+			}
+			this.Echo.ServeDir(path.Join(PUBLIC_PREFIX, a[1], a[2]), p)
 		}
-		this.Engine.Static(PUBLIC_PREFIX+a[1]+a[2], p)
 	}
+}
 
-	// 设置模板定界符
-	this.Engine.HTMLTemplateDelims(this.Config.TplLeft, this.Config.TplRight)
-	// 遍历模板文件
-	tplFiles := WalkRelFiles(APP_PACKAGE, this.Config.TplSuffex)
-	// 添加模板
-	this.Engine.LoadHTMLFiles(tplFiles...)
+func (this *Think) Run() {
+	this.Echo.Run(fmt.Sprintf("%s:%d", this.Config.HttpAddr, this.Config.HttpPort))
+}
 
-	// 开启服务
-	err = this.Engine.Run(fmt.Sprintf("%s:%d", this.Config.HttpAddr, this.Config.HttpPort))
-	return
+func (this *Think) Use(m ...Middleware) *Think {
+	this.Echo.Use(m...)
+	return this
 }
