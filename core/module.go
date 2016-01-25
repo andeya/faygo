@@ -48,15 +48,13 @@ func newModules() *Modules {
 // 初始化模块，文件名作为id，且文件名应与模块目录名、包名保存一致
 func ModulePrepare(m *Module) *Module {
 	_, file, _, _ := runtime.Caller(1)
-	name := strings.TrimSuffix(filepath.Base(file), ".go")
-	if name == "home" {
-		m.Id = "/"
-	} else {
-		m.Id = "/" + name
+	m.Id = strings.TrimSuffix(filepath.Base(file), ".go")
+	prefix := "/" + m.Id
+	if m.Id == "home" {
+		prefix = ""
 	}
-
 	// 创建分组并修改请求路径c.path "/[模块]/[控制器]/[操作]"为"/[模块]/[主题]/[控制器]/[操作]"
-	m.Group = ThinkGo.Echo.Group("/"+m.Id, func(c *Context) error {
+	m.Group = ThinkGo.Echo.Group(prefix, func(c *Context) error {
 		p := strings.Split(c.Path(), "/:")[0]
 		if p == "/" || p == "" {
 			c.SetPath("/index/index")
@@ -70,11 +68,11 @@ func ModulePrepare(m *Module) *Module {
 				c.SetPath(p + strings.Repeat("/index", num))
 			}
 		}
-		p = path.Join(m.Id, m.Themes.Cur, strings.TrimPrefix(p, m.Id))
+		p = path.Join(prefix, m.Themes.Cur, strings.TrimPrefix(p, prefix))
 		// 插入主题字段
 		c.SetPath(p)
 		// 静态文件前缀
-		c.Set("__PUBLIC__", path.Join(PUBLIC_PREFIX, m.Id, m.Themes.Cur))
+		c.Set("__PUBLIC__", path.Join(PUBLIC_PREFIX, prefix, m.Themes.Cur))
 		return nil
 	})
 
