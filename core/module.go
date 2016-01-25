@@ -19,7 +19,7 @@ type (
 		Name        string
 		Class       string
 		Description string
-		id          string
+		Id          string
 		status      int
 		sync.Mutex
 		*Themes
@@ -50,13 +50,13 @@ func ModulePrepare(m *Module) *Module {
 	_, file, _, _ := runtime.Caller(1)
 	name := strings.TrimSuffix(filepath.Base(file), ".go")
 	if name == "home" {
-		m.id = "/"
+		m.Id = "/"
 	} else {
-		m.id = "/" + name
+		m.Id = "/" + name
 	}
 
 	// 创建分组并修改请求路径c.path "/[模块]/[控制器]/[操作]"为"/[模块]/[主题]/[控制器]/[操作]"
-	m.Group = ThinkGo.Echo.Group("/"+m.id, func(c *Context) error {
+	m.Group = ThinkGo.Echo.Group("/"+m.Id, func(c *Context) error {
 		p := strings.Split(c.Path(), "/:")[0]
 		if p == "/" || p == "" {
 			c.SetPath("/index/index")
@@ -70,11 +70,11 @@ func ModulePrepare(m *Module) *Module {
 				c.SetPath(p + strings.Repeat("/index", num))
 			}
 		}
-		p = path.Join(m.id, m.Themes.Cur, strings.TrimPrefix(p, m.id))
+		p = path.Join(m.Id, m.Themes.Cur, strings.TrimPrefix(p, m.Id))
 		// 插入主题字段
 		c.SetPath(p)
 		// 静态文件前缀
-		c.Set("__PUBLIC__", path.Join(PUBLIC_PREFIX, m.id, m.Themes.Cur))
+		c.Set("__PUBLIC__", path.Join(PUBLIC_PREFIX, m.Id, m.Themes.Cur))
 		return nil
 	})
 
@@ -85,7 +85,7 @@ func ModulePrepare(m *Module) *Module {
 
 // 获取Id
 func (this *Module) GetId() string {
-	return this.id
+	return this.Id
 }
 
 // 设置主题，自动设置传入的第1个主题为当前主题
@@ -189,7 +189,7 @@ func (this *Module) router(method, pattern string, c Controller) {
 
 	echo := this.Group.Echo()
 	prefix := echo.Prefix()
-
+	cname = "/" + cname
 	if method != SOCKET {
 		add := echo.Match
 		if prefix == "/home" {
@@ -202,7 +202,7 @@ func (this *Module) router(method, pattern string, c Controller) {
 			p := path.Join(cname, pattern[len(a[1])+1:])
 			// p = strings.Replace(p, "/?", "?", -1)
 			add([]string{method}, p, h)
-			if cname == "index" {
+			if cname == "/index" {
 				add([]string{method}, "/"+pattern[len(a[1])+1:], h)
 			}
 		}
@@ -220,7 +220,7 @@ func (this *Module) router(method, pattern string, c Controller) {
 			p := path.Join(cname, pattern[len(a[1]):])
 			// p = strings.Replace(p, "/?", "?", -1)
 			add(p, h)
-			if cname == "index" {
+			if cname == "/index" {
 				add("/"+pattern[len(a[1]):], h)
 			}
 		}
@@ -277,7 +277,7 @@ func dealPattern(s string) (string, []string) {
 // 顺序插入插件
 func insertModule(m *Module) {
 	// 添加至插件索引列表
-	ThinkGo.Modules.Map[m.id] = m
+	ThinkGo.Modules.Map[m.Id] = m
 
 	// 添加至插件有序列表
 	var (
@@ -317,4 +317,8 @@ func insertModule(m *Module) {
 			break
 		}
 	}
+}
+
+func GetMoudleSlice() [][]*Module {
+	return ThinkGo.Modules.Slice
 }

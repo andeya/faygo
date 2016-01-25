@@ -34,14 +34,14 @@ func (this *BaseController) AutoInit(ctx *Context, module *Module) Controller {
 	return this
 }
 
-func (this *BaseController) Render(code ...int) {
+func (this *BaseController) Render(code ...int) error {
 	if len(code) == 0 {
 		code = append(code, http.StatusOK)
 	}
-	this.Context.Render(code[0], this.Context.Path(), this.Context.GetAll())
+	return this.Context.Render(code[0], this.Context.Path(), this.Context.GetAll())
 }
 
-func (this *BaseController) RenderLayout(layoutName string, code ...int) {
+func (this *BaseController) RenderLayout(layoutName string, code ...int) error {
 	if len(code) == 0 {
 		code = append(code, http.StatusOK)
 	}
@@ -52,7 +52,7 @@ func (this *BaseController) RenderLayout(layoutName string, code ...int) {
 		sectionContent, _ := ioutil.ReadAll(sectionBytes)
 		this.Set(k, template.HTML(sectionContent))
 	}
-	this.Context.Render(code[0], layoutName, this.Context.GetAll())
+	return this.Context.Render(code[0], layoutName, this.Context.GetAll())
 }
 
 func (this *BaseController) SetSection(position string, sectionName ...string) {
