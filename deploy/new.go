@@ -156,6 +156,8 @@ func createApp(cmd *Command, args []string) int {
 	fmt.Println(path.Join(apppath, "application", "common", "view") + string(path.Separator))
 	os.Mkdir(path.Join(apppath, "application", "common", "view", "__public__"), 0755)
 	fmt.Println(path.Join(apppath, "application", "common", "view", "__public__") + string(path.Separator))
+	os.Mkdir(path.Join(apppath, "application", "common", "view", "__public__", "js"), 0755)
+	fmt.Println(path.Join(apppath, "application", "common", "view", "__public__", "js") + string(path.Separator))
 
 	os.Mkdir(path.Join(apppath, "application", "home"), 0755)
 	fmt.Println(path.Join(apppath, "application", "home") + string(path.Separator))
@@ -199,6 +201,8 @@ func createApp(cmd *Command, args []string) int {
 	writetofile(path.Join(apppath, "application", "common", "template.go"), templatego)
 	fmt.Println(path.Join(apppath, "application", "common", "view", "layout.html"))
 	writetofile(path.Join(apppath, "application", "common", "view", "layout.html"), commlayouthtml)
+	fmt.Println(path.Join(apppath, "application", "common", "view", "__public__", "js", "jquery.min.js"))
+	writetofile(path.Join(apppath, "application", "common", "view", "__public__", "js", "jquery.min.js"), jquery)
 
 	fmt.Println(path.Join(apppath, "application", "home", "common.go"))
 	writetofile(path.Join(apppath, "application", "home", "common.go"), home_commongo)
@@ -215,8 +219,6 @@ func createApp(cmd *Command, args []string) int {
 	writetofile(path.Join(apppath, "application", "home", "view", "default", "index", "layout.html"), layouthtml)
 	fmt.Println(path.Join(apppath, "application", "home", "view", "default", "__public__", "css", "thinkgo.css"))
 	writetofile(path.Join(apppath, "application", "home", "view", "default", "__public__", "css", "thinkgo.css"), thinkgocss)
-	fmt.Println(path.Join(apppath, "application", "home", "view", "default", "__public__", "js", "jquery.min.js"))
-	writetofile(path.Join(apppath, "application", "home", "view", "default", "__public__", "js", "jquery.min.js"), jquery)
 	fmt.Println(path.Join(apppath, "application", "home", "view", "default", "__public__", "js", "jquery.min.map"))
 	writetofile(path.Join(apppath, "application", "home", "view", "default", "__public__", "js", "jquery.min.map"), jquerymap)
 	fmt.Println(path.Join(apppath, "application", "home", "view", "default", "__public__", "js", "jquery.githubRepoWidget2.js"))
@@ -243,20 +245,14 @@ var maingo = `package main
 
 import (
 	"github.com/henrylee2cn/thinkgo/core"
-	mw "github.com/henrylee2cn/thinkgo/core/middleware"
 
-	_ "[[[Appname]]]/application"
-	_ "[[[Appname]]]/application/common"
-	_ "[[[Appname]]]/deploy"
+	_ "test/abc/application"
+	_ "test/abc/application/common"
+	_ "test/abc/deploy"
 )
 
 func main() {
-	core.ThinkGo.
-		// 以下为可选设置
-		// 设置自定义的中间件列表
-		Use(mw.Recover(), mw.Logger()).
-		// 必须调用的启动服务
-		Run()
+	core.ThinkGo.Run()
 }
 `
 
@@ -287,8 +283,7 @@ func init() {
 		// 中间件
 		// Use(...).
 		// 注册路由
-		GET("/index", &IndexController{}).
-		GET("/layout/:a", &IndexController{})
+		Control(&IndexController{})
 }
 `
 
@@ -402,14 +397,14 @@ type IndexController struct {
 	home.BaseController
 }
 
-func (this *IndexController) Index() {
-	fmt.Println(this.Query("a"))
+func (this *IndexController) Index_Get() {
+	fmt.Println(this.Query("0"))
 	this.Set("content", "Welcome To ThinkGo")
 	this.Render()
 }
 
-func (this *IndexController) Layout() {
-	fmt.Println(this.Param("a"))
+func (this *IndexController) Layout_Get() {
+	fmt.Println(this.Query("a"))
 	this.Set("content", "Welcome To ThinkGo")
 	this.SetSection("__CONTENT__", this.Path())
 	this.RenderLayout("/common/layout")
@@ -424,7 +419,7 @@ var indexhtml = `<!DOCTYPE html>
     <!-- Tell the browser to be responsive to screen width -->
     <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
     <link href="{{{.__PUBLIC__}}}/css/thinkgo.css" rel="stylesheet" type="text/css" />
-    <script src="{{{.__PUBLIC__}}}/js/jquery.min.js"></script>
+    <script src="/common/js/jquery.min.js"></script>
 </head>
 
 <body>

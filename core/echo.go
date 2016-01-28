@@ -38,6 +38,7 @@ type (
 		autoIndex               bool
 		logger                  *log.Logger
 		router                  *Router
+		blackfile               map[string]bool // @ modified by henrylee2cn 2016.1.22
 	}
 
 	Route struct {
@@ -223,6 +224,11 @@ func New() (e *Echo) {
 	e.logger = log.New("echo")
 	e.logger.SetLevel(log.INFO)
 
+	// @ modified by henrylee2cn 2016.1.22
+	e.blackfile = map[string]bool{
+		".html": true,
+	}
+
 	return
 }
 
@@ -301,6 +307,14 @@ func (e *Echo) AutoIndex(on bool) {
 // before it hits the router or any middleware.
 func (e *Echo) Hook(h http.HandlerFunc) {
 	e.hook = h
+}
+
+// @ modified by henrylee2cn 2016.1.22
+// 文件服务器排除指定扩展名
+func (e *Echo) Blackfile(ext ...string) {
+	for _, v := range ext {
+		e.blackfile[v] = true
+	}
 }
 
 // Use adds handler to the middleware chain.
@@ -390,7 +404,7 @@ func (e *Echo) WebSocket(path string, h HandlerFunc) {
 
 // @ modified by henrylee2cn 2016.1.22
 func (e *Echo) add(method, path string, h Handler) {
-	path = pathpkg.Join(e.prefix + path)
+	path = pathpkg.Join(e.prefix, "/", path)
 	e.router.Add(method, path, wrapHandler(h), e)
 	r := Route{
 		Method:  method,
@@ -428,9 +442,13 @@ func (e *Echo) ServeDir(path, dir string) {
 	})
 }
 
+// @ modified by henrylee2cn 2016.1.22
 // ServeFile serves a file.
 func (e *Echo) ServeFile(path, file string) {
 	e.Get(path, func(c *Context) error {
+		if e.blackfile[filepath.Ext(file)] {
+			return NewHTTPError(http.StatusNotFound)
+		}
 		dir, file := filepath.Split(file)
 		return e.serveFile(dir, file, c)
 	})
@@ -497,7 +515,7 @@ func listDir(d http.File, c *Context) (err error) {
 // the parent. Passing middleware overrides parent middleware.
 func (e *Echo) Group(prefix string, m ...Middleware) *Group {
 	g := &Group{*e}
-	g.echo.prefix = pathpkg.Join(g.echo.prefix, prefix)
+	g.echo.prefix = pathpkg.Join("/", g.echo.prefix, prefix)
 	if len(m) == 0 {
 		mw := make([]MiddlewareFunc, len(g.echo.middleware))
 		copy(mw, g.echo.middleware)

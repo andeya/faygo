@@ -7,7 +7,6 @@ package core
 import (
 	"fmt"
 	"io"
-	"regexp"
 
 	"github.com/henrylee2cn/thinkgo/core/template"
 )
@@ -45,34 +44,6 @@ func (t *Template) SetBasepath(basepath string) {
 
 func (t *Template) SetDebug(debug bool) {
 	t.debug = debug
-}
-
-func (t *Template) Prepare() {
-	var re = regexp.MustCompile(t.basepath + "(/[^/]+)/" + VIEW_PACKAGE + "(/[^/]+)(/[^/]+)(/[^/]+)" + t.suffix)
-	var re2 = regexp.MustCompile(t.basepath + "/" + COMMON_PACKAGE + "/" + VIEW_PACKAGE + "(/[^/]+)" + t.suffix)
-	var paths []string
-	for _, f := range WalkRelFiles(t.basepath, t.suffix) {
-		a := re.FindStringSubmatch(f)
-		if len(a) < 5 {
-			b := re2.FindStringSubmatch(f)
-			if len(b) == 2 {
-				t.pathmap["/"+COMMON_PACKAGE+b[1]] = f
-				paths = append(paths, f)
-			}
-			continue
-		}
-		if a[1] == "/home" {
-			a[1] = ""
-		}
-		r := a[1] + a[2] + a[3] + a[4]
-		t.pathmap[r] = f
-		paths = append(paths, f)
-	}
-	if !t.debug {
-		t.Template.ParseFiles(paths...)
-	}
-
-	t.Template.Delims(t.delims[0], t.delims[1])
 }
 
 func (t *Template) Render(w io.Writer, name string, data interface{}) error {

@@ -91,12 +91,7 @@ import (
 )
 
 func main() {
-    core.ThinkGo.
-        // 以下为可选设置
-        // 设置自定义的中间件列表
-        Use(mw.Recover(), mw.Logger()).
-        // 必须调用的启动服务
-        Run()
+    core.ThinkGo.Run()
 }
 ```
 
@@ -129,9 +124,8 @@ func init() {
         UseTheme("default").
         // 中间件
         // Use(...).
-        // 注册路由
-        GET("/index", &IndexController{}).
-        GET("/layout/:a", &IndexController{})
+        // 自动注册路由
+        Control(&IndexController{})
 }
 ```
 
@@ -177,13 +171,15 @@ type IndexController struct {
     home.BaseController
 }
 
-func (this *IndexController) Index() {
+// 后缀"_Method"用于指定请求方法
+func (this *IndexController) Index_Get() {
     fmt.Println(this.Query("a"))
     this.Set("content", "Welcome To ThinkGo")
     this.Render()
 }
 
-func (this *IndexController) Layout() {
+// 后缀"_Method"用于指定请求方法
+func (this *IndexController) Layout_Get() {
     fmt.Println(this.Param("a"))
     this.Set("content", "Welcome To ThinkGo")
     this.SetSection("__CONTENT__", this.Path())

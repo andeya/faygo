@@ -19,7 +19,7 @@ type (
 		Name        string
 		Class       string
 		Description string
-		Id          string
+		id          string
 		status      int
 		sync.Mutex
 		*Themes
@@ -48,33 +48,19 @@ func newModules() *Modules {
 // 初始化模块，文件名作为id，且文件名应与模块目录名、包名保存一致
 func ModulePrepare(m *Module) *Module {
 	_, file, _, _ := runtime.Caller(1)
-	m.Id = strings.TrimSuffix(filepath.Base(file), ".go")
-	prefix := "/" + m.Id
-	if m.Id == "home" {
-		prefix = ""
-	}
+	m.id = strings.TrimSuffix(filepath.Base(file), ".go")
+	prefix := "/" + m.id
 	// 创建分组并修改请求路径c.path "/[模块]/[控制器]/[操作]"为"/[模块]/[主题]/[控制器]/[操作]"
 	m.Group = ThinkGo.Echo.Group(prefix, func(c *Context) error {
+		// 补全主题字段
 		p := strings.Split(c.Path(), "/:")[0]
-		if p == "/" || p == "" {
-			c.SetPath("/index/index")
-		} else if strings.HasSuffix(p, "/index") {
-			l := 3
-			if c.Echo().Prefix() == "/" {
-				l = 2
-			}
-			num := l - strings.Count(p, "/")
-			if num > 0 {
-				c.SetPath(p + strings.Repeat("/index", num))
-			}
-		}
 		p = path.Join(prefix, m.Themes.Cur, strings.TrimPrefix(p, prefix))
-		// 插入主题字段
 		c.SetPath(p)
 		// 静态文件前缀
-		c.Set("__PUBLIC__", path.Join(PUBLIC_PREFIX, prefix, m.Themes.Cur))
+		c.Set("__PUBLIC__", path.Join("/public", prefix, m.Themes.Cur))
 		return nil
 	})
+	m.Group.Use(Recover(), Logger())
 
 	// 登记并排序
 	insertModule(m)
@@ -83,7 +69,7 @@ func ModulePrepare(m *Module) *Module {
 
 // 获取Id
 func (this *Module) GetId() string {
-	return this.Id
+	return this.id
 }
 
 // 设置主题，自动设置传入的第1个主题为当前主题
@@ -111,171 +97,42 @@ func (this *Module) Use(m ...Middleware) *Module {
 	return this
 }
 
-// @pattern: 方法名[/参数规则]
-func (this *Module) CONNECT(pattern string, c Controller) *Module {
-	this.router(CONNECT, pattern, c)
-	return this
-}
-
-// @pattern: 方法名[/参数规则]
-func (this *Module) DELETE(pattern string, c Controller) *Module {
-	this.router(DELETE, pattern, c)
-	return this
-}
-
-// @pattern: 方法名[/参数规则]
-func (this *Module) GET(pattern string, c Controller) *Module {
-	this.router(GET, pattern, c)
-	return this
-}
-
-// @pattern: 方法名[/参数规则]
-func (this *Module) HEAD(pattern string, c Controller) *Module {
-	this.router(HEAD, pattern, c)
-	return this
-}
-
-// @pattern: 方法名[/参数规则]
-func (this *Module) OPTIONS(pattern string, c Controller) *Module {
-	this.router(OPTIONS, pattern, c)
-	return this
-}
-
-// @pattern: 方法名[/参数规则]
-func (this *Module) PATCH(pattern string, c Controller) *Module {
-	this.router(PATCH, pattern, c)
-	return this
-}
-
-// @pattern: 方法名[/参数规则]
-func (this *Module) POST(pattern string, c Controller) *Module {
-	this.router(POST, pattern, c)
-	return this
-}
-
-// @pattern: 方法名[/参数规则]
-func (this *Module) PUT(pattern string, c Controller) *Module {
-	this.router(PUT, pattern, c)
-	return this
-}
-
-// @pattern: 方法名[/参数规则]
-func (this *Module) TRACE(pattern string, c Controller) *Module {
-	this.router(TRACE, pattern, c)
-	return this
-}
-
-// @pattern: 方法名[/参数规则]
-func (this *Module) SOCKET(pattern string, c Controller) *Module {
-	this.router(SOCKET, pattern, c)
-	return this
-}
-
-// 公用路由注册方法
-// 注：路由规则"/ReadMail/:id" 将被自动转为 "/read_mail/:id"
-// 注：路由规则"read" 将被自动转为 "/read"
-// 注：当为"home"模块时，同时在根目录注册路由
-func (this *Module) router(method, pattern string, c Controller) {
-	this.Mutex.Lock()
-	defer func() {
-		recover()
-		this.Mutex.Unlock()
-	}()
-	pattern, a := dealPattern(pattern)
-
-	cname, fname, h := this.newHandler(CamelString(a[1]), c)
-
-	echo := this.Group.Echo()
-	prefix := echo.Prefix()
-	cname = "/" + cname
-	if method != SOCKET {
-		add := echo.Match
-		if prefix == "/home" {
-			// 当为"home"模块时，添加注册根路由
-			add = ThinkGo.Echo.Match
-		}
-
-		// 允许省略index
-		if fname == "index" && a[2] != "/" {
-			p := path.Join(cname, pattern[len(a[1])+1:])
-			// p = strings.Replace(p, "/?", "?", -1)
-			add([]string{method}, p, h)
-			if cname == "/index" {
-				add([]string{method}, "/"+pattern[len(a[1])+1:], h)
-			}
-		}
-		add([]string{method}, path.Join(cname, pattern), h)
-
-	} else {
-		add := echo.WebSocket
-		if prefix == "/home" {
-			// 当为"home"模块时，添加注册根路由
-			add = ThinkGo.Echo.WebSocket
-		}
-
-		// 允许省略index
-		if fname == "index" && a[2] != "/" {
-			p := path.Join(cname, pattern[len(a[1]):])
-			// p = strings.Replace(p, "/?", "?", -1)
-			add(p, h)
-			if cname == "/index" {
-				add("/"+pattern[len(a[1]):], h)
-			}
-		}
-		add(path.Join(cname, pattern), h)
-	}
-}
-
-// 返回闭包操作
-func (this *Module) newHandler(fname string, c Controller) (_cname, _fname string, h HandlerFunc) {
+// 注册智能路由
+func (this *Module) Control(c Controller, m ...Middleware) *Module {
 	t := reflect.TypeOf(c)
-	has := false
+	e := t.Elem()
+	cname := SnakeString(strings.TrimSuffix(e.Name(), "Controller"))
+	group := this.Group.Group(cname, m...)
 	for i := t.NumMethod() - 1; i >= 0; i-- {
-		mname := t.Method(i).Name
-		if strings.EqualFold(mname, fname) {
-			fname = mname
-			has = true
-			break
+		fname := t.Method(i).Name
+		idx := strings.LastIndex(fname, "_")
+		if idx == -1 {
+			continue
+		}
+		pattern := SnakeString(fname[:idx])
+		method := strings.ToUpper(fname[idx+1:])
+		switch method {
+		case "CONNECT", "DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT", "TRACE", "SOCKET":
+			group.Match([]string{method}, pattern, func(ctx *Context) error {
+				var v = reflect.New(e)
+				v.Interface().(Controller).AutoInit(ctx)
+				rets := v.MethodByName(fname).Call([]reflect.Value{})
+				if len(rets) > 0 {
+					if err, ok := rets[0].Interface().(error); ok {
+						return err
+					}
+				}
+				return nil
+			})
 		}
 	}
-	t = t.Elem()
-	if !has {
-		ThinkGo.Logger().Fatal(`[ERROR]  配置路由规则: 指定方法名 "` + fname + `" 在控制器 [` + t.Name() + `] 不存在(忽略大小写)`)
-	}
-
-	_cname = SnakeString(strings.TrimSuffix(t.Name(), "Controller"))
-	_fname = SnakeString(fname)
-	h = func(ctx *Context) error {
-		var newv = reflect.New(t)
-		newv.Interface().(Controller).AutoInit(ctx, this)
-		vs := newv.MethodByName(fname).Call([]reflect.Value{})
-		if len(vs) > 0 {
-			if err, ok := vs[0].Interface().(error); ok {
-				return err
-			}
-		}
-		return nil
-	}
-	return
-}
-
-func dealPattern(s string) (string, []string) {
-	s = strings.Trim(s, "/")
-	s = strings.Trim(s, "?")
-	// s = strings.Replace(s, "/?", "?", -1)
-	s = strings.Split(s, "?")[0]
-	a := re.FindStringSubmatch(s)
-	s = "/" + SnakeString(s)
-	if len(a) < 3 {
-		ThinkGo.Logger().Fatal(`[ERROR]  配置路由规则: 匹配规则 "` + s + `" 不正确`)
-	}
-	return s, a
+	return this
 }
 
 // 顺序插入插件
 func insertModule(m *Module) {
 	// 添加至插件索引列表
-	ThinkGo.Modules.Map[m.Id] = m
+	ThinkGo.Modules.Map[m.id] = m
 
 	// 添加至插件有序列表
 	var (
