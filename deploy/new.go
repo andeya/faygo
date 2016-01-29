@@ -267,24 +267,33 @@ import (
 )
 
 func init() {
-	core.ModulePrepare(&core.Module{
-		Name:        "home",
-		Class:       "模块示例",
-		Description: "这是一个模块示例",
-	}).SetThemes(
-		// 自动设置传入的第1个主题为当前主题
-		&core.Theme{
-			Name:        "default",
-			Description: "default",
-			Src:         map[string]string{},
-		},
-	).
-		// 指定当前主题
-		UseTheme("default").
-		// 中间件
-		// Use(...).
-		// 注册路由
-		Router(&IndexController{})
+	//
+	// 创建模块，并默认设置default主题
+	var m = core.NewModule(
+		// name
+		"home",
+		// description
+		"这是一个模块示例",
+	)
+
+	// 中间件(可选)
+	// m.Use(...)
+
+	// 设置主题列表(可选)
+	// 若尚未指定当前主题，则默认为第1个
+	// m.SetThemes(
+	// 	&core.Theme{
+	// 		Name:        "default",
+	// 		Description: "default",
+	// 		Src:         map[string]string{},
+	// 	},
+	// )
+
+	// 指定当前主题(可选)
+	// m.UseTheme("default")
+
+	// 注册路由
+	m.Router(&IndexController{})
 }
 `
 

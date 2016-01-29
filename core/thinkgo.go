@@ -14,7 +14,7 @@ import (
 type Think struct {
 	echo *Echo
 	// 模块列表
-	Modules *Modules
+	Modules map[string]*Module
 	// 模板引擎
 	*Template
 	// 配置信息
@@ -47,7 +47,7 @@ func newThinkGo() *Think {
 	t := &Think{
 		// 业务数据
 		echo:    New(),
-		Modules: newModules(),
+		Modules: Modules,
 		Config:  getConfig(),
 		// 框架信息
 		Author:  AUTHOR,
@@ -148,7 +148,7 @@ func (this *Think) Hook() {
 			} else {
 				m = p[:idx]
 			}
-			if _, ok := this.Modules.Map[m]; !ok {
+			if _, ok := this.Modules[m]; !ok {
 				switch m {
 				case "common", "public", "uploads":
 					return

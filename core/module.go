@@ -13,43 +13,45 @@ import (
 	"sync"
 )
 
-type (
-	// 应用模块
-	Module struct {
-		Name        string
-		Class       string
-		Description string
-		id          string
-		status      int
-		sync.Mutex
-		*Themes
-		*Group
-	}
-	// 登记模块列表
-	Modules struct {
-		// 快速调用列表
-		Map map[string]*Module
-		// 有序列表 [分组][Id]*Module
-		Slice [][]*Module
-	}
-)
-
-var (
-	re = regexp.MustCompile("^[/]?([a-zA-Z0-9_]+)([\\./\\?])?")
-)
-
-func newModules() *Modules {
-	return &Modules{
-		Map:   map[string]*Module{},
-		Slice: [][]*Module{},
-	}
+// 应用模块
+type Module struct {
+	Name        string
+	Description string
+	id          string
+	status      int
+	sync.Mutex
+	*Themes
+	*Group
 }
 
-// 初始化模块，文件名作为id，且文件名应与模块目录名、包名保存一致
-func ModulePrepare(m *Module) *Module {
+var (
+	Modules = map[string]*Module{}
+	re      = regexp.MustCompile("^[/]?([a-zA-Z0-9_]+)([\\./\\?])?")
+)
+
+// 创建模块
+// 默认设置default主题
+// 文件名作为id，且文件名应与模块目录名、包名保存一致
+func NewModule(name, description string) *Module {
+	m := &Module{
+		Name:        name,
+		Description: description,
+		Themes:      &Themes{},
+	}
+	// 设置默认主题
+	m.Themes.SetThemes(&Theme{
+		Name:        "default",
+		Description: "default",
+		Src:         map[string]string{},
+	})
+
+	// 设置id
 	_, file, _, _ := runtime.Caller(1)
 	m.id = strings.TrimSuffix(filepath.Base(file), ".go")
+
+	// 生成url前缀
 	prefix := "/" + m.id
+
 	// 创建分组并修改请求路径c.path "/[模块]/[控制器]/[操作]"为"/[模块]/[主题]/[控制器]/[操作]"
 	m.Group = ThinkGo.echo.Group(prefix, func(c *Context) error {
 		// 补全主题字段
@@ -62,8 +64,9 @@ func ModulePrepare(m *Module) *Module {
 	})
 	m.Group.Use(Recover(), Logger())
 
-	// 登记并排序
-	insertModule(m)
+	// 模块登记
+	Modules[m.id] = m
+
 	return m
 }
 
@@ -72,16 +75,9 @@ func (this *Module) GetId() string {
 	return this.id
 }
 
-// 设置主题，自动设置传入的第1个主题为当前主题
+// 设置主题，并默认设置传入的第1个主题为当前主题
 func (this *Module) SetThemes(themes ...*Theme) *Module {
-	if len(themes) == 0 {
-		return this
-	}
-	this.Themes = &Themes{
-		Cur:  themes[0].Name,
-		List: make(map[string]*Theme),
-	}
-	this.Themes.AddThemes(themes...)
+	this.Themes.SetThemes(themes...)
 	return this
 }
 
@@ -127,53 +123,4 @@ func (this *Module) Router(c Controller, m ...Middleware) *Module {
 		}
 	}
 	return this
-}
-
-// 顺序插入插件
-func insertModule(m *Module) {
-	// 添加至插件索引列表
-	ThinkGo.Modules.Map[m.id] = m
-
-	// 添加至插件有序列表
-	var (
-		add   bool
-		class []string
-	)
-
-	for _, ms := range ThinkGo.Modules.Slice {
-		c := ms[0].Class
-		class = append(class, c)
-		if c != m.Class {
-			continue
-		}
-		for k, v := range ms {
-			if v.Name > m.Name {
-				x := append([]*Module{m}, ms[k:]...)
-				ms = append(ms[:k], x...)
-				break
-			}
-		}
-		add = true
-		break
-	}
-	if add {
-		return
-	}
-
-	if len(class) == 0 {
-		ThinkGo.Modules.Slice = append(ThinkGo.Modules.Slice, []*Module{m})
-		return
-	}
-
-	for k, v := range class {
-		if v > m.Class {
-			x := append([][]*Module{{m}}, ThinkGo.Modules.Slice[k:]...)
-			ThinkGo.Modules.Slice = append(ThinkGo.Modules.Slice[:k], x...)
-			break
-		}
-	}
-}
-
-func GetMoudleSlice() [][]*Module {
-	return ThinkGo.Modules.Slice
 }
