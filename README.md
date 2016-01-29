@@ -107,13 +107,8 @@ import (
 )
 
 func init() {
-    // 创建模块，并默认设置default主题
-    var m = core.NewModule(
-        // name
-        "home",
-        // description
-        "这是一个模块示例",
-    )
+    // 创建模块，并自动设置default主题
+    var m = core.NewModule("这是一个模块示例")
 
     // 中间件(可选)
     // m.Use(...)

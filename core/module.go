@@ -10,16 +10,13 @@ import (
 	"regexp"
 	"runtime"
 	"strings"
-	"sync"
 )
 
 // 应用模块
 type Module struct {
+	id          string
 	Name        string
 	Description string
-	id          string
-	status      int
-	sync.Mutex
 	*Themes
 	*Group
 }
@@ -30,14 +27,14 @@ var (
 )
 
 // 创建模块
-// 默认设置default主题
+// 自动设置default主题
 // 文件名作为id，且文件名应与模块目录名、包名保存一致
-func NewModule(name, description string) *Module {
+func NewModule(description string) *Module {
 	m := &Module{
-		Name:        name,
 		Description: description,
 		Themes:      &Themes{},
 	}
+
 	// 设置默认主题
 	m.Themes.SetThemes(&Theme{
 		Name:        "default",
@@ -48,6 +45,9 @@ func NewModule(name, description string) *Module {
 	// 设置id
 	_, file, _, _ := runtime.Caller(1)
 	m.id = strings.TrimSuffix(filepath.Base(file), ".go")
+
+	// 设置Name
+	m.Name = strings.Title(m.id)
 
 	// 生成url前缀
 	prefix := "/" + m.id
