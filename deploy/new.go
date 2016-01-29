@@ -239,6 +239,7 @@ httpport = 8080
 tplsuffex = .html
 tplleft = {{{
 tplright = }}}
+defmodule = home
 `
 
 var maingo = `package main
@@ -246,9 +247,9 @@ var maingo = `package main
 import (
 	"github.com/henrylee2cn/thinkgo/core"
 
-	_ "test/abc/application"
-	_ "test/abc/application/common"
-	_ "test/abc/deploy"
+	_ "[[[Appname]]]/application"
+	_ "[[[Appname]]]/application/common"
+	_ "[[[Appname]]]/deploy"
 )
 
 func main() {

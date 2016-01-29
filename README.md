@@ -173,7 +173,7 @@ type IndexController struct {
 
 // 后缀"_Method"用于指定请求方法
 func (this *IndexController) Index_Get() {
-    fmt.Println(this.Query("a"))
+    fmt.Println(this.Query("0"))
     this.Set("content", "Welcome To ThinkGo")
     this.Render()
 }
