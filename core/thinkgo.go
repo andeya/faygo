@@ -12,7 +12,7 @@ import (
 )
 
 type Think struct {
-	*Echo
+	echo *Echo
 	// 模块列表
 	Modules *Modules
 	// 模板引擎
@@ -46,7 +46,7 @@ var (
 func newThinkGo() *Think {
 	t := &Think{
 		// 业务数据
-		Echo:    New(),
+		echo:    New(),
 		Modules: newModules(),
 		Config:  getConfig(),
 		// 框架信息
@@ -54,47 +54,42 @@ func newThinkGo() *Think {
 		Version: VERSION,
 	}
 
-	log := t.Logger()
+	log := t.echo.Logger()
 	log.SetPrefix("TG")
-	t.Echo.Use(Recover(), Logger())
-	t.Echo.Blackfile(".html")
-	t.Echo.SetLogLevel(t.Config.LogLevel)
-	t.Echo.SetDebug(t.Config.Debug)
+	t.echo.Use(Recover(), Logger())
+	t.echo.Blackfile(".html")
+	t.echo.SetLogLevel(t.Config.LogLevel)
+	t.echo.SetDebug(t.Config.Debug)
 	t.htmlPrepare()
 	t.dirServe()
 	t.Hook()
-	// t.Echo.SetBinder(b)
-	// t.Echo.SetHTTPErrorHandler(HTTPErrorHandler)
-	// t.Echo.SetLogOutput(w io.Writer)
-	// t.Echo.SetHTTPErrorHandler(h HTTPErrorHandler)
+	// t.echo.SetBinder(b)
+	// t.echo.SetHTTPErrorHandler(HTTPErrorHandler)
+	// t.echo.SetLogOutput(w io.Writer)
+	// t.echo.SetHTTPErrorHandler(h HTTPErrorHandler)
 	return t
 }
 
 func (this *Think) Run() {
-	this.Echo.Run(fmt.Sprintf("%s:%d", this.Config.HttpAddr, this.Config.HttpPort))
-}
-
-func (this *Think) Use(m ...Middleware) *Think {
-	this.Echo.Use(m...)
-	return this
+	this.echo.Run(fmt.Sprintf("%s:%d", this.Config.HttpAddr, this.Config.HttpPort))
 }
 
 func (this *Think) dirServe() {
-	this.Echo.Favicon("deploy/favicon/favicon.ico")
-	this.Echo.ServeDir("/uploads", UPLOADS_PACKAGE)
-	this.Echo.ServeDir("/common", APP_PACKAGE+"/"+COMMON_PACKAGE+"/"+VIEW_PACKAGE+"/"+PUBLIC_PACKAGE)
+	this.echo.Favicon("deploy/favicon/favicon.ico")
+	this.echo.ServeDir("/uploads", UPLOADS_PACKAGE)
+	this.echo.ServeDir("/common", APP_PACKAGE+"/"+COMMON_PACKAGE+"/"+VIEW_PACKAGE+"/"+PUBLIC_PACKAGE)
 
 	var re = regexp.MustCompile(APP_PACKAGE + "(/[^/]+)/" + VIEW_PACKAGE + "(/[^/]+)/" + PUBLIC_PACKAGE)
 	for _, p := range WalkRelDirs(APP_PACKAGE, "/"+PUBLIC_PACKAGE) {
 		a := re.FindStringSubmatch(p)
 		if len(a) == 3 {
 			// public/[模块]/[主题]/
-			this.Echo.ServeDir(path.Join("/public", a[1], a[2]), p)
+			this.echo.ServeDir(path.Join("/public", a[1], a[2]), p)
 		}
 	}
-	if this.Echo.Debug() {
+	if this.echo.Debug() {
 		for k, v := range this.Template.Map() {
-			this.logger.Notice("	%-25s --> %-25s", k, v)
+			this.echo.logger.Notice("	%-25s --> %-25s", k, v)
 		}
 	}
 }
@@ -133,11 +128,11 @@ func (this *Think) htmlPrepare() {
 	t.Template.Delims(t.delims[0], t.delims[1])
 
 	this.Template = t
-	this.Echo.SetRenderer(t)
+	this.echo.SetRenderer(t)
 }
 
 func (this *Think) Hook() {
-	this.Echo.Hook(func(w http.ResponseWriter, r *http.Request) {
+	this.echo.Hook(func(w http.ResponseWriter, r *http.Request) {
 		p := strings.Trim(r.URL.Path, "/")
 		// 补全默认模块
 		switch p {

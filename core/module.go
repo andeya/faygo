@@ -51,7 +51,7 @@ func ModulePrepare(m *Module) *Module {
 	m.id = strings.TrimSuffix(filepath.Base(file), ".go")
 	prefix := "/" + m.id
 	// 创建分组并修改请求路径c.path "/[模块]/[控制器]/[操作]"为"/[模块]/[主题]/[控制器]/[操作]"
-	m.Group = ThinkGo.Echo.Group(prefix, func(c *Context) error {
+	m.Group = ThinkGo.echo.Group(prefix, func(c *Context) error {
 		// 补全主题字段
 		p := strings.Split(c.Path(), "/:")[0]
 		p = path.Join(prefix, m.Themes.Cur, strings.TrimPrefix(p, prefix))

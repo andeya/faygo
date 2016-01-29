@@ -180,7 +180,7 @@ func (this *IndexController) Index_Get() {
 
 // 后缀"_Method"用于指定请求方法
 func (this *IndexController) Layout_Get() {
-    fmt.Println(this.Param("a"))
+    fmt.Println(this.Query("a"))
     this.Set("content", "Welcome To ThinkGo")
     this.SetSection("__CONTENT__", this.Path())
     this.RenderLayout("/common/layout")
