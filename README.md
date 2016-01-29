@@ -83,7 +83,6 @@ package main
 
 import (
     "github.com/henrylee2cn/thinkgo/core"
-    mw "github.com/henrylee2cn/thinkgo/core/middleware"
 
     _ "appname/application"
     _ "appname/application/common"
