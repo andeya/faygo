@@ -267,7 +267,6 @@ import (
 )
 
 func init() {
-	//
 	// 创建模块，并默认设置default主题
 	var m = core.NewModule(
 		// name
