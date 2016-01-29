@@ -98,7 +98,7 @@ func (this *Module) Use(m ...Middleware) *Module {
 }
 
 // 注册智能路由
-func (this *Module) Control(c Controller, m ...Middleware) *Module {
+func (this *Module) Router(c Controller, m ...Middleware) *Module {
 	t := reflect.TypeOf(c)
 	e := t.Elem()
 	cname := SnakeString(strings.TrimSuffix(e.Name(), "Controller"))

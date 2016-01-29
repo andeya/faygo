@@ -284,7 +284,7 @@ func init() {
 		// 中间件
 		// Use(...).
 		// 注册路由
-		Control(&IndexController{})
+		Router(&IndexController{})
 }
 `
 
