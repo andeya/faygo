@@ -12,9 +12,11 @@ import (
 )
 
 type Think struct {
-	echo *Echo
+	Echo *Echo
 	// 模块列表
 	Modules map[string]*Module
+	// 插件列表
+	// Addons *Addons
 	// 模板引擎
 	*Template
 	// 配置信息
@@ -46,50 +48,51 @@ var (
 func newThinkGo() *Think {
 	t := &Think{
 		// 业务数据
-		echo:    New(),
+		Echo:    New(),
 		Modules: Modules,
-		Config:  getConfig(),
+		// Addons:  newAddons(),
+		Config: getConfig(),
 		// 框架信息
 		Author:  AUTHOR,
 		Version: VERSION,
 	}
 
-	log := t.echo.Logger()
+	log := t.Echo.Logger()
 	log.SetPrefix("TG")
-	t.echo.Use(Recover(), Logger())
-	t.echo.Blackfile(".html")
-	t.echo.SetLogLevel(t.Config.LogLevel)
-	t.echo.SetDebug(t.Config.Debug)
+	t.Echo.Use(Recover(), Logger())
+	t.Echo.Blackfile(".html")
+	t.Echo.SetLogLevel(t.Config.LogLevel)
+	t.Echo.SetDebug(t.Config.Debug)
 	t.htmlPrepare()
 	t.dirServe()
 	t.Hook()
-	// t.echo.SetBinder(b)
-	// t.echo.SetHTTPErrorHandler(HTTPErrorHandler)
-	// t.echo.SetLogOutput(w io.Writer)
-	// t.echo.SetHTTPErrorHandler(h HTTPErrorHandler)
+	// t.Echo.SetBinder(b)
+	// t.Echo.SetHTTPErrorHandler(HTTPErrorHandler)
+	// t.Echo.SetLogOutput(w io.Writer)
+	// t.Echo.SetHTTPErrorHandler(h HTTPErrorHandler)
 	return t
 }
 
 func (this *Think) Run() {
-	this.echo.Run(fmt.Sprintf("%s:%d", this.Config.HttpAddr, this.Config.HttpPort))
+	this.Echo.Run(fmt.Sprintf("%s:%d", this.Config.HttpAddr, this.Config.HttpPort))
 }
 
 func (this *Think) dirServe() {
-	this.echo.Favicon("deploy/favicon/favicon.ico")
-	this.echo.ServeDir("/uploads", UPLOADS_PACKAGE)
-	this.echo.ServeDir("/common", APP_PACKAGE+"/"+COMMON_PACKAGE+"/"+VIEW_PACKAGE+"/"+PUBLIC_PACKAGE)
+	this.Echo.Favicon("deploy/favicon/favicon.ico")
+	this.Echo.ServeDir("/uploads", UPLOADS_PACKAGE)
+	this.Echo.ServeDir("/common", APP_PACKAGE+"/"+COMMON_PACKAGE+"/"+VIEW_PACKAGE+"/"+PUBLIC_PACKAGE)
 
 	var re = regexp.MustCompile(APP_PACKAGE + "(/[^/]+)/" + VIEW_PACKAGE + "(/[^/]+)/" + PUBLIC_PACKAGE)
 	for _, p := range WalkRelDirs(APP_PACKAGE, "/"+PUBLIC_PACKAGE) {
 		a := re.FindStringSubmatch(p)
 		if len(a) == 3 {
 			// public/[模块]/[主题]/
-			this.echo.ServeDir(path.Join("/public", a[1], a[2]), p)
+			this.Echo.ServeDir(path.Join("/public", a[1], a[2]), p)
 		}
 	}
-	if this.echo.Debug() {
+	if this.Echo.Debug() {
 		for k, v := range this.Template.Map() {
-			this.echo.logger.Notice("	%-25s --> %-25s", k, v)
+			this.Echo.logger.Notice("	%-25s --> %-25s", k, v)
 		}
 	}
 }
@@ -128,11 +131,15 @@ func (this *Think) htmlPrepare() {
 	t.Template.Delims(t.delims[0], t.delims[1])
 
 	this.Template = t
-	this.echo.SetRenderer(t)
+	this.Echo.SetRenderer(t)
 }
 
 func (this *Think) Hook() {
-	this.echo.Hook(func(w http.ResponseWriter, r *http.Request) {
+	this.Echo.Hook(func(w http.ResponseWriter, r *http.Request) {
+		fs := this.Echo.fileSystem.path
+		if fs != "" && strings.HasPrefix(r.URL.Path, fs) {
+			return
+		}
 		p := strings.Trim(r.URL.Path, "/")
 		// 补全默认模块
 		switch p {
@@ -179,4 +186,8 @@ func (this *Think) Hook() {
 			r.URL.Path = path.Join("/", p)
 		}
 	})
+}
+
+func (this *Think) Group(prefix string, m ...Middleware) *Group {
+	return this.Echo.Group(prefix, m...)
 }

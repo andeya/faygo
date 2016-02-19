@@ -3,10 +3,14 @@
 // license that can be found in the LICENSE file.
 package core
 
+import (
+	"sort"
+)
+
 type (
 	Themes struct {
-		Cur  string
-		List map[string]*Theme
+		cur string
+		Map map[string]*Theme
 	}
 	Theme struct {
 		Name        string
@@ -17,36 +21,51 @@ type (
 
 func NewThemes() *Themes {
 	return &Themes{
-		List: make(map[string]*Theme),
+		Map: make(map[string]*Theme),
 	}
 }
 
-func (this *Themes) CurTheme() *Theme {
-	return this.List[this.Cur]
+func (this *Themes) List() []*Theme {
+	i := len(this.Map)
+	a := make([]string, i)
+	for k, _ := range this.Map {
+		i--
+		a[i] = k
+	}
+	sort.Strings(a)
+	ts := make([]*Theme, len(a))
+	for i, k := range a {
+		ts[i] = this.Map[k]
+	}
+	return ts
 }
 
-func (this *Themes) UseTheme(name string) {
-	this.Cur = name
+func (this *Themes) Cur() *Theme {
+	return this.Map[this.cur]
 }
 
-func (this *Themes) AddThemes(themes ...*Theme) {
+func (this *Themes) Use(name string) {
+	this.cur = name
+}
+
+func (this *Themes) Add(themes ...*Theme) {
 	for _, theme := range themes {
-		this.List[theme.Name] = theme
+		this.Map[theme.Name] = theme
 	}
 }
 
 // 设置主题，并默认设置传入的第1个主题为当前主题
-func (this *Themes) SetThemes(themes ...*Theme) *Themes {
+func (this *Themes) Set(themes ...*Theme) *Themes {
 	if len(themes) == 0 {
 		return this
 	}
 
-	this.List = make(map[string]*Theme)
+	this.Map = make(map[string]*Theme)
 	for _, theme := range themes {
-		this.List[theme.Name] = theme
+		this.Map[theme.Name] = theme
 	}
 
-	this.Cur = themes[0].Name
+	this.cur = themes[0].Name
 
 	return this
 }

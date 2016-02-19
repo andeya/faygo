@@ -28,6 +28,9 @@ type (
 		query    url.Values
 		store    store
 		echo     *Echo
+		// @ modified by henrylee2cn 2016.2.2
+		Layout   string            // 模板布局
+		Sections map[string]string // 子模板
 	}
 	store map[string]interface{}
 )
@@ -239,6 +242,7 @@ func (c *Context) xml(code int, b []byte) {
 	c.response.Write(b)
 }
 
+// @ modified by henrylee2cn 2016.1.22
 // File sends a response with the content of the file. If `attachment` is set
 // to true, the client is prompted to save the file with provided `name`,
 // name can be empty, in that case name of the file is used.
@@ -247,7 +251,8 @@ func (c *Context) File(path, name string, attachment bool) (err error) {
 	if attachment {
 		c.response.Header().Set(ContentDisposition, "attachment; filename="+name)
 	}
-	if err = c.echo.serveFile(dir, file, c); err != nil {
+	fs := http.Dir(dir)
+	if err = c.echo.serveFile(fs, file, c); err != nil {
 		c.response.Header().Del(ContentDisposition)
 	}
 	return

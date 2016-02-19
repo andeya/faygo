@@ -29,14 +29,14 @@ var (
 // 创建模块
 // 自动设置default主题
 // 文件名作为id，且文件名应与模块目录名、包名保存一致
-func NewModule(description string) *Module {
+func NewModule(description string, mw ...Middleware) *Module {
 	m := &Module{
 		Description: description,
 		Themes:      &Themes{},
 	}
 
 	// 设置默认主题
-	m.Themes.SetThemes(&Theme{
+	m.Themes.Set(&Theme{
 		Name:        "default",
 		Description: "default",
 		Src:         map[string]string{},
@@ -53,16 +53,21 @@ func NewModule(description string) *Module {
 	prefix := "/" + m.id
 
 	// 创建分组并修改请求路径c.path "/[模块]/[控制器]/[操作]"为"/[模块]/[主题]/[控制器]/[操作]"
-	m.Group = ThinkGo.echo.Group(prefix, func(c *Context) error {
-		// 补全主题字段
-		p := strings.Split(c.Path(), "/:")[0]
-		p = path.Join(prefix, m.Themes.Cur, strings.TrimPrefix(p, prefix))
-		c.SetPath(p)
-		// 静态文件前缀
-		c.Set("__PUBLIC__", path.Join("/public", prefix, m.Themes.Cur))
-		return nil
-	})
-	m.Group.Use(Recover(), Logger())
+	m.Group = ThinkGo.Echo.Group(
+		prefix,
+		func(c *Context) error {
+			// 补全主题字段
+			p := strings.Split(c.Path(), "/:")[0]
+			p = path.Join(prefix, m.Themes.Cur().Name, strings.TrimPrefix(p, prefix))
+			c.SetPath(p)
+			// 静态文件前缀
+			c.Set("__PUBLIC__", path.Join("/public", prefix, m.Themes.Cur().Name))
+			return nil
+		},
+		Recover(),
+		Logger(),
+	)
+	m.Group.Use(mw...)
 
 	// 模块登记
 	Modules[m.id] = m
@@ -75,15 +80,31 @@ func (this *Module) GetId() string {
 	return this.id
 }
 
+// 设置Id
+func (this *Module) SetId(id string) *Module {
+	this.id = id
+	return this
+}
+
+// 获取Name
+func (this *Module) GetName() string {
+	return this.Name
+}
+
+// 获取Description
+func (this *Module) GetDescription() string {
+	return this.Description
+}
+
 // 设置主题，并默认设置传入的第1个主题为当前主题
 func (this *Module) SetThemes(themes ...*Theme) *Module {
-	this.Themes.SetThemes(themes...)
+	this.Themes.Set(themes...)
 	return this
 }
 
 // 设置当前主题
 func (this *Module) UseTheme(name string) *Module {
-	this.Themes.UseTheme(name)
+	this.Themes.Use(name)
 	return this
 }
 

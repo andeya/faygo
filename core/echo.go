@@ -38,7 +38,9 @@ type (
 		autoIndex               bool
 		logger                  *log.Logger
 		router                  *Router
-		blackfile               map[string]bool // @ modified by henrylee2cn 2016.1.22
+		// @ modified by henrylee2cn 2016.1.22
+		blackfile  map[string]bool // 静态文件扫描黑名单
+		fileSystem *FileSystem     // 静态文件系统
 	}
 
 	Route struct {
@@ -76,6 +78,13 @@ type (
 	// Renderer is the interface that wraps the Render method.
 	Renderer interface {
 		Render(w io.Writer, name string, data interface{}) error
+	}
+
+	// @ modified by henrylee2cn 2016.1.22
+	FileSystem struct {
+		fs   http.FileSystem // 静态文件系统
+		path string          // 静态文件系统url
+		dir  string          // 静态文件系统实际路径
 	}
 )
 
@@ -228,7 +237,7 @@ func New() (e *Echo) {
 	e.blackfile = map[string]bool{
 		".html": true,
 	}
-
+	e.fileSystem = new(FileSystem)
 	return
 }
 
@@ -432,13 +441,15 @@ func (e *Echo) Static(path, dir string) {
 	e.ServeDir(path, dir)
 }
 
+// @ modified by henrylee2cn 2016.1.22
 // ServeDir serves files from a directory.
 func (e *Echo) ServeDir(path, dir string) {
 	if e.debug {
 		e.logger.Notice("	%-25s --> %v", path, dir)
 	}
 	e.Get(path+"*", func(c *Context) error {
-		return e.serveFile(dir, c.P(0), c) // Param `_*`
+		fs := http.Dir(dir)
+		return e.serveFile(fs, c.P(0), c) // Param `_*`
 	})
 }
 
@@ -450,12 +461,26 @@ func (e *Echo) ServeFile(path, file string) {
 			return NewHTTPError(http.StatusNotFound)
 		}
 		dir, file := filepath.Split(file)
-		return e.serveFile(dir, file, c)
+		fs := http.Dir(dir)
+		return e.serveFile(fs, file, c)
 	})
 }
 
-func (e *Echo) serveFile(dir, file string, c *Context) (err error) {
-	fs := http.Dir(dir)
+// @ modified by henrylee2cn 2016.1.22
+func (e *Echo) SetFileSystem(path, dir string, fs http.FileSystem) {
+	e.fileSystem.fs = fs
+	e.fileSystem.path = path
+	e.fileSystem.dir = dir
+	if e.debug {
+		e.logger.Notice("	%-25s --> %v", path, dir)
+	}
+	e.Get(path+"*", func(c *Context) error {
+		return e.serveFile(e.fileSystem.fs, strings.TrimPrefix(c.Request().URL.String(), e.fileSystem.path), c)
+	})
+}
+
+// @ modified by henrylee2cn 2016.1.22
+func (e *Echo) serveFile(fs http.FileSystem, file string, c *Context) (err error) {
 	f, err := fs.Open(file)
 	if err != nil {
 		return NewHTTPError(http.StatusNotFound)
@@ -601,6 +626,10 @@ func (e *Echo) Server(addr string) *http.Server {
 	if e.http2 {
 		http2.ConfigureServer(s, nil)
 	}
+
+	// @ modified by henrylee2cn 2016.1.22
+	e.logger.Notice("	Server Running on %v", addr)
+
 	return s
 }
 

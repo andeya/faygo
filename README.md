@@ -183,9 +183,10 @@ func (this *IndexController) Index_Get() {
 // 后缀"_Method"用于指定请求方法
 func (this *IndexController) Layout_Get() {
     fmt.Println(this.Query("a"))
+    this.Layout = "/common/layout"
+    this.Sections["__CONTENT__"] = this.Path()
     this.Set("content", "Welcome To ThinkGo")
-    this.SetSection("__CONTENT__", this.Path())
-    this.RenderLayout("/common/layout")
+    this.Render()
 }
 ```
 

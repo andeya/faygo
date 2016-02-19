@@ -18,15 +18,15 @@ type (
 	}
 	// 基础控制器
 	BaseController struct {
-		// 请求上下文
-		*Context
-		// 子模板
-		sectionTpl map[string]string
+		*Context // 请求上下文
 	}
 )
 
 // 自动初始化
 func (this *BaseController) AutoInit(ctx *Context) Controller {
+	if ctx.Sections == nil {
+		ctx.Sections = map[string]string{}
+	}
 	this.Context = ctx
 	return this
 }
@@ -35,29 +35,21 @@ func (this *BaseController) Render(code ...int) error {
 	if len(code) == 0 {
 		code = append(code, http.StatusOK)
 	}
-	return this.Context.Render(code[0], this.Context.Path(), this.Context.GetAll())
-}
 
-func (this *BaseController) RenderLayout(layoutName string, code ...int) error {
-	if len(code) == 0 {
-		code = append(code, http.StatusOK)
+	if this.Context.Layout != "" {
+		render := this.Echo().Render
+		for k, v := range this.Context.Sections {
+			if v == "" {
+				this.Set(k, "")
+				continue
+			}
+			sectionBytes := bytes.NewBufferString("")
+			render(sectionBytes, v, this.Context.GetAll())
+			sectionContent, _ := ioutil.ReadAll(sectionBytes)
+			this.Set(k, template.HTML(sectionContent))
+		}
+	} else {
+		this.Context.Layout = this.Context.Path()
 	}
-	render := this.Echo().Render
-	for k, v := range this.sectionTpl {
-		sectionBytes := bytes.NewBufferString("")
-		render(sectionBytes, v, this.Context.GetAll())
-		sectionContent, _ := ioutil.ReadAll(sectionBytes)
-		this.Set(k, template.HTML(sectionContent))
-	}
-	return this.Context.Render(code[0], layoutName, this.Context.GetAll())
-}
-
-func (this *BaseController) SetSection(position string, sectionName ...string) {
-	if len(sectionName) == 0 {
-		sectionName = append(sectionName, this.Path())
-	}
-	if this.sectionTpl == nil {
-		this.sectionTpl = make(map[string]string)
-	}
-	this.sectionTpl[position] = sectionName[0]
+	return this.Context.Render(code[0], this.Context.Layout, this.Context.GetAll())
 }
