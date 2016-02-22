@@ -10,14 +10,15 @@ import (
 	"io/ioutil"
 	"path/filepath"
 	"sync"
-	"text/template"
-	"text/template/parse"
+
+	"github.com/henrylee2cn/thinkgo/core/template/text/template"
+	"github.com/henrylee2cn/thinkgo/core/template/text/template/parse"
 )
 
-// Template is a specialized Template from "text/template" that produces a safe
+// Template is a specialized Template from "github.com/henrylee2cn/thinkgo/core/template/text/template" that produces a safe
 // HTML document fragment.
 type Template struct {
-	// Sticky error if escaping fails.
+	// Sticky error if escaping fails, or escapeOK if succeeded.
 	escapeErr error
 	// We could embed the text/template field, but it's safer not to because
 	// we need to keep our version of the name space and the underlying
@@ -51,11 +52,37 @@ func (t *Template) Templates() []*Template {
 	return m
 }
 
+// Option sets options for the template. Options are described by
+// strings, either a simple string or "key=value". There can be at
+// most one equals sign in an option string. If the option string
+// is unrecognized or otherwise invalid, Option panics.
+//
+// Known options:
+//
+// missingkey: Control the behavior during execution if a map is
+// indexed with a key that is not present in the map.
+//	"missingkey=default" or "missingkey=invalid"
+//		The default behavior: Do nothing and continue execution.
+//		If printed, the result of the index operation is the string
+//		"<no value>".
+//	"missingkey=zero"
+//		The operation returns the zero value for the map type's element.
+//	"missingkey=error"
+//		Execution stops immediately with an error.
+//
+func (t *Template) Option(opt ...string) *Template {
+	t.text.Option(opt...)
+	return t
+}
+
 // escape escapes all associated templates.
 func (t *Template) escape() error {
 	t.nameSpace.mu.Lock()
 	defer t.nameSpace.mu.Unlock()
 	if t.escapeErr == nil {
+		if t.Tree == nil {
+			return fmt.Errorf("template: %q is an incomplete or empty template%s", t.Name(), t.DefinedTemplates())
+		}
 		if err := escapeTemplate(t, t.text.Root, t.Name()); err != nil {
 			return err
 		}
@@ -117,6 +144,13 @@ func (t *Template) lookupAndEscapeTemplate(name string) (tmpl *Template, err err
 	return tmpl, err
 }
 
+// DefinedTemplates returns a string listing the defined templates,
+// prefixed by the string "; defined templates are: ". If there are none,
+// it returns the empty string. Used to generate an error message.
+func (t *Template) DefinedTemplates() string {
+	return t.text.DefinedTemplates()
+}
+
 // Parse parses a string into a template. Nested template definitions
 // will be associated with the top-level template t. Parse may be
 // called multiple times to parse definitions of templates to associate
@@ -143,6 +177,8 @@ func (t *Template) Parse(src string) (*Template, error) {
 		tmpl := t.set[name]
 		if tmpl == nil {
 			tmpl = t.new(name)
+		} else if tmpl.escapeErr != nil {
+			return nil, fmt.Errorf("html/template: cannot redefine %q after it has executed", name)
 		}
 		// Restore our record of this text/template to its unescaped original state.
 		tmpl.escapeErr = nil
@@ -202,6 +238,7 @@ func (t *Template) Clone() (*Template, error) {
 			set: make(map[string]*Template),
 		},
 	}
+	ret.set[ret.Name()] = ret
 	for _, x := range textClone.Templates() {
 		name := x.Name()
 		src := t.set[name]
@@ -264,8 +301,8 @@ func (t *Template) Name() string {
 // return values of which the second has type error. In that case, if the
 // second (error) argument evaluates to non-nil during execution, execution
 // terminates and Execute returns that error. FuncMap has the same base type
-// as FuncMap in "text/template", copied here so clients need not import
-// "text/template".
+// as FuncMap in "github.com/henrylee2cn/thinkgo/core/template/text/template", copied here so clients need not import
+// "github.com/henrylee2cn/thinkgo/core/template/text/template".
 type FuncMap map[string]interface{}
 
 // Funcs adds the elements of the argument map to the template's function map.
@@ -334,11 +371,9 @@ func parseFiles(t *Template, filenames ...string) (*Template, error) {
 			return nil, err
 		}
 		s := string(b)
-
-		// @modified by henry, 2016.1.12
+		// @modified by henry, 2016.2.22
 		// name := filepath.Base(filename)
 		name := filename
-
 		// First template becomes return value if not already defined,
 		// and we use that one for subsequent New calls to associate
 		// all the templates together. Also, if this file has the same name
@@ -390,4 +425,11 @@ func parseGlob(t *Template, pattern string) (*Template, error) {
 		return nil, fmt.Errorf("html/template: pattern matches no files: %#q", pattern)
 	}
 	return parseFiles(t, filenames...)
+}
+
+// IsTrue reports whether the value is 'true', in the sense of not the zero of its type,
+// and whether the value has a meaningful truth value. This is the definition of
+// truth used by if and other such actions.
+func IsTrue(val interface{}) (truth, ok bool) {
+	return template.IsTrue(val)
 }

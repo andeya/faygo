@@ -56,6 +56,10 @@ func NewModule(description string, mw ...Middleware) *Module {
 	m.Group = ThinkGo.Echo.Group(
 		prefix,
 		func(c *Context) error {
+			// 初始化
+			if c.Sections == nil {
+				c.Sections = map[string]string{}
+			}
 			// 补全主题字段
 			p := strings.Split(c.Path(), "/:")[0]
 			p = path.Join(prefix, m.Themes.Cur().Name, strings.TrimPrefix(p, prefix))

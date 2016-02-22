@@ -19,15 +19,15 @@ type Template struct {
 	*template.Template
 	// [[模块]/[主题]/[控制器]/[操作]]:path
 	pathmap map[string]string
-	// 不可调试的模板 [[模块]/[主题]/[控制器]/[操作]]:bool
-	notDebug map[string]bool
+	// 一旦解析就不可变的模板 [[模块]/[主题]/[控制器]/[操作]]:bool
+	permanent map[string]bool
 }
 
 func NewRender() *Template {
 	return &Template{
-		Template: template.New("thinkgo").Funcs(template.FuncMap{}),
-		pathmap:  make(map[string]string),
-		notDebug: make(map[string]bool),
+		Template:  template.New("thinkgo").Funcs(template.FuncMap{}),
+		pathmap:   make(map[string]string),
+		permanent: make(map[string]bool),
 	}
 }
 
@@ -52,8 +52,10 @@ func (t *Template) Render(w io.Writer, name string, data interface{}) error {
 	if f == "" {
 		return fmt.Errorf("索引模板不存在: %s", name)
 	}
-	if !t.debug || t.notDebug[name] {
+	if !t.debug {
 		return t.Template.ExecuteTemplate(w, f, data)
+	} else if t.permanent[name] {
+		return template.Must(t.Template.Clone()).ExecuteTemplate(w, f, data)
 	}
 	return template.Must(template.Must(t.Template.Clone()).ParseFiles(f)).ExecuteTemplate(w, f, data)
 }
@@ -62,8 +64,9 @@ func (t *Template) Map() map[string]string {
 	return t.pathmap
 }
 
-func (t *Template) NotDebugParse(name, src string) {
+// 永久解析模板，以后不可变
+func (t *Template) PermanentParse(name, src string) {
 	template.Must(t.Template.New(name).Parse(src))
 	t.pathmap[name] = name
-	t.notDebug[name] = true
+	t.permanent[name] = true
 }

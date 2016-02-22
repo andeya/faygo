@@ -24,9 +24,6 @@ type (
 
 // 自动初始化
 func (this *BaseController) AutoInit(ctx *Context) Controller {
-	if ctx.Sections == nil {
-		ctx.Sections = map[string]string{}
-	}
 	this.Context = ctx
 	return this
 }

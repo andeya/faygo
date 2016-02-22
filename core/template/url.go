@@ -19,9 +19,7 @@ func urlFilter(args ...interface{}) string {
 	}
 	if i := strings.IndexRune(s, ':'); i >= 0 && strings.IndexRune(s[:i], '/') < 0 {
 		protocol := strings.ToLower(s[:i])
-		if protocol != "http" && protocol != "https" && protocol != "mailto" &&
-			// @modified by henry, 2016.1.12
-			protocol != "javascript" {
+		if protocol != "http" && protocol != "https" && protocol != "mailto" {
 			return "#" + filterFailsafe
 		}
 	}
