@@ -541,14 +541,10 @@ func listDir(d http.File, c *Context) (err error) {
 func (e *Echo) Group(prefix string, m ...Middleware) *Group {
 	g := &Group{*e}
 	g.echo.prefix = pathpkg.Join("/", g.echo.prefix, prefix)
-	if len(m) == 0 {
-		mw := make([]MiddlewareFunc, len(g.echo.middleware))
-		copy(mw, g.echo.middleware)
-		g.echo.middleware = mw
-	} else {
-		g.echo.middleware = nil
-		g.Use(m...)
-	}
+	mw := make([]MiddlewareFunc, len(g.echo.middleware))
+	copy(mw, g.echo.middleware)
+	g.echo.middleware = mw
+	g.Use(m...)
 	return g
 }
 

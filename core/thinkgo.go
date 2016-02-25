@@ -41,17 +41,12 @@ const (
 )
 
 // 全局运行实例
-var (
-	ThinkGo = newThinkGo()
-)
-
-func newThinkGo() *Think {
+var ThinkGo = func() *Think {
 	t := &Think{
 		// 业务数据
 		Echo:    New(),
 		Modules: Modules,
-		// Addons:  newAddons(),
-		Config: getConfig(),
+		Config:  getConfig(),
 		// 框架信息
 		Author:  AUTHOR,
 		Version: VERSION,
@@ -71,7 +66,7 @@ func newThinkGo() *Think {
 	// t.Echo.SetLogOutput(w io.Writer)
 	// t.Echo.SetHTTPErrorHandler(h HTTPErrorHandler)
 	return t
-}
+}()
 
 func (this *Think) Run() {
 	this.Echo.Run(fmt.Sprintf("%s:%d", this.Config.HttpAddr, this.Config.HttpPort))

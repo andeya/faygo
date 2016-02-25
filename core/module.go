@@ -68,8 +68,6 @@ func NewModule(description string, mw ...Middleware) *Module {
 			c.Set("__PUBLIC__", path.Join("/public", prefix, m.Themes.Cur().Name))
 			return nil
 		},
-		Recover(),
-		Logger(),
 	)
 	m.Group.Use(mw...)
 
