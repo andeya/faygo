@@ -130,19 +130,25 @@ func (this *Module) Router(c Controller, m ...Middleware) *Module {
 		}
 		pattern := SnakeString(fname[:idx])
 		method := strings.ToUpper(fname[idx+1:])
-		switch method {
-		case "CONNECT", "DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT", "TRACE", "SOCKET":
-			group.Match([]string{method}, pattern, func(ctx *Context) error {
-				var v = reflect.New(e)
-				v.Interface().(Controller).AutoInit(ctx)
-				rets := v.MethodByName(fname).Call([]reflect.Value{})
-				if len(rets) > 0 {
-					if err, ok := rets[0].Interface().(error); ok {
-						return err
-					}
+		h := func(ctx *Context) error {
+			var v = reflect.New(e)
+			v.Interface().(Controller).AutoInit(ctx)
+			rets := v.MethodByName(fname).Call([]reflect.Value{})
+			if len(rets) > 0 {
+				if err, ok := rets[0].Interface().(error); ok {
+					return err
 				}
-				return nil
-			})
+			}
+			return nil
+		}
+		switch method {
+		case "CONNECT", "DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT", "TRACE":
+			group.Match(pattern, h, method)
+		case "ANY":
+			// 除"SOCKET"外的所有方法
+			group.Any(pattern, h)
+		case "SOCKET":
+			group.WebSocket(pattern, h)
 		}
 	}
 	return this

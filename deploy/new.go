@@ -382,11 +382,11 @@ type BaseController struct {
 	core.BaseController
 }
 
-func (this *BaseController) Render(code ...int) {
+func (this *BaseController) Render(code ...int) error {
 	for k, v := range BASE_DATA {
 		this.TrySet(k, v)
 	}
-	this.BaseController.Render(code...)
+	return this.BaseController.Render(code...)
 }
 `
 
@@ -401,18 +401,20 @@ type IndexController struct {
 	home.BaseController
 }
 
-func (this *IndexController) Index_Get() {
+// 后缀"_GET"用于指定GET请求方法
+func (this *IndexController) Index_GET() error {
 	fmt.Println(this.Query("0"))
 	this.Set("content", "Welcome To ThinkGo")
-	this.Render()
+	return this.Render()
 }
 
-func (this *IndexController) Layout_Get() {
+// 后缀"_ANY"用于指定出websocket外的任何请求方法
+func (this *IndexController) Layout_ANY() error {
 	fmt.Println(this.Query("a"))
 	this.Layout = "/common/layout"
 	this.Sections["__CONTENT__"] = this.Path()
 	this.Set("content", "Welcome To ThinkGo")
-	this.Render()
+	return this.Render()
 }
 `
 var indexhtml = `<!DOCTYPE html>

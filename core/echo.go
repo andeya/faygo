@@ -196,48 +196,45 @@ var (
 	}
 
 	unixEpochTime = time.Unix(0, 0)
+
+	// @ modified by henrylee2cn 2016.1.22
+	Log = log.New("echo").SetLevel(log.INFO)
 )
 
+// @ modified by henrylee2cn 2016.1.22
 // New creates an instance of Echo.
 func New() (e *Echo) {
-	e = &Echo{maxParam: new(int)}
+	e = &Echo{
+		maxParam:   new(int),
+		http2:      true,
+		logger:     Log,
+		binder:     &binder{},
+		fileSystem: new(FileSystem),
+		blackfile: map[string]bool{
+			".html": true,
+		},
+		defaultHTTPErrorHandler: func(err error, c *Context) {
+			code := http.StatusInternalServerError
+			msg := http.StatusText(code)
+			if he, ok := err.(*HTTPError); ok {
+				code = he.code
+				msg = he.message
+			}
+			if e.debug {
+				msg = err.Error()
+			}
+			if !c.response.committed {
+				http.Error(c.response, msg, code)
+			}
+			e.logger.Error(err)
+		},
+	}
+	e.router = NewRouter(e)
 	e.pool.New = func() interface{} {
 		return NewContext(nil, new(Response), e)
 	}
-	e.router = NewRouter(e)
 
-	//----------
-	// Defaults
-	//----------
-
-	e.HTTP2(true)
-	e.defaultHTTPErrorHandler = func(err error, c *Context) {
-		code := http.StatusInternalServerError
-		msg := http.StatusText(code)
-		if he, ok := err.(*HTTPError); ok {
-			code = he.code
-			msg = he.message
-		}
-		if e.debug {
-			msg = err.Error()
-		}
-		if !c.response.committed {
-			http.Error(c.response, msg, code)
-		}
-		e.logger.Error(err)
-	}
 	e.SetHTTPErrorHandler(e.defaultHTTPErrorHandler)
-	e.SetBinder(&binder{})
-
-	// Logger
-	e.logger = log.New("echo")
-	e.logger.SetLevel(log.INFO)
-
-	// @ modified by henrylee2cn 2016.1.22
-	e.blackfile = map[string]bool{
-		".html": true,
-	}
-	e.fileSystem = new(FileSystem)
 	return
 }
 
@@ -385,9 +382,13 @@ func (e *Echo) Any(path string, h Handler) {
 	}
 }
 
+// @ modified by henrylee2cn 2016.1.22
 // Match adds a route > handler to the router for multiple HTTP methods provided.
-func (e *Echo) Match(methods []string, path string, h Handler) {
-	for _, m := range methods {
+func (e *Echo) Match(path string, h Handler, method ...string) {
+	if len(method) == 0 {
+		method = append(method, GET)
+	}
+	for _, m := range method {
 		e.add(m, path, h)
 	}
 }
@@ -424,16 +425,6 @@ func (e *Echo) add(method, path string, h Handler) {
 	if e.debug {
 		e.logger.Notice("%-5s %-25s --> %v", method, path, h)
 	}
-}
-
-// Index serves index file.
-func (e *Echo) Index(file string) {
-	e.ServeFile("/", file)
-}
-
-// Favicon serves the default favicon - GET /favicon.ico.
-func (e *Echo) Favicon(file string) {
-	e.ServeFile("/favicon.ico", file)
 }
 
 // Static serves static files from a directory. It's an alias for `Echo.ServeDir`
@@ -721,24 +712,24 @@ func wrapMiddleware(m Middleware) MiddlewareFunc {
 
 // wrapHandlerFuncMW wraps HandlerFunc middleware.
 func wrapHandlerFuncMW(m HandlerFunc) MiddlewareFunc {
-	return func(h HandlerFunc) HandlerFunc {
+	return func(next HandlerFunc) HandlerFunc {
 		return func(c *Context) error {
 			if err := m(c); err != nil {
 				return err
 			}
-			return h(c)
+			return next(c)
 		}
 	}
 }
 
 // wrapHTTPHandlerFuncMW wraps http.HandlerFunc middleware.
 func wrapHTTPHandlerFuncMW(m http.HandlerFunc) MiddlewareFunc {
-	return func(h HandlerFunc) HandlerFunc {
+	return func(next HandlerFunc) HandlerFunc {
 		return func(c *Context) error {
 			if !c.response.committed {
 				m.ServeHTTP(c.response.writer, c.request)
 			}
-			return h(c)
+			return next(c)
 		}
 	}
 }

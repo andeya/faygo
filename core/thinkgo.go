@@ -73,7 +73,7 @@ func (this *Think) Run() {
 }
 
 func (this *Think) dirServe() {
-	this.Echo.Favicon("deploy/favicon/favicon.ico")
+	this.Echo.ServeFile("/favicon.ico", "deploy/favicon/favicon.ico")
 	this.Echo.ServeDir("/uploads", UPLOADS_PACKAGE)
 	this.Echo.ServeDir("/common", APP_PACKAGE+"/"+COMMON_PACKAGE+"/"+VIEW_PACKAGE+"/"+PUBLIC_PACKAGE)
 

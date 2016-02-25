@@ -9,7 +9,7 @@ import (
 )
 
 func Logger() MiddlewareFunc {
-	return func(h HandlerFunc) HandlerFunc {
+	return func(next HandlerFunc) HandlerFunc {
 		return func(c *Context) error {
 			req := c.Request()
 			res := c.Response()
@@ -25,7 +25,7 @@ func Logger() MiddlewareFunc {
 			}
 
 			start := time.Now()
-			if err := h(c); err != nil {
+			if err := next(c); err != nil {
 				c.Error(err)
 			}
 			stop := time.Now()

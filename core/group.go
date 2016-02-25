@@ -7,9 +7,10 @@ type (
 )
 
 func (g *Group) Use(m ...Middleware) {
-	for _, h := range m {
-		g.echo.middleware = append(g.echo.middleware, wrapMiddleware(h))
-	}
+	g.echo.Use(m...)
+	// for _, h := range m {
+	// 	g.echo.middleware = append(g.echo.middleware, wrapMiddleware(h))
+	// }
 }
 
 func (g *Group) Connect(path string, h Handler) {
@@ -54,10 +55,9 @@ func (g *Group) Any(path string, h Handler) {
 	}
 }
 
-func (g *Group) Match(methods []string, path string, h Handler) {
-	for _, m := range methods {
-		g.echo.add(m, path, h)
-	}
+// @ modified by henrylee2cn 2016.1.22
+func (g *Group) Match(path string, h Handler, method ...string) {
+	g.echo.Match(path, h, method...)
 }
 
 func (g *Group) WebSocket(path string, h HandlerFunc) {

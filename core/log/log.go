@@ -53,8 +53,9 @@ func (l *Logger) SetPrefix(p string) {
 	l.prefix = p
 }
 
-func (l *Logger) SetLevel(v Level) {
+func (l *Logger) SetLevel(v Level) *Logger {
 	l.level = v
+	return l
 }
 
 func (l *Logger) Level() Level {

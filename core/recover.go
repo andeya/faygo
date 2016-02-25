@@ -10,7 +10,7 @@ import (
 // and handles the control to the centralized HTTPErrorHandler.
 func Recover() MiddlewareFunc {
 	// TODO: Provide better stack trace `https://github.com/go-errors/errors` `https://github.com/docker/libcontainer/tree/master/stacktrace`
-	return func(h HandlerFunc) HandlerFunc {
+	return func(next HandlerFunc) HandlerFunc {
 		return func(c *Context) error {
 			defer func() {
 				if err := recover(); err != nil {
@@ -20,7 +20,7 @@ func Recover() MiddlewareFunc {
 						err, n, trace[:n]))
 				}
 			}()
-			return h(c)
+			return next(c)
 		}
 	}
 }

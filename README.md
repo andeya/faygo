@@ -173,20 +173,20 @@ type IndexController struct {
     home.BaseController
 }
 
-// 后缀"_Method"用于指定请求方法
-func (this *IndexController) Index_Get() {
+// 后缀"_GET"用于指定GET请求方法
+func (this *IndexController) Index_GET() error {
     fmt.Println(this.Query("0"))
     this.Set("content", "Welcome To ThinkGo")
-    this.Render()
+    return this.Render()
 }
 
-// 后缀"_Method"用于指定请求方法
-func (this *IndexController) Layout_Get() {
+// 后缀"_ANY"用于指定出websocket外的任何请求方法
+func (this *IndexController) Layout_ANY() error {
     fmt.Println(this.Query("a"))
     this.Layout = "/common/layout"
     this.Sections["__CONTENT__"] = this.Path()
     this.Set("content", "Welcome To ThinkGo")
-    this.Render()
+    return this.Render()
 }
 ```
 
