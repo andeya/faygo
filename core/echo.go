@@ -615,7 +615,7 @@ func (e *Echo) Server(addr string) *http.Server {
 	}
 
 	// @ modified by henrylee2cn 2016.1.22
-	e.logger.Notice("	Server Running on %v", addr)
+	e.logger.Notice("	%s %s Running on %v", NAME, VERSION, addr)
 
 	return s
 }
