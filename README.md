@@ -1,15 +1,15 @@
 
 #ThinkGo Web Framework  [![GoDoc](https://godoc.org/github.com/henrylee2cn/thinkgo?status.svg)](https://godoc.org/github.com/henrylee2cn/thinkgo)
 
-![ThinkGo Admin](https://github.com/henrylee2cn/thinkgo/raw/master/doc/favicon.png)
+![ThinkGo Admin](https://github.com/henrylee2cn/thinkgo/raw/mvc_version/doc/favicon.png)
 
 ThinkGo 是一款 Go 语言编写的 web 快速开发框架。该MVC版分支基于开源框架 echo v1 进行二次开发，旨在实现一种类 ThinkPHP 的高可用、高效率的 web 框架。在此感谢 [echo](https://github.com/labstack/echo)。它最显著的特点是模块、控制器、操作三层架构的 MVC 架构及其智能路由。再加上对中间件及前端主题的支持，令开发变得异常简单与灵活。
 
 * 官方QQ群：Go-Web 编程 42730308    [![Go-Web 编程群](http://pub.idqqimg.com/wpa/images/group.png)](http://jq.qq.com/?_wv=1027&k=fzi4p1)
 
-![ThinkGo Admin](https://github.com/henrylee2cn/thinkgo/raw/master/doc/server.jpg)
+![ThinkGo Admin](https://github.com/henrylee2cn/thinkgo/raw/mvc_version/doc/server.jpg)
 
-![ThinkGo Admin](https://github.com/henrylee2cn/thinkgo/raw/master/doc/admin.jpg)
+![ThinkGo Admin](https://github.com/henrylee2cn/thinkgo/raw/mvc_version/doc/admin.jpg)
 
 
 ##目录结构
@@ -205,4 +205,4 @@ ikfmt|cookie功能
 
 ##开源协议
 
-ThinkGo 项目采用商业应用友好的 [MIT](https://github.com/henrylee2cn/thinkgo/raw/master/doc/LICENSE) 协议发布。
+ThinkGo 项目采用商业应用友好的 [MIT](https://github.com/henrylee2cn/thinkgo/raw/mvc_version/doc/LICENSE) 协议发布。
