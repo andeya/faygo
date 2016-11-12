@@ -64,4 +64,4 @@ List of supported param value types:
     float32 |  []float32 |
     float64 |  []float64 |
 */
-package apiware
+package thinkgo
