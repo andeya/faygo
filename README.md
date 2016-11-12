@@ -1,208 +1,115 @@
+# Thinkgo    [![GoDoc](https://godoc.org/github.com/tsuna/gohbase?status.png)](https://godoc.org/github.com/henrylee2cn/thinkgo)
 
-#ThinkGo Web Framework  [![GoDoc](https://godoc.org/github.com/henrylee2cn/thinkgo?status.svg)](https://godoc.org/github.com/henrylee2cn/thinkgo)
+# 概述
+Thinkgo目前进行了全面重构，是一款面向中间件开发、智能参数映射与校验、自动化API文档的Go语言web框架。
 
-![ThinkGo Admin](https://github.com/henrylee2cn/thinkgo/raw/mvc_version/doc/favicon.png)
+官方QQ群：Go-Web 编程 42730308    [![Go-Web 编程群](http://pub.idqqimg.com/wpa/images/group.png)](http://jq.qq.com/?_wv=1027&k=fzi4p1)
 
-ThinkGo 是一款 Go 语言编写的 web 快速开发框架。该MVC版分支基于开源框架 echo v1 进行二次开发，旨在实现一种类 ThinkPHP 的高可用、高效率的 web 框架。在此感谢 [echo](https://github.com/labstack/echo)。它最显著的特点是模块、控制器、操作三层架构的 MVC 架构及其智能路由。再加上对中间件及前端主题的支持，令开发变得异常简单与灵活。
+# 框架下载
 
-* 官方QQ群：Go-Web 编程 42730308    [![Go-Web 编程群](http://pub.idqqimg.com/wpa/images/group.png)](http://jq.qq.com/?_wv=1027&k=fzi4p1)
-
-![ThinkGo Admin](https://github.com/henrylee2cn/thinkgo/raw/mvc_version/doc/server.jpg)
-
-![ThinkGo Admin](https://github.com/henrylee2cn/thinkgo/raw/mvc_version/doc/admin.jpg)
-
-
-##目录结构
-
-```
-├─core 框架目录
-│ 
-├─main.go 主文件
-│ 
-├─application 应用模块目录
-│  ├─common 公共模块目录
-│  │  ├─template.go 模板函数
-│  │  ├─common.go 公共变量与函数
-│  │  ├─controller 公共控制器类目录
-│  │  ├─middleware 中间件目录
-│  │  └─model 公共数据模型目录
-│  │  └─view 公共视图文件目录
-│  │      ├─__public__ 资源文件目录
-│  │      └─xxx 模板文件(常用作Layout)
-│  │
-│  ├─module.go 模块定义文件
-│  ├─module 模块目录
-│  │  ├─template.go 模板函数
-│  │  ├─common.go 公共变量与函数
-│  │  ├─controller.go 基础控制器
-│  │  ├─controller 控制器目录
-│  │  ├─model 模型目录
-│  │  └─view 视图文件目录
-│  │      └─default 主题文件目录
-│  │          ├─__public__ 资源文件目录
-│  │          └─xxx 控制器模板目录
-│  │
-│  └─... 扩展的可装卸功能模块或插件
-│
-├─deploy 部署文件目录
-│
-├─conf 配置文件目录
-│
-└─uploads 上传根目录
-```
-
-## 安装
-
-1.下载框架源码
 ```sh
 go get github.com/henrylee2cn/thinkgo
 ```
 
-2.安装部署工具
-```sh
-go install
+# 安装要求
+
+Go Version ≥1.6
+
+# 代码示例
 ```
-
-3.创建项目（在项目目录下运行cmd）
-```sh
-$ thinkgo new appname
-```
-
-4.以热编译模式运行（在项目目录下运行cmd）
-```sh
-$ cd appname
-$ thinkgo run
-```
-
-##使用说明
-
-#### main.go
-
-```go
 package main
 
 import (
-    "github.com/henrylee2cn/thinkgo/core"
-
-    _ "appname/application"
-    _ "appname/application/common"
-    _ "appname/deploy"
+    "github.com/henrylee2cn/thinkgo"
+    "time"
 )
+
+type Index struct {
+    Id        int      `param:"in(path),required,desc(ID),range(0:10)"`
+    Title     string   `param:"in(query),nonzero"`
+    Paragraph []string `param:"in(query),name(p),len(1:10)" regexp:"(^[\\w]*$)"`
+    Cookie    string   `param:"in(cookie),name(thinkgoID)"`
+    // Picture         multipart.FileHeader `param:"in(formData),name(pic),maxmb(30)"`
+}
+
+func (i *Index) Serve(ctx *thinkgo.Context) error {
+    if ctx.CookieParam("thinkgoID") == "" {
+        ctx.SetCookie("thinkgoID", time.Now().String())
+    }
+    return ctx.JSON(200, i)
+}
 
 func main() {
-    core.ThinkGo.Run()
+    thinkgo.Root().GET("/index/:id", new(Index))
+    // or thinkgo.Route(thinkgo.GET("/index/:id", new(Index)))
+    thinkgo.Run()
 }
-```
 
-#### 定义模块
-
-```go
-package application
-
-import (
-    "github.com/henrylee2cn/thinkgo/core"
-    // "appname/application/common/middleware"
-    _ "appname/application/home"
-    . "appname/application/home/controller"
-)
-
-func init() {
-    // 创建模块，并自动设置default主题
-    var m = core.NewModule("这是一个模块示例")
-
-    // 中间件(可选)
-    // m.Use(...)
-
-    // 设置主题列表(可选)
-    // 若尚未指定当前主题，则默认为第1个
-    // m.SetThemes(
-    //  &core.Theme{
-    //      Name:        "default",
-    //      Description: "default",
-    //      Src:         map[string]string{},
-    //  },
-    // )
-
-    // 指定当前主题(可选)
-    // m.UseTheme("default")
-
-    // 注册路由
-    m.Router(&IndexController{})
-}
-```
-
-#### 定义中间件
-
-```go
-package middleware
-
-import (
-    "fmt"
-    "runtime"
-    "github.com/henrylee2cn/thinkgo/core"
-)
-
-func Recover() core.MiddlewareFunc {
-    return func(h core.HandlerFunc) core.HandlerFunc {
-        return func(c *core.Context) error {
-            defer func() {
-                if err := recover(); err != nil {
-                    trace := make([]byte, 1<<16)
-                    n := runtime.Stack(trace, true)
-                    c.Error(fmt.Errorf("panic recover\n %v\n stack trace %d bytes\n %s",
-                        err, n, trace[:n]))
-                }
-            }()
-            return h(c)
-        }
+/*
+http GET:
+    http://localhost:8080/index/1?title=test&p=abc&p=xyz
+response:
+    {
+      "Id": 1,
+      "Title": "test",
+      "Paragraph": [
+        "abc",
+        "xyz"
+      ],
+      "Cookie": "2016-11-13 01:14:40.9038005 +0800 CST"
     }
-}
+*/
 ```
 
-#### 定义控制器
+# Handler结构体字段标签说明
 
-```go
-package controller
+tag   |   key    | required |     value     |   desc
+------|----------|----------|---------------|----------------------------------
+param |    in    | only one |     path      | (position of param) if `required` is unsetted, auto set it. e.g. url: "http://www.abc.com/a/{path}"
+param |    in    | only one |     query     | (position of param) e.g. url: "http://www.abc.com/a?b={query}"
+param |    in    | only one |     formData  | (position of param) e.g. "request body: a=123&b={formData}"
+param |    in    | only one |     body      | (position of param) request body can be any content
+param |    in    | only one |     header    | (position of param) request header info
+param |    in    | only one |     cookie    | (position of param) request cookie info, support: `http.Cookie`, `fasthttp.Cookie`, `string`, `[]byte` and so on
+param |   name   |    no    |  (e.g. "id")  | specify request param`s name
+param | required |    no    |   required    | request param is required
+param |   desc   |    no    |  (e.g. "id")  | request param description
+param |   len    |    no    | (e.g. 3:6, 3) | length range of param's value
+param |   range  |    no    |  (e.g. 0:10)  | numerical range of param's value
+param |  nonzero |    no    |    nonzero    | param`s value can not be zero
+param |   maxmb  |    no    |   (e.g. 32)   | when request Content-Type is multipart/form-data, the max memory for body.(multi-param, whichever is greater)
+regexp|          |    no    |(e.g. "^\\w+$")| param value can not be null
+err   |          |    no    |(e.g. "incorrect password format")| customize the prompt for validation error
 
-import (
-    "fmt"
-    "appname/application/home"
-)
+**NOTES**:
+* the binding object must be a struct pointer
+* the binding struct's field can not be a pointer
+* `regexp` or `param` tag is only usable when `param:"type(xxx)"` is exist
+* if the `param` tag is not exist, anonymous field will be parsed
+* when the param's position(`in`) is `formData` and the field's type is `multipart.FileHeader`, the param receives file uploaded
+* if param's position(`in`) is `cookie`, field's type must be `http.Cookie`
+* param tags `in(formData)` and `in(body)` can not exist at the same time
+* there should not be more than one `in(body)` param tag
 
-type IndexController struct {
-    home.BaseController
-}
+# Handler结构体字段类型说明
 
-// 后缀"_GET"用于指定GET请求方法
-func (this *IndexController) Index_GET() error {
-    fmt.Println(this.Query("0"))
-    this.Set("content", "Welcome To ThinkGo")
-    return this.Render()
-}
+base    |   slice    | special
+--------|------------|-------------------------------------------------------
+string  |  []string  | [][]byte
+byte    |  []byte    | [][]uint8
+uint8   |  []uint8   | multipart.FileHeader (only for `formData` param)
+bool    |  []bool    | http.Cookie (only for `net/http`'s `cookie` param)
+int     |  []int     | fasthttp.Cookie (only for `fasthttp`'s `cookie` param)
+int8    |  []int8    | struct (struct type only for `body` param or as an anonymous field to extend params)
+int16   |  []int16   |
+int32   |  []int32   |
+int64   |  []int64   |
+uint8   |  []uint8   |
+uint16  |  []uint16  |
+uint32  |  []uint32  |
+uint64  |  []uint64  |
+float32 |  []float32 |
+float64 |  []float64 |
 
-// 后缀"_ANY"用于指定出websocket外的任何请求方法
-func (this *IndexController) Layout_ANY() error {
-    fmt.Println(this.Query("a"))
-    this.Layout = "/common/layout"
-    this.Sections["__CONTENT__"] = this.Path()
-    this.Set("content", "Welcome To ThinkGo")
-    return this.Render()
-}
-```
-
-##FAQ
-
-更多操作可以参考[echo](https://github.com/labstack/echo)的一些用法。
-
-
-##贡献者名单
-
-贡献者                          |贡献内容
---------------------------------|--------------------------------------------------
-henrylee2cn|项目发起人 
-ikfmt|cookie功能 
-
-
-##开源协议
-
-ThinkGo 项目采用商业应用友好的 [MIT](https://github.com/henrylee2cn/thinkgo/raw/mvc_version/doc/LICENSE) 协议发布。
+## 开源协议
+Lessgo 项目采用商业应用友好的 [Apache2.0](https://github.com/henrylee2cn/thinkgo/raw/master/LICENSE) 协议发布。
