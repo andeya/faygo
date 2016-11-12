@@ -16,7 +16,53 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 
-Param tag value description:
+A trivial example is:
+
+package main
+
+import (
+    "github.com/henrylee2cn/thinkgo"
+    "time"
+)
+
+type Index struct {
+    Id        int      `param:"in(path),required,desc(ID),range(0:10)"`
+    Title     string   `param:"in(query),nonzero"`
+    Paragraph []string `param:"in(query),name(p),len(1:10)" regexp:"(^[\\w]*$)"`
+    Cookie    string   `param:"in(cookie),name(thinkgoID)"`
+    // Picture         multipart.FileHeader `param:"in(formData),name(pic),maxmb(30)"`
+}
+
+func (i *Index) Serve(ctx *thinkgo.Context) error {
+    if ctx.CookieParam("thinkgoID") == "" {
+        ctx.SetCookie("thinkgoID", time.Now().String())
+    }
+    return ctx.JSON(200, i)
+}
+
+func main() {
+    thinkgo.Root().GET("/index/:id", new(Index))
+    // or thinkgo.Route(thinkgo.GET("/index/:id", new(Index)))
+    thinkgo.Run()
+}
+
+
+run result:
+http GET:
+    http://localhost:8080/index/1?title=test&p=abc&p=xyz
+response:
+    {
+      "Id": 1,
+      "Title": "test",
+      "Paragraph": [
+        "abc",
+        "xyz"
+      ],
+      "Cookie": "2016-11-13 01:14:40.9038005 +0800 CST"
+    }
+
+
+StructHandler tag value description:
     tag   |   key    | required |     value     |   desc
     ------|----------|----------|---------------|----------------------------------
     param |    in    | only one |     path      | (position of param) if `required` is unsetted, auto set it. e.g. url: "http://www.abc.com/a/{path}"
@@ -24,7 +70,7 @@ Param tag value description:
     param |    in    | only one |     formData  | (position of param) e.g. "request body: a=123&b={formData}"
     param |    in    | only one |     body      | (position of param) request body can be any content
     param |    in    | only one |     header    | (position of param) request header info
-    param |    in    | only one |     cookie    | (position of param) request cookie info, support: `http.Cookie`, `fasthttp.Cookie`, `string`, `[]byte` and so on
+    param |    in    | only one |     cookie    | (position of param) request cookie info, support: `http.Cookie`, `string`, `[]byte` and so on
     param |   name   |    no    |  (e.g. "id")  | specify request param`s name
     param | required |    no    |   required    | request param is required
     param |   desc   |    no    |  (e.g. "id")  | request param description
@@ -45,15 +91,15 @@ Param tag value description:
         7. param tags `in(formData)` and `in(body)` can not exist at the same time
         8. there should not be more than one `in(body)` param tag
 
-List of supported param value types:
+List of supported structHandler param value types:
     base    |   slice    | special
     --------|------------|-------------------------------------------------------
     string  |  []string  | [][]byte
     byte    |  []byte    | [][]uint8
     uint8   |  []uint8   | multipart.FileHeader (only for `formData` param)
     bool    |  []bool    | http.Cookie (only for `net/http`'s `cookie` param)
-    int     |  []int     | fasthttp.Cookie (only for `fasthttp`'s `cookie` param)
-    int8    |  []int8    | struct (struct type only for `body` param or as an anonymous field to extend params)
+    int     |  []int     | struct (struct type only for `body` param or as an anonymous field to extend params)
+    int8    |  []int8    |
     int16   |  []int16   |
     int32   |  []int32   |
     int64   |  []int64   |
