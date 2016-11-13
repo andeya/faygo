@@ -81,7 +81,13 @@ func (ctx *Context) Site() string {
 // HostWithPort returns a host:port string for this request,
 // such as "example.com" or "example.com:8080".
 func (ctx *Context) HostWithPort() string {
-	return ctx.R.Host
+	if ctx.R.Host != "" {
+		if strings.Contains(ctx.R.Host, ":") {
+			return ctx.R.Host
+		}
+		return ctx.R.Host + ":80"
+	}
+	return "localhost:80"
 }
 
 // Host returns host name.
