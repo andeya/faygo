@@ -2,6 +2,7 @@
 *.rar
 *.psd
 *.bmd
+*.cfg
 *.sublime-project
 *.sublime-workspace
 think/*

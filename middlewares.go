@@ -33,7 +33,7 @@ func NewIPFilter(prefixList []string, realIP bool) HandlerFunc {
 		if realIP {
 			ip = ctx.RealIP()
 		} else {
-			ip = ctx.RemoteAddr()
+			ip = ctx.IP()
 		}
 		for _, ipPrefix := range prefixList {
 			if strings.HasPrefix(ip, ipPrefix) {

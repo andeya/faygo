@@ -78,6 +78,12 @@ func (ctx *Context) Site() string {
 	return ctx.Scheme() + "://" + ctx.Host()
 }
 
+// HostWithPort returns a host:port string for this request,
+// such as "example.com" or "example.com:8080".
+func (ctx *Context) HostWithPort() string {
+	return ctx.R.Host
+}
+
 // Host returns host name.
 // `host` is `subDomain.domain`.
 // if no host info in request, return localhost.
@@ -115,8 +121,19 @@ func (ctx *Context) SubDomain() string {
 	return ""
 }
 
-// RemoteAddr gets just the ip from the most direct one client.
-func (ctx *Context) RemoteAddr() string {
+// Port returns host port for this request.
+// when error or empty, return 80.
+func (ctx *Context) Port() int {
+	parts := strings.Split(ctx.R.Host, ":")
+	if len(parts) == 2 {
+		port, _ := strconv.Atoi(parts[1])
+		return port
+	}
+	return 80
+}
+
+// IP gets just the ip from the most direct one client.
+func (ctx *Context) IP() string {
 	var ip = strings.Split(ctx.R.RemoteAddr, ":")
 	if len(ip) > 0 {
 		if ip[0] != "[" {
@@ -139,7 +156,7 @@ func (ctx *Context) RealIP() string {
 		rip := strings.Split(ips[0], ":")
 		return rip[0]
 	}
-	return ctx.RemoteAddr()
+	return ctx.IP()
 }
 
 // Proxy returns proxy client ips slice.
@@ -153,17 +170,6 @@ func (ctx *Context) Proxy() []string {
 // Referer returns http referer header.
 func (ctx *Context) Referer() string {
 	return ctx.HeaderParam(HeaderReferer)
-}
-
-// Port returns request client port.
-// when error or empty, return 80.
-func (ctx *Context) Port() int {
-	parts := strings.Split(ctx.R.Host, ":")
-	if len(parts) == 2 {
-		port, _ := strconv.Atoi(parts[1])
-		return port
-	}
-	return 80
 }
 
 // Method returns http request method.
