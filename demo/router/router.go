@@ -8,9 +8,10 @@ import (
 )
 
 func init() {
+	// Register the route in a tree style
 	thinkgo.Route(
-		thinkgo.Group("home",
-			thinkgo.NamedAPI("test", "GETPOST", "test/:id", &handler.Index{
+		thinkgo.NewGroup("home",
+			thinkgo.NewNamedAPI("test", "GETPOST", "test/:id", &handler.Index{
 				Paragraph: []string{"abc"},
 				Returns: thinkgo.Returns{{
 					Code:        200,
@@ -22,27 +23,28 @@ func init() {
 				}},
 			}),
 		),
-		thinkgo.StaticFS("/public", http.Dir("./static/public")),
-		thinkgo.Static("/public2", "./static/public"),
+		thinkgo.NewStaticFS("/public", http.Dir("./static/public")),
+		thinkgo.NewStatic("/public2", "./static/public"),
 	)
 }
 
 func Route(frame *thinkgo.Framework) {
-	frame.Route(
-		frame.Group("home",
-			frame.NamedAPI("test", "GETPOST", "test/:id", &handler.Index{
-				Paragraph: []string{"abc"},
-				Returns: thinkgo.Returns{{
-					Code:        200,
-					Description: "成功",
-				}, {
-					Code:         400,
-					Description:  "参数解析错误",
-					ExampleValue: "error:???",
-				}},
-			}),
-		),
-		frame.StaticFS("/public", http.Dir("./static/public")),
-		frame.Static("/public2", "./static/public"),
-	)
+	// Register the route in a chain style
+	home := frame.Group("home")
+	{
+		home.NamedAPI("test", "GETPOST", "test/:id", &handler.Index{
+			Paragraph: []string{"abc"},
+			Returns: thinkgo.Returns{{
+				Code:        200,
+				Description: "成功",
+			}, {
+				Code:         400,
+				Description:  "参数解析错误",
+				ExampleValue: "error:???",
+			}},
+		})
+	}
+
+	frame.StaticFS("/public", http.Dir("./static/public"))
+	frame.Static("/public2", "./static/public")
 }

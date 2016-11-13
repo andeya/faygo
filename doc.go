@@ -41,10 +41,17 @@ A trivial example is:
     }
 
     func main() {
-        thinkgo.Root().GET("/index/:id", new(Index))
-        // or thinkgo.Route(thinkgo.GET("/index/:id", new(Index)))
-        thinkgo.Run()
-    }
+    // Register the route in a chain style
+    // thinkgo.GET("/index/:id", new(Index))
+
+    // Register the route in a tree style
+    thinkgo.Route(
+        thinkgo.NewGET("/index/:id", new(Index)),
+    )
+
+    // Start the service
+    thinkgo.Run()
+}
 
 
 run result:

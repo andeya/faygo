@@ -24,7 +24,7 @@ import (
 )
 
 type (
-	// MuxAPI is prepared for the router.
+	// MuxAPI the visible api for the serveMux, in order to prepare for routing.
 	MuxAPI struct {
 		name       string
 		pattern    string
@@ -101,6 +101,42 @@ func (m *Methodset) Methods() []string {
 	return methods
 }
 
+// Group adds a subordinate subgroup node to the current muxAPI grouping node.
+// notes: handler cannot be nil.
+func (mux *MuxAPI) Group(pattern string, handlers ...Handler) *MuxAPI {
+	return mux.NamedAPI("", "", pattern, handlers...)
+}
+
+// NamedGroup adds a subordinate subgroup node with the name to the current muxAPI grouping node.
+// notes: handler cannot be nil.
+func (mux *MuxAPI) NamedGroup(name string, pattern string, handlers ...Handler) *MuxAPI {
+	return mux.NamedAPI(name, "", pattern, handlers...)
+}
+
+func (mux *MuxAPI) IsGroup() bool {
+	return len(mux.methods) == 0
+}
+
+// API adds a subordinate node to the current muxAPI grouping node.
+// notes: handler cannot be nil.
+func (mux *MuxAPI) API(methodset Methodset, pattern string, handlers ...Handler) *MuxAPI {
+	return mux.NamedAPI("", methodset, pattern, handlers...)
+}
+
+// NamedAPI adds a subordinate node with the name to the current muxAPI grouping node.
+// notes: handler cannot be nil.
+func (mux *MuxAPI) NamedAPI(name string, methodset Methodset, pattern string, handlers ...Handler) *MuxAPI {
+	for _, h := range handlers {
+		if h == nil {
+			panic("handler cannot be nil:" + reflect.TypeOf(h).String())
+		}
+	}
+	var child = newMuxAPI(mux.frame, name, methodset, pattern, handlers...)
+	mux.children = append(mux.children, child)
+	child.parent = mux
+	return child
+}
+
 // GET is a shortcut for muxAPI.API("GET", pattern, handlers...)
 func (mux *MuxAPI) GET(pattern string, handlers ...Handler) *MuxAPI {
 	return mux.API("GET", pattern, handlers...)
@@ -171,27 +207,7 @@ func (mux *MuxAPI) NamedDELETE(name string, pattern string, handlers ...Handler)
 	return mux.NamedAPI(name, "DELETE", pattern, handlers...)
 }
 
-// Register router.
-// notes: handler cannot be nil.
-func (mux *MuxAPI) API(methodset Methodset, pattern string, handlers ...Handler) *MuxAPI {
-	return mux.NamedAPI("", methodset, pattern, handlers...)
-}
-
-// Register router with name.
-// notes: handler cannot be nil.
-func (mux *MuxAPI) NamedAPI(name string, methodset Methodset, pattern string, handlers ...Handler) *MuxAPI {
-	for _, h := range handlers {
-		if h == nil {
-			panic("handler cannot be nil:" + reflect.TypeOf(h).String())
-		}
-	}
-	var child = newMuxAPI(mux.frame, name, methodset, pattern, handlers...)
-	mux.children = append(mux.children, child)
-	child.parent = mux
-	return child
-}
-
-// StaticFS serves files from the given file system fs.
+// NamedStaticFS serves files from the given file system fs.
 // The pattern must end with "/*filepath", files are then served from the local
 // pattern /defined/root/dir/*filepath.
 // For example if root is "/etc" and *filepath is "passwd", the local file
@@ -201,10 +217,6 @@ func (mux *MuxAPI) NamedAPI(name string, methodset Methodset, pattern string, ha
 // To use the operating system's file system implementation,
 // use http.Dir:
 //     frame.StaticFS("/src/*filepath", http.Dir("/var/www"))
-func (mux *MuxAPI) StaticFS(pattern string, fs http.FileSystem) *MuxAPI {
-	return mux.NamedStaticFS("fileserver", pattern, fs)
-}
-
 func (mux *MuxAPI) NamedStaticFS(name, pattern string, fs http.FileSystem) *MuxAPI {
 	if fs == nil {
 		panic("For file server, fs (http.FileSystem) cannot be nil")
@@ -221,29 +233,20 @@ func (mux *MuxAPI) NamedStaticFS(name, pattern string, fs http.FileSystem) *MuxA
 	return mux.NamedAPI(name, "GET", pattern, handler)
 }
 
-func (mux *MuxAPI) Static(pattern string, root string) *MuxAPI {
-	return mux.NamedStatic(root, pattern, root)
+// StaticFS is similar to NamedStaticFS, but no name.
+func (mux *MuxAPI) StaticFS(pattern string, fs http.FileSystem) *MuxAPI {
+	return mux.NamedStaticFS("fileserver", pattern, fs)
 }
 
+// NamedStatic is similar to NamedStaticFS, but the second parameter is the local file path.
 func (mux *MuxAPI) NamedStatic(name, pattern string, root string) *MuxAPI {
 	os.MkdirAll(root, 0777)
 	return mux.NamedStaticFS(name, pattern, http.Dir(root))
 }
 
-// Register router group.
-// notes: handler cannot be nil.
-func (mux *MuxAPI) Group(pattern string, handlers ...Handler) *MuxAPI {
-	return mux.NamedAPI("", "", pattern, handlers...)
-}
-
-// Register router group with name.
-// notes: handler cannot be nil.
-func (mux *MuxAPI) NamedGroup(name string, pattern string, handlers ...Handler) *MuxAPI {
-	return mux.NamedAPI(name, "", pattern, handlers...)
-}
-
-func (mux *MuxAPI) IsGroup() bool {
-	return len(mux.methods) == 0
+// Static is similar to NamedStatic, but no name.
+func (mux *MuxAPI) Static(pattern string, root string) *MuxAPI {
+	return mux.NamedStatic(root, pattern, root)
 }
 
 // Insert the middlewares at the left end of the node's handler chain.

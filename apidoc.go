@@ -32,12 +32,12 @@ func (frame *Framework) regAPIdoc() {
 	// jsonPattern := strings.TrimRight(strings.Replace(frame.config.APIdoc.Path, "/*filepath", "", -1), "/") + ".json"
 	jsonPattern := "/swagger.json"
 	if frame.config.APIdoc.NoLimit {
-		frame.mux.NamedStaticFS("APIdoc-Swagger", frame.config.APIdoc.Path, swagger.AssetFS())
-		frame.mux.NamedGET("APIdoc-Swagger-JSON", jsonPattern, newAPIdocJSONHandler())
+		frame.MuxAPI.NamedStaticFS("APIdoc-Swagger", frame.config.APIdoc.Path, swagger.AssetFS())
+		frame.MuxAPI.NamedGET("APIdoc-Swagger-JSON", jsonPattern, newAPIdocJSONHandler())
 	} else {
 		allowApidoc := NewIPFilter(frame.config.APIdoc.PrefixList, frame.config.APIdoc.RealIP)
-		frame.mux.NamedStaticFS("APIdoc-Swagger", frame.config.APIdoc.Path, swagger.AssetFS()).Use(allowApidoc)
-		frame.mux.NamedGET("APIdoc-Swagger-JSON", jsonPattern, newAPIdocJSONHandler(), allowApidoc)
+		frame.MuxAPI.NamedStaticFS("APIdoc-Swagger", frame.config.APIdoc.Path, swagger.AssetFS()).Use(allowApidoc)
+		frame.MuxAPI.NamedGET("APIdoc-Swagger-JSON", jsonPattern, newAPIdocJSONHandler(), allowApidoc)
 	}
 
 	tip := `APIdoc's URL path is '` + frame.config.APIdoc.Path
@@ -77,7 +77,7 @@ func (frame *Framework) initAPIdoc(host string) {
 	if frame.apidoc != nil {
 		return
 	}
-	rootMuxAPI := frame.mux
+	rootMuxAPI := frame.MuxAPI
 	rootTag := &swagger.Tag{
 		Name:        rootMuxAPI.Path(),
 		Description: apiTagDesc(rootMuxAPI.Name()),

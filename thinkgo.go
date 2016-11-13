@@ -53,7 +53,7 @@ type Framework struct {
 	name           string // name of the application
 	version        string // version of the application
 	config         Config
-	mux            *MuxAPI
+	*MuxAPI        // root muxAPI node
 	muxesForRouter MuxAPIs
 	server         *http.Server
 	// Error replies to the request with the specified error message and HTTP code.
@@ -84,7 +84,7 @@ func New(name string, version ...string) *Framework {
 		config:            newConfig(configFileName),
 		fileServerManager: new(FileServerManager),
 	}
-	frame.mux = newMuxAPI(frame, "root", "", "/", nil)
+	frame.MuxAPI = newMuxAPI(frame, "root", "", "/", nil)
 	return frame
 }
 
@@ -372,279 +372,9 @@ func (frame *Framework) SetParamMapping(paramMapping apiware.ParamNameFunc) {
 	frame.paramMapping = paramMapping
 }
 
-// Root returns the root node of the muxAPI.
-func Root() *MuxAPI {
-	return defaultFramework.Root()
-}
-
-// Root returns the root node of the muxAPI.
-func (frame *Framework) Root() *MuxAPI {
-	return frame.mux
-}
-
-// Append middlewares of function type to root muxAPI.
-func Route(children ...*MuxAPI) *MuxAPI {
-	return defaultFramework.Route(children...)
-}
-
-// Append middlewares of function type to root muxAPI.
-func (frame *Framework) Route(children ...*MuxAPI) *MuxAPI {
-	frame.mux.children = append(frame.mux.children, children...)
-	for _, child := range children {
-		child.parent = frame.mux
-	}
-	return frame.mux
-}
-
-// Insert the middlewares at the left end of the node's handler chain.
-func Use(handlers ...HandlerWithoutPath) *MuxAPI {
-	return defaultFramework.Use(handlers...)
-}
-
-// Insert the middlewares at the left end of the node's handler chain.
-func (frame *Framework) Use(handlers ...HandlerWithoutPath) *MuxAPI {
-	return frame.mux.Use(handlers...)
-}
-
-// Create a new muxAPI node that contains the Handlers, but it is only group.
-func Group(pattern string, children ...*MuxAPI) *MuxAPI {
-	return defaultFramework.Group(pattern, children...)
-}
-
-// Create a new MuxAPI node that contains the Handlers, but it is only group.
-func (frame *Framework) Group(pattern string, children ...*MuxAPI) *MuxAPI {
-	return frame.NamedGroup("", pattern, children...)
-}
-
-// Create a new MuxAPI group node with a name.
-func NamedGroup(name string, pattern string, children ...*MuxAPI) *MuxAPI {
-	return defaultFramework.NamedGroup(name, pattern, children...)
-}
-
-// Create a new MuxAPI group node with a name.
-func (frame *Framework) NamedGroup(name string, pattern string, children ...*MuxAPI) *MuxAPI {
-	group := frame.NamedAPI(name, "", pattern)
-	group.children = append(group.children, children...)
-	for _, child := range children {
-		child.parent = group
-	}
-	return group
-}
-
-// Create a new MuxAPI node that contains the Handlers.
-func API(methodset Methodset, pattern string, handlers ...Handler) *MuxAPI {
-	return defaultFramework.API(methodset, pattern, handlers...)
-}
-
-// Create a new MuxAPI node that contains the Handlers.
-func (frame *Framework) API(methodset Methodset, pattern string, handlers ...Handler) *MuxAPI {
-	return frame.NamedAPI("", methodset, pattern, handlers...)
-}
-
-// Create a new MuxAPI node that contains the named Handlers.
-func NamedAPI(name string, methodset Methodset, pattern string, handlers ...Handler) *MuxAPI {
-	return defaultFramework.NamedAPI(name, methodset, pattern, handlers...)
-}
-
-// Create a new MuxAPI node that contains the named Handlers.
-func (frame *Framework) NamedAPI(name string, methodset Methodset, pattern string, handlers ...Handler) *MuxAPI {
-	return newMuxAPI(frame, name, methodset, pattern, handlers...)
-}
-
-// GET is a shortcut for defaultFramework.GET(pattern, handlers...)
-func GET(pattern string, handlers ...Handler) *MuxAPI {
-	return defaultFramework.GET(pattern, handlers...)
-}
-
-// GET is a shortcut for frame.API("GET", pattern, handlers...)
-func (frame *Framework) GET(pattern string, handlers ...Handler) *MuxAPI {
-	return frame.API("GET", pattern, handlers...)
-}
-
-// HEAD is a shortcut for defaultFramework.HEAD(pattern, handlers...)
-func HEAD(pattern string, handlers ...Handler) *MuxAPI {
-	return defaultFramework.HEAD(pattern, handlers...)
-}
-
-// HEAD is a shortcut for frame.API("HEAD", pattern, handlers...)
-func (frame *Framework) HEAD(pattern string, handlers ...Handler) *MuxAPI {
-	return frame.API("HEAD", pattern, handlers...)
-}
-
-// OPTIONS is a shortcut for defaultFramework.OPTIONS(pattern, handlers...)
-func OPTIONS(pattern string, handlers ...Handler) *MuxAPI {
-	return defaultFramework.OPTIONS(pattern, handlers...)
-}
-
-// OPTIONS is a shortcut for frame.API("OPTIONS", pattern, handlers...)
-func (frame *Framework) OPTIONS(pattern string, handlers ...Handler) *MuxAPI {
-	return frame.API("OPTIONS", pattern, handlers...)
-}
-
-// POST is a shortcut for defaultFramework.POST(pattern, handlers...)
-func POST(pattern string, handlers ...Handler) *MuxAPI {
-	return defaultFramework.POST(pattern, handlers...)
-}
-
-// POST is a shortcut for frame.API("POST", pattern, handlers...)
-func (frame *Framework) POST(pattern string, handlers ...Handler) *MuxAPI {
-	return frame.API("POST", pattern, handlers...)
-}
-
-// PUT is a shortcut for defaultFramework.PUT(pattern, handlers...)
-func PUT(pattern string, handlers ...Handler) *MuxAPI {
-	return defaultFramework.PUT(pattern, handlers...)
-}
-
-// PUT is a shortcut for frame.API("PUT", pattern, handlers...)
-func (frame *Framework) PUT(pattern string, handlers ...Handler) *MuxAPI {
-	return frame.API("PUT", pattern, handlers...)
-}
-
-// PATCH is a shortcut for defaultFramework.PATCH(pattern, handlers...)
-func PATCH(pattern string, handlers ...Handler) *MuxAPI {
-	return defaultFramework.PATCH(pattern, handlers...)
-}
-
-// PATCH is a shortcut for frame.API("PATCH", pattern, handlers...)
-func (frame *Framework) PATCH(pattern string, handlers ...Handler) *MuxAPI {
-	return frame.API("PATCH", pattern, handlers...)
-}
-
-// DELETE is a shortcut for defaultFramework.DELETE(pattern, handlers...)
-func DELETE(pattern string, handlers ...Handler) *MuxAPI {
-	return defaultFramework.DELETE(pattern, handlers...)
-}
-
-// DELETE is a shortcut for frame.API("DELETE", pattern, handlers...)
-func (frame *Framework) DELETE(pattern string, handlers ...Handler) *MuxAPI {
-	return frame.API("DELETE", pattern, handlers...)
-}
-
-// NamedGET is a shortcut for defaultFramework.NamedGET(name, pattern, handlers...)
-func NamedGET(name string, pattern string, handlers ...Handler) *MuxAPI {
-	return defaultFramework.NamedGET(name, pattern, handlers...)
-}
-
-// NamedGET is a shortcut for frame.NamedAPI(name, "GET", pattern, handlers...)
-func (frame *Framework) NamedGET(name string, pattern string, handlers ...Handler) *MuxAPI {
-	return frame.NamedAPI(name, "GET", pattern, handlers...)
-}
-
-// NamedHEAD is a shortcut for defaultFramework.NamedHEAD(name, pattern, handlers...)
-func NamedHEAD(name string, pattern string, handlers ...Handler) *MuxAPI {
-	return defaultFramework.NamedHEAD(name, pattern, handlers...)
-}
-
-// NamedHEAD is a shortcut for frame.NamedAPI(name, "HEAD", pattern, handlers...)
-func (frame *Framework) NamedHEAD(name string, pattern string, handlers ...Handler) *MuxAPI {
-	return frame.NamedAPI(name, "HEAD", pattern, handlers...)
-}
-
-// NamedOPTIONS is a shortcut for defaultFramework.NamedOPTIONS(name, pattern, handlers...)
-func NamedOPTIONS(name string, pattern string, handlers ...Handler) *MuxAPI {
-	return defaultFramework.NamedOPTIONS(name, pattern, handlers...)
-}
-
-// NamedOPTIONS is a shortcut for frame.NamedAPI(name, "OPTIONS", pattern, handlers...)
-func (frame *Framework) NamedOPTIONS(name string, pattern string, handlers ...Handler) *MuxAPI {
-	return frame.NamedAPI(name, "OPTIONS", pattern, handlers...)
-}
-
-// NamedPOST is a shortcut for defaultFramework.NamedPOST(name, pattern, handlers...)
-func NamedPOST(name string, pattern string, handlers ...Handler) *MuxAPI {
-	return defaultFramework.NamedPOST(name, pattern, handlers...)
-}
-
-// NamedPOST is a shortcut for frame.NamedAPI(name, "POST", pattern, handlers...)
-func (frame *Framework) NamedPOST(name string, pattern string, handlers ...Handler) *MuxAPI {
-	return frame.NamedAPI(name, "POST", pattern, handlers...)
-}
-
-// NamedPUT is a shortcut for defaultFramework.NamedPUT(name, pattern, handlers...)
-func NamedPUT(name string, pattern string, handlers ...Handler) *MuxAPI {
-	return defaultFramework.NamedPUT(name, pattern, handlers...)
-}
-
-// NamedPUT is a shortcut for frame.NamedAPI(name, "PUT", pattern, handlers...)
-func (frame *Framework) NamedPUT(name string, pattern string, handlers ...Handler) *MuxAPI {
-	return frame.NamedAPI(name, "PUT", pattern, handlers...)
-}
-
-// NamedPATCH is a shortcut for defaultFramework.NamedPATCH(name, pattern, handlers...)
-func NamedPATCH(name string, pattern string, handlers ...Handler) *MuxAPI {
-	return defaultFramework.NamedPATCH(name, pattern, handlers...)
-}
-
-// NamedPATCH is a shortcut for frame.NamedAPI(name, "PATCH", pattern, handlers...)
-func (frame *Framework) NamedPATCH(name string, pattern string, handlers ...Handler) *MuxAPI {
-	return frame.NamedAPI(name, "PATCH", pattern, handlers...)
-}
-
-// NamedDELETE is a shortcut for defaultFramework.NamedDELETE(name, pattern, handlers...)
-func NamedDELETE(name string, pattern string, handlers ...Handler) *MuxAPI {
-	return defaultFramework.NamedDELETE(name, pattern, handlers...)
-}
-
-// NamedDELETE is a shortcut for frame.NamedAPI(name, "DELETE", pattern, handlers...)
-func (frame *Framework) NamedDELETE(name string, pattern string, handlers ...Handler) *MuxAPI {
-	return frame.NamedAPI(name, "DELETE", pattern, handlers...)
-}
-
-// StaticFS serves files from the given file system fs.
-// The pattern must end with "/*filepath", files are then served from the local
-// pattern /defined/root/dir/*filepath.
-// For example if root is "/etc" and *filepath is "passwd", the local file
-// "/etc/passwd" would be served.
-// Internally a http.FileServer is used, therefore http.NotFound is used instead
-// of the Router's NotFound handler.
-// To use the operating system's file system implementation,
-// use http.Dir:
-//     frame.StaticFS("/src/*filepath", http.Dir("/var/www"))
-func StaticFS(pattern string, fs http.FileSystem) *MuxAPI {
-	return defaultFramework.StaticFS(pattern, fs)
-}
-
-// StaticFS serves files from the given file system fs.
-// The pattern must end with "/*filepath", files are then served from the local
-// pattern /defined/root/dir/*filepath.
-// For example if root is "/etc" and *filepath is "passwd", the local file
-// "/etc/passwd" would be served.
-// Internally a http.FileServer is used, therefore http.NotFound is used instead
-// of the Router's NotFound handler.
-// To use the operating system's file system implementation,
-// use http.Dir:
-//     frame.StaticFS("/src/*filepath", http.Dir("/var/www"))
-func (frame *Framework) StaticFS(pattern string, fs http.FileSystem) *MuxAPI {
-	return (&MuxAPI{frame: frame}).StaticFS(pattern, fs)
-}
-
-func NamedStaticFS(name, pattern string, fs http.FileSystem) *MuxAPI {
-	return defaultFramework.NamedStaticFS(name, pattern, fs)
-}
-
-func (frame *Framework) NamedStaticFS(name, pattern string, fs http.FileSystem) *MuxAPI {
-	return (&MuxAPI{frame: frame}).NamedStaticFS(name, pattern, fs)
-}
-
-// An easy way to register a static route
-func Static(pattern string, root string) *MuxAPI {
-	return defaultFramework.Static(pattern, root)
-}
-
-// An easy way to register a static route
-func (frame *Framework) Static(pattern string, root string) *MuxAPI {
-	return (&MuxAPI{frame: frame}).Static(pattern, root)
-}
-
-// An easy way to register a static named route
-func NamedStatic(name, pattern string, root string) *MuxAPI {
-	return defaultFramework.NamedStatic(name, pattern, root)
-}
-
-// An easy way to register a static named route
-func (frame *Framework) NamedStatic(name, pattern string, root string) *MuxAPI {
-	return (&MuxAPI{frame: frame}).NamedStatic(name, pattern, root)
+// Default returns the default framework.
+func Default() *Framework {
+	return defaultFramework
 }
 
 // Get an ordered list of nodes used to register router.
@@ -656,11 +386,386 @@ func MuxAPIsForRouter() []*MuxAPI {
 func (frame *Framework) MuxAPIsForRouter() []*MuxAPI {
 	if frame.muxesForRouter == nil {
 		// comb mux.handlers, mux.paramInfos, mux.returns and mux.path,.
-		frame.mux.comb()
+		frame.MuxAPI.comb()
 
-		frame.muxesForRouter = frame.mux.HandlerProgeny()
+		frame.muxesForRouter = frame.MuxAPI.HandlerProgeny()
 	}
 	return frame.muxesForRouter
+}
+
+/**
+ * -----------------------Register the middleware for the root node---------------------------
+ */
+
+// Insert the middlewares at the left end of the node's handler chain.
+func Use(handlers ...HandlerWithoutPath) *MuxAPI {
+	return defaultFramework.Use(handlers...)
+}
+
+// Insert the middlewares at the left end of the node's handler chain.
+func (frame *Framework) Use(handlers ...HandlerWithoutPath) *MuxAPI {
+	return frame.MuxAPI.Use(handlers...)
+}
+
+/**
+ * -----------------------------Add subordinate muxAPI nodes----------------------------------
+ * ------------------------Used to register router in chain style-----------------------------
+ */
+
+// Group adds a subordinate subgroup node to the current muxAPI grouping node.
+func Group(pattern string, handlers ...Handler) *MuxAPI {
+	return defaultFramework.Group(pattern, handlers...)
+}
+
+// NamedGroup adds a subordinate subgroup node with the name to the current muxAPI grouping node.
+func NamedGroup(name string, pattern string, handlers ...Handler) *MuxAPI {
+	return defaultFramework.NamedGroup(name, pattern, handlers...)
+}
+
+// API adds a subordinate node to the current muxAPI grouping node.
+func API(methodset Methodset, pattern string, handlers ...Handler) *MuxAPI {
+	return defaultFramework.API(methodset, pattern, handlers...)
+}
+
+// NamedAPI adds a subordinate node with the name to the current muxAPI grouping node.
+func NamedAPI(name string, methodset Methodset, pattern string, handlers ...Handler) *MuxAPI {
+	return defaultFramework.NamedAPI(name, methodset, pattern, handlers...)
+}
+
+// GET is a shortcut for defaultFramework.GET(pattern, handlers...)
+func GET(pattern string, handlers ...Handler) *MuxAPI {
+	return defaultFramework.GET(pattern, handlers...)
+}
+
+// HEAD is a shortcut for defaultFramework.HEAD(pattern, handlers...)
+func HEAD(pattern string, handlers ...Handler) *MuxAPI {
+	return defaultFramework.HEAD(pattern, handlers...)
+}
+
+// OPTIONS is a shortcut for defaultFramework.OPTIONS(pattern, handlers...)
+func OPTIONS(pattern string, handlers ...Handler) *MuxAPI {
+	return defaultFramework.OPTIONS(pattern, handlers...)
+}
+
+// POST is a shortcut for defaultFramework.POST(pattern, handlers...)
+func POST(pattern string, handlers ...Handler) *MuxAPI {
+	return defaultFramework.POST(pattern, handlers...)
+}
+
+// PUT is a shortcut for defaultFramework.PUT(pattern, handlers...)
+func PUT(pattern string, handlers ...Handler) *MuxAPI {
+	return defaultFramework.PUT(pattern, handlers...)
+}
+
+// PATCH is a shortcut for defaultFramework.PATCH(pattern, handlers...)
+func PATCH(pattern string, handlers ...Handler) *MuxAPI {
+	return defaultFramework.PATCH(pattern, handlers...)
+}
+
+// DELETE is a shortcut for defaultFramework.DELETE(pattern, handlers...)
+func DELETE(pattern string, handlers ...Handler) *MuxAPI {
+	return defaultFramework.DELETE(pattern, handlers...)
+}
+
+// NamedGET is a shortcut for defaultFramework.NamedGET(name, pattern, handlers...)
+func NamedGET(name string, pattern string, handlers ...Handler) *MuxAPI {
+	return defaultFramework.NamedGET(name, pattern, handlers...)
+}
+
+// NamedHEAD is a shortcut for defaultFramework.NamedHEAD(name, pattern, handlers...)
+func NamedHEAD(name string, pattern string, handlers ...Handler) *MuxAPI {
+	return defaultFramework.NamedHEAD(name, pattern, handlers...)
+}
+
+// NamedOPTIONS is a shortcut for defaultFramework.NamedOPTIONS(name, pattern, handlers...)
+func NamedOPTIONS(name string, pattern string, handlers ...Handler) *MuxAPI {
+	return defaultFramework.NamedOPTIONS(name, pattern, handlers...)
+}
+
+// NamedPOST is a shortcut for defaultFramework.NamedPOST(name, pattern, handlers...)
+func NamedPOST(name string, pattern string, handlers ...Handler) *MuxAPI {
+	return defaultFramework.NamedPOST(name, pattern, handlers...)
+}
+
+// NamedPUT is a shortcut for defaultFramework.NamedPUT(name, pattern, handlers...)
+func NamedPUT(name string, pattern string, handlers ...Handler) *MuxAPI {
+	return defaultFramework.NamedPUT(name, pattern, handlers...)
+}
+
+// NamedPATCH is a shortcut for defaultFramework.NamedPATCH(name, pattern, handlers...)
+func NamedPATCH(name string, pattern string, handlers ...Handler) *MuxAPI {
+	return defaultFramework.NamedPATCH(name, pattern, handlers...)
+}
+
+// NamedDELETE is a shortcut for defaultFramework.NamedDELETE(name, pattern, handlers...)
+func NamedDELETE(name string, pattern string, handlers ...Handler) *MuxAPI {
+	return defaultFramework.NamedDELETE(name, pattern, handlers...)
+}
+
+// Static is a shortcut for defaultFramework.Static(pattern, root)
+func Static(pattern string, root string) *MuxAPI {
+	return defaultFramework.Static(pattern, root)
+}
+
+// NamedStatic is a shortcut for defaultFramework.NamedStatic(name, pattern, root)
+func NamedStatic(name, pattern string, root string) *MuxAPI {
+	return defaultFramework.NamedStatic(name, pattern, root)
+}
+
+// StaticFS is a shortcut for defaultFramework.StaticFS(pattern, fs)
+func StaticFS(pattern string, fs http.FileSystem) *MuxAPI {
+	return defaultFramework.StaticFS(pattern, fs)
+}
+
+// NamedStaticFS is a shortcut for defaultFramework.NamedStaticFS(name, pattern, fs)
+func NamedStaticFS(name, pattern string, fs http.FileSystem) *MuxAPI {
+	return defaultFramework.NamedStaticFS(name, pattern, fs)
+}
+
+/**
+ * -----------------------------Create isolated muxAPI nodes----------------------------------
+ * -------------------------Used to register router in tree style-----------------------------
+ */
+
+// Append middlewares of function type to root muxAPI.
+// Used to register router in tree style.
+func Route(children ...*MuxAPI) *MuxAPI {
+	return defaultFramework.Route(children...)
+}
+
+// Append middlewares of function type to root muxAPI.
+// Used to register router in tree style.
+func (frame *Framework) Route(children ...*MuxAPI) *MuxAPI {
+	frame.MuxAPI.children = append(frame.MuxAPI.children, children...)
+	for _, child := range children {
+		child.parent = frame.MuxAPI
+	}
+	return frame.MuxAPI
+}
+
+// NewGroup create an isolated grouping muxAPI node.
+func NewGroup(pattern string, children ...*MuxAPI) *MuxAPI {
+	return defaultFramework.NewGroup(pattern, children...)
+}
+
+// NewAPI creates an isolated muxAPI node.
+func NewAPI(methodset Methodset, pattern string, handlers ...Handler) *MuxAPI {
+	return defaultFramework.NewAPI(methodset, pattern, handlers...)
+}
+
+// NewNamedGroup creates an isolated grouping muxAPI node with the name.
+func NewNamedGroup(name string, pattern string, children ...*MuxAPI) *MuxAPI {
+	return defaultFramework.NewNamedGroup(name, pattern, children...)
+}
+
+// NewNamedAPI creates an isolated muxAPI node with the name.
+func NewNamedAPI(name string, methodset Methodset, pattern string, handlers ...Handler) *MuxAPI {
+	return defaultFramework.NewNamedAPI(name, methodset, pattern, handlers...)
+}
+
+// NewGET is a shortcut for defaultFramework.NewGET(name,pattern, handlers ...)
+func NewGET(pattern string, handlers ...Handler) *MuxAPI {
+	return defaultFramework.NewGET(pattern, handlers...)
+}
+
+// NewHEAD is a shortcut for defaultFramework.NewHEAD(name,pattern, handlers ...)
+func NewHEAD(pattern string, handlers ...Handler) *MuxAPI {
+	return defaultFramework.NewHEAD(pattern, handlers...)
+}
+
+// NewOPTIONS is a shortcut for defaultFramework.NewOPTIONS(name,pattern, handlers ...)
+func NewOPTIONS(pattern string, handlers ...Handler) *MuxAPI {
+	return defaultFramework.NewOPTIONS(pattern, handlers...)
+}
+
+// NewPOST is a shortcut for defaultFramework.NewPOST(name,pattern, handlers ...)
+func NewPOST(pattern string, handlers ...Handler) *MuxAPI {
+	return defaultFramework.NewPOST(pattern, handlers...)
+}
+
+// NewPUT is a shortcut for defaultFramework.NewPUT(name,pattern, handlers ...)
+func NewPUT(pattern string, handlers ...Handler) *MuxAPI {
+	return defaultFramework.NewPUT(pattern, handlers...)
+}
+
+// NewPATCH is a shortcut for defaultFramework.NewPATCH(name,pattern, handlers ...)
+func NewPATCH(pattern string, handlers ...Handler) *MuxAPI {
+	return defaultFramework.NewPATCH(pattern, handlers...)
+}
+
+// NewDELETE is a shortcut for defaultFramework.NewDELETE(name,pattern, handlers ...)
+func NewDELETE(pattern string, handlers ...Handler) *MuxAPI {
+	return defaultFramework.NewDELETE(pattern, handlers...)
+}
+
+// NewNamedGET is a shortcut for defaultFramework.NewNamedGET(name,pattern, handlers ...)
+func NewNamedGET(name string, pattern string, handlers ...Handler) *MuxAPI {
+	return defaultFramework.NewNamedGET(name, pattern, handlers...)
+}
+
+// NewNamedHEAD is a shortcut for defaultFramework.NewNamedHEAD(name,pattern, handlers ...)
+func NewNamedHEAD(name string, pattern string, handlers ...Handler) *MuxAPI {
+	return defaultFramework.NewNamedHEAD(name, pattern, handlers...)
+}
+
+// NewNamedOPTIONS is a shortcut for defaultFramework.NewNamedOPTIONS(name,pattern, handlers ...)
+func NewNamedOPTIONS(name string, pattern string, handlers ...Handler) *MuxAPI {
+	return defaultFramework.NewNamedOPTIONS(name, pattern, handlers...)
+}
+
+// NewNamedPOST is a shortcut for defaultFramework.NewNamedPOST(name,pattern, handlers ...)
+func NewNamedPOST(name string, pattern string, handlers ...Handler) *MuxAPI {
+	return defaultFramework.NewNamedPOST(name, pattern, handlers...)
+}
+
+// NewNamedPUT is a shortcut for defaultFramework.NewNamedPUT(name,pattern, handlers ...)
+func NewNamedPUT(name string, pattern string, handlers ...Handler) *MuxAPI {
+	return defaultFramework.NewNamedPUT(name, pattern, handlers...)
+}
+
+// NewNamedPATCH is a shortcut for defaultFramework.NewNamedPATCH(name,pattern, handlers ...)
+func NewNamedPATCH(name string, pattern string, handlers ...Handler) *MuxAPI {
+	return defaultFramework.NewNamedPATCH(name, pattern, handlers...)
+}
+
+// NewNamedDELETE is a shortcut for defaultFramework.NewNamedDELETE(name,pattern, handlers ...)
+func NewNamedDELETE(name string, pattern string, handlers ...Handler) *MuxAPI {
+	return defaultFramework.NewNamedDELETE(name, pattern, handlers...)
+}
+
+// NewNamedStatic creates an isolated static muxAPI node.
+func NewStatic(pattern string, root string) *MuxAPI {
+	return defaultFramework.NewStatic(pattern, root)
+}
+
+// NewNamedStatic creates an isolated static muxAPI node with the name.
+func NewNamedStatic(name, pattern string, root string) *MuxAPI {
+	return defaultFramework.NewNamedStatic(name, pattern, root)
+}
+
+// NewNamedStatic creates an isolated static muxAPI node.
+func NewStaticFS(pattern string, fs http.FileSystem) *MuxAPI {
+	return defaultFramework.NewStaticFS(pattern, fs)
+}
+
+// NewNamedStatic creates an isolated static muxAPI node with the name.
+func NewNamedStaticFS(name, pattern string, fs http.FileSystem) *MuxAPI {
+	return defaultFramework.NewNamedStaticFS(name, pattern, fs)
+}
+
+// NewGroup create an isolated grouping muxAPI node.
+func (frame *Framework) NewGroup(pattern string, children ...*MuxAPI) *MuxAPI {
+	return frame.NewNamedGroup("", pattern, children...)
+}
+
+// NewAPI creates an isolated muxAPI node.
+func (frame *Framework) NewAPI(methodset Methodset, pattern string, handlers ...Handler) *MuxAPI {
+	return frame.NewNamedAPI("", methodset, pattern, handlers...)
+}
+
+// NewNamedGroup creates an isolated grouping muxAPI node with the name.
+func (frame *Framework) NewNamedGroup(name string, pattern string, children ...*MuxAPI) *MuxAPI {
+	group := frame.NewNamedAPI(name, "", pattern)
+	group.children = append(group.children, children...)
+	for _, child := range children {
+		child.parent = group
+	}
+	return group
+}
+
+// NewNamedAPI creates an isolated muxAPI node with the name.
+func (frame *Framework) NewNamedAPI(name string, methodset Methodset, pattern string, handlers ...Handler) *MuxAPI {
+	return newMuxAPI(frame, name, methodset, pattern, handlers...)
+}
+
+// NewGET is a shortcut for frame.NewAPI("GET", pattern, handlers...)
+func (frame *Framework) NewGET(pattern string, handlers ...Handler) *MuxAPI {
+	return frame.NewAPI("GET", pattern, handlers...)
+}
+
+// NewHEAD is a shortcut for frame.NewAPI("HEAD", pattern, handlers...)
+func (frame *Framework) NewHEAD(pattern string, handlers ...Handler) *MuxAPI {
+	return frame.NewAPI("HEAD", pattern, handlers...)
+}
+
+// NewOPTIONS is a shortcut for frame.NewAPI("OPTIONS", pattern, handlers...)
+func (frame *Framework) NewOPTIONS(pattern string, handlers ...Handler) *MuxAPI {
+	return frame.NewAPI("OPTIONS", pattern, handlers...)
+}
+
+// NewPOST is a shortcut for frame.NewAPI("POST", pattern, handlers...)
+func (frame *Framework) NewPOST(pattern string, handlers ...Handler) *MuxAPI {
+	return frame.NewAPI("POST", pattern, handlers...)
+}
+
+// NewPUT is a shortcut for frame.NewAPI("PUT", pattern, handlers...)
+func (frame *Framework) NewPUT(pattern string, handlers ...Handler) *MuxAPI {
+	return frame.NewAPI("PUT", pattern, handlers...)
+}
+
+// NewPATCH is a shortcut for frame.NewAPI("PATCH", pattern, handlers...)
+func (frame *Framework) NewPATCH(pattern string, handlers ...Handler) *MuxAPI {
+	return frame.NewAPI("PATCH", pattern, handlers...)
+}
+
+// NewDELETE is a shortcut for frame.NewAPI("DELETE", pattern, handlers...)
+func (frame *Framework) NewDELETE(pattern string, handlers ...Handler) *MuxAPI {
+	return frame.NewAPI("DELETE", pattern, handlers...)
+}
+
+// NewNamedGET is a shortcut for frame.NewNamedAPI(name, "GET", pattern, handlers...)
+func (frame *Framework) NewNamedGET(name string, pattern string, handlers ...Handler) *MuxAPI {
+	return frame.NewNamedAPI(name, "GET", pattern, handlers...)
+}
+
+// NewNamedHEAD is a shortcut for frame.NewNamedAPI(name, "HEAD", pattern, handlers...)
+func (frame *Framework) NewNamedHEAD(name string, pattern string, handlers ...Handler) *MuxAPI {
+	return frame.NewNamedAPI(name, "HEAD", pattern, handlers...)
+}
+
+// NewNamedOPTIONS is a shortcut for frame.NewNamedAPI(name, "OPTIONS", pattern, handlers...)
+func (frame *Framework) NewNamedOPTIONS(name string, pattern string, handlers ...Handler) *MuxAPI {
+	return frame.NewNamedAPI(name, "OPTIONS", pattern, handlers...)
+}
+
+// NewNamedPOST is a shortcut for frame.NewNamedAPI(name, "POST", pattern, handlers...)
+func (frame *Framework) NewNamedPOST(name string, pattern string, handlers ...Handler) *MuxAPI {
+	return frame.NewNamedAPI(name, "POST", pattern, handlers...)
+}
+
+// NewNamedPUT is a shortcut for frame.NewNamedAPI(name, "PUT", pattern, handlers...)
+func (frame *Framework) NewNamedPUT(name string, pattern string, handlers ...Handler) *MuxAPI {
+	return frame.NewNamedAPI(name, "PUT", pattern, handlers...)
+}
+
+// NewNamedPATCH is a shortcut for frame.NewNamedAPI(name, "PATCH", pattern, handlers...)
+func (frame *Framework) NewNamedPATCH(name string, pattern string, handlers ...Handler) *MuxAPI {
+	return frame.NewNamedAPI(name, "PATCH", pattern, handlers...)
+}
+
+// NewNamedDELETE is a shortcut for frame.NewNamedAPI(name, "DELETE", pattern, handlers...)
+func (frame *Framework) NewNamedDELETE(name string, pattern string, handlers ...Handler) *MuxAPI {
+	return frame.NewNamedAPI(name, "DELETE", pattern, handlers...)
+}
+
+// NewNamedStatic creates an isolated static muxAPI node.
+func (frame *Framework) NewStatic(pattern string, root string) *MuxAPI {
+	return frame.NewNamedStatic("", pattern, root)
+}
+
+// NewNamedStatic creates an isolated static muxAPI node with the name.
+func (frame *Framework) NewNamedStatic(name, pattern string, root string) *MuxAPI {
+	return (&MuxAPI{frame: frame}).NamedStatic(name, pattern, root)
+}
+
+// NewNamedStatic creates an isolated static muxAPI node.
+func (frame *Framework) NewStaticFS(pattern string, fs http.FileSystem) *MuxAPI {
+	return frame.NewNamedStaticFS("", pattern, fs)
+}
+
+// NewNamedStatic creates an isolated static muxAPI node with the name.
+func (frame *Framework) NewNamedStaticFS(name, pattern string, fs http.FileSystem) *MuxAPI {
+	return (&MuxAPI{frame: frame}).NamedStaticFS(name, pattern, fs)
 }
 
 // makeHandle makes an *apiware.ParamsAPI implements the Handle interface.
@@ -703,8 +808,8 @@ func (frame *Framework) makePanicHandler() func(http.ResponseWriter, *http.Reque
 }
 
 func (frame *Framework) registerSystemStatic() {
-	frame.mux.NamedStatic("Directory for uploading files", "/upload/", UPLOAD_DIR)
-	frame.mux.NamedStatic("Directory for public static files", "/static/", STATIC_DIR)
+	frame.MuxAPI.NamedStatic("Directory for uploading files", "/upload/", UPLOAD_DIR)
+	frame.MuxAPI.NamedStatic("Directory for public static files", "/static/", STATIC_DIR)
 }
 
 func (frame *Framework) registerSession() {
