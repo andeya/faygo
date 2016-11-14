@@ -14,8 +14,8 @@ type Index struct {
 	Title     string   `param:"in(query),nonzero"`
 	Paragraph []string `param:"in(query),name(p),len(1:10)" regexp:"(^[\\w]*$)"`
 	// Picture         multipart.FileHeader `param:"in(formData),name(pic),maxmb(30)"`
-	Cookie          http.Cookie `param:"in(cookie),name(apiwareid)"`
-	CookieString    string      `param:"in(cookie),name(apiwareid)"`
+	Cookie          http.Cookie `param:"in(cookie),name(thinkgo)"`
+	CookieString    string      `param:"in(cookie),name(thinkgo)"`
 	thinkgo.Returns `param:"-" json:"-"`
 }
 
@@ -29,6 +29,9 @@ func (i *Index) Serve(ctx *thinkgo.Context) error {
 	// 	ctx.SetSession("id", 123)
 	// })
 
+	once.Do(func() {
+		ctx.SetCookie("thinkgo", "henrylee")
+	})
 	return ctx.JSON(200, i)
 	// return ctx.String(200, "name: %v\nid: %d", name, id)
 }

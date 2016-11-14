@@ -27,11 +27,11 @@ func (frame *Framework) initSysLogger() {
 	var fileFormat string
 	switch frame.config.RunMode {
 	case RUNMODE_DEV:
-		consoleFormat = "[%{time:01/02 15:04:05}] \x1b[46m[SYS]\x1b[0m %{message} <%{module} #%{shortfile}>"
-		fileFormat = "[%{time:2006/01/02T15:04:05.999Z07:00}] [SYS] %{message} <%{module} #%{shortfile}>"
+		consoleFormat = "[%{time:01/02 15:04:05}] \x1b[46m[SYS]\x1b[0m %{message} <%{module}>"
+		fileFormat = "[%{time:2006/01/02T15:04:05.999Z07:00}] [SYS] %{message} <%{module}>"
 	case RUNMODE_PROD:
-		consoleFormat = "[%{time:01/02 15:04:05}] \x1b[46m[SYS]\x1b[0m %{message} <%{module} #%{shortfile}>"
-		fileFormat = "[%{time:2006/01/02T15:04:05.999Z07:00}] [SYS] %{message} <%{module} #%{shortfile}>"
+		consoleFormat = "[%{time:01/02 15:04:05}] \x1b[46m[SYS]\x1b[0m %{message} <%{module}>"
+		fileFormat = "[%{time:2006/01/02T15:04:05.999Z07:00}] [SYS] %{message} <%{module}>"
 	}
 	frame.syslog = newLogger(
 		strings.TrimSuffix(strings.ToLower(frame.name+"_"+frame.version), "_"),
