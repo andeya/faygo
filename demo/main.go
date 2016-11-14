@@ -8,10 +8,10 @@ import (
 func main() {
 	thinkgo.SetUploadDir("./upload/0")
 	thinkgo.SetStaticDir("./static/0")
-	thinkgo.Init("default")
+	thinkgo.Init("defaultapp")
 	go thinkgo.Run()
 
-	app := thinkgo.New("new_test", "0.1")
+	app := thinkgo.New("testapp", "0.1")
 	router.Route(app)
 	app.Run()
 }

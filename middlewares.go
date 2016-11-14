@@ -19,6 +19,9 @@ package thinkgo
 import (
 	"net/http"
 	"strings"
+	"time"
+
+	"github.com/henrylee2cn/thinkgo/logging/color"
 )
 
 // Create middleware that intercepts the specified IP prefix.
@@ -47,9 +50,40 @@ func NewIPFilter(prefixList []string, realIP bool) HandlerFunc {
 }
 
 // Cross-Domain middleware
-func CrossDomainFilter(ctx *Context) error {
-	ctx.SetHeader(HeaderAccessControlAllowOrigin, ctx.HeaderParam(HeaderOrigin))
-	// ctx.SetHeader(HeaderAccessControlAllowOrigin, "*")
-	ctx.SetHeader(HeaderAccessControlAllowCredentials, "true")
-	return nil
+func CrossDomainFilter() HandlerFunc {
+	return func(ctx *Context) error {
+		ctx.SetHeader(HeaderAccessControlAllowOrigin, ctx.HeaderParam(HeaderOrigin))
+		// ctx.SetHeader(HeaderAccessControlAllowOrigin, "*")
+		ctx.SetHeader(HeaderAccessControlAllowCredentials, "true")
+		return nil
+	}
+}
+
+// Access log statistics
+func AccessLogWare() HandlerFunc {
+	return func(ctx *Context) error {
+		var u = ctx.URI()
+		start := time.Now()
+		ctx.Next()
+		stop := time.Now()
+
+		method := ctx.Method()
+		if u == "" {
+			u = "/"
+		}
+
+		n := ctx.W.Status()
+		code := color.Green(n)
+		switch {
+		case n >= 500:
+			code = color.Red(n)
+		case n >= 400:
+			code = color.Magenta(n)
+		case n >= 300:
+			code = color.Grey(n)
+		}
+
+		ctx.Log().Infof("%15s %7s  %3s %10d %12s %-30s | ", ctx.RealIP(), method, code, ctx.W.Size(), stop.Sub(start), u)
+		return nil
+	}
 }

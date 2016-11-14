@@ -52,6 +52,7 @@ type (
 		Cache                CacheConfig   `ini:"cache"`
 		XSRF                 XSRFConfig    `ini:"xsrf"`
 		Session              SessionConfig `ini:"session"`
+		Log                  LogConfig     `ini:"log"`
 		APIdoc               APIdocConfig  `ini:"apidoc"`
 	}
 	RouterConfig struct {
@@ -125,6 +126,12 @@ type (
 		NameInHttpHeader      string `ini:"name_in_header"`
 		EnableSidInUrlQuery   bool   `ini:"enable_sid_in_urlquery"` // enable get the sessionId from Url Query params
 	}
+	LogConfig struct {
+		ConsoleEnable bool   `ini:"console_enable"`
+		ConsoleLevel  string `ini:"console_level"` // critical | error | warning | notice | info | debug
+		FileEnable    bool   `ini:"file_enable"`
+		FileLevel     string `ini:"file_level"` // critical | error | warning | notice | info | debug
+	}
 	APIdocConfig struct {
 		Enable     bool     `ini:"enable"`                // Whether to enable API doc
 		Path       string   `ini:"path"`                  // API doc url
@@ -152,6 +159,8 @@ const (
 	defaultPort                 = 8080
 	// The path for the configuration files
 	CONFIG_DIR = "./config"
+	// The path for the log files
+	LOG_DIR = "./log"
 	// The default path for the upload files
 	defaultUploadDir = "./upload"
 	// The default path for the static files
@@ -226,6 +235,12 @@ func newConfig(filename string, addrs ...string) Config {
 			EnableSidInHttpHeader: false, //	enable store/get the sessionId into/from http headers
 			NameInHttpHeader:      "Thinkgosessionid",
 			EnableSidInUrlQuery:   false, //	enable get the sessionId from Url Query params
+		},
+		Log: LogConfig{
+			ConsoleEnable: true,
+			ConsoleLevel:  "debug",
+			FileEnable:    true,
+			FileLevel:     "debug",
 		},
 		APIdoc: APIdocConfig{
 			Enable:  true,

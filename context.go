@@ -23,6 +23,7 @@ import (
 	"path"
 	"sync"
 
+	"github.com/henrylee2cn/thinkgo/logging"
 	"github.com/henrylee2cn/thinkgo/session"
 	"github.com/henrylee2cn/thinkgo/utils"
 )
@@ -135,6 +136,11 @@ type (
 		_xsrfTokenReset bool
 	}
 )
+
+// The log used by the user bissness
+func (ctx *Context) Log() *logging.Logger {
+	return ctx.frame.bizlog
+}
 
 // XSRFToken creates a xsrf token string and returns.
 // If specifiedExpiration is empty, the value in the configuration is used.

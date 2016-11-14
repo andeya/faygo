@@ -18,7 +18,6 @@ package thinkgo
 
 import (
 	"fmt"
-	"log"
 	"path"
 	"strings"
 	"sync"
@@ -42,13 +41,13 @@ func (frame *Framework) regAPIdoc() {
 
 	tip := `APIdoc's URL path is '` + frame.config.APIdoc.Path
 	if frame.config.APIdoc.NoLimit {
-		log.Println(tip + `' [free access]`)
+		frame.syslog.Criticalf(tip + `' [free access]`)
 	} else if len(frame.config.APIdoc.PrefixList) == 0 {
-		log.Println(tip + `' [no access]`)
+		frame.syslog.Criticalf(tip + `' [no access]`)
 	} else if frame.config.APIdoc.RealIP {
-		log.Println(tip + `' [check real ip for filter]`)
+		frame.syslog.Criticalf(tip + `' [check real ip for filter]`)
 	} else {
-		log.Println(tip + `' [check direct ip for filter]`)
+		frame.syslog.Criticalf(tip + `' [check direct ip for filter]`)
 	}
 }
 

@@ -27,6 +27,7 @@ import (
 
 	"github.com/henrylee2cn/apiware"
 	"github.com/henrylee2cn/thinkgo/acceptencoder"
+	"github.com/henrylee2cn/thinkgo/logging"
 	"github.com/henrylee2cn/thinkgo/session"
 	"github.com/henrylee2cn/thinkgo/swagger"
 	"github.com/henrylee2cn/thinkgo/utils"
@@ -71,6 +72,8 @@ type Framework struct {
 	// If the APIHander's parameter binding fails, the default handler is invoked
 	paramMapping   apiware.ParamNameFunc
 	sessionManager *session.Manager
+	syslog         *logging.Logger // for framework
+	bizlog         *logging.Logger // for user bissness
 	apidoc         *swagger.Swagger
 }
 
@@ -84,7 +87,9 @@ func New(name string, version ...string) *Framework {
 		config:            newConfig(configFileName),
 		fileServerManager: new(FileServerManager),
 	}
-	frame.MuxAPI = newMuxAPI(frame, "root", "", "/", nil)
+	frame.initSysLogger()
+	frame.initBizLogger()
+	frame.MuxAPI = newMuxAPI(frame, "root", "", "/")
 	return frame
 }
 
@@ -140,6 +145,8 @@ func Init(nameAndVersion ...string) *Framework {
 
 		defaultFramework.version = version
 		defaultFramework.name = name
+		defaultFramework.initSysLogger()
+		defaultFramework.initBizLogger()
 	})
 	return defaultFramework
 }
@@ -280,7 +287,7 @@ func (frame *Framework) build() {
 				frame.regAPIdoc()
 			}
 			// static
-			frame.registerSystemStatic()
+			frame.presetSystemMuxes()
 		}
 
 		if frame.errorFunc == nil {
@@ -309,7 +316,7 @@ func (frame *Framework) build() {
 			handle := frame.makeHandle(node.handlers)
 			for _, method := range node.methods {
 
-				println("URL:" + node.path)
+				frame.syslog.Criticalf("%7s | %-30s", method, node.path)
 
 				router.Handle(method, node.path, handle)
 			}
@@ -377,6 +384,16 @@ func Default() *Framework {
 	return defaultFramework
 }
 
+// The log used by the user bissness
+func Log() *logging.Logger {
+	return defaultFramework.Log()
+}
+
+// The log used by the user bissness
+func (frame *Framework) Log() *logging.Logger {
+	return frame.bizlog
+}
+
 // Get an ordered list of nodes used to register router.
 func MuxAPIsForRouter() []*MuxAPI {
 	return defaultFramework.MuxAPIsForRouter()
@@ -400,11 +417,6 @@ func (frame *Framework) MuxAPIsForRouter() []*MuxAPI {
 // Insert the middlewares at the left end of the node's handler chain.
 func Use(handlers ...HandlerWithoutPath) *MuxAPI {
 	return defaultFramework.Use(handlers...)
-}
-
-// Insert the middlewares at the left end of the node's handler chain.
-func (frame *Framework) Use(handlers ...HandlerWithoutPath) *MuxAPI {
-	return frame.MuxAPI.Use(handlers...)
 }
 
 /**
@@ -807,7 +819,8 @@ func (frame *Framework) makePanicHandler() func(http.ResponseWriter, *http.Reque
 	}
 }
 
-func (frame *Framework) registerSystemStatic() {
+func (frame *Framework) presetSystemMuxes() {
+	frame.Use(AccessLogWare())
 	frame.MuxAPI.NamedStatic("Directory for uploading files", "/upload/", UPLOAD_DIR)
 	frame.MuxAPI.NamedStatic("Directory for public static files", "/static/", STATIC_DIR)
 }

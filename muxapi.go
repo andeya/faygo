@@ -128,7 +128,9 @@ func (mux *MuxAPI) API(methodset Methodset, pattern string, handlers ...Handler)
 func (mux *MuxAPI) NamedAPI(name string, methodset Methodset, pattern string, handlers ...Handler) *MuxAPI {
 	for _, h := range handlers {
 		if h == nil {
-			panic("handler cannot be nil:" + reflect.TypeOf(h).String())
+			errStr := "handler cannot be nil:" + reflect.TypeOf(h).String()
+			mux.frame.Log().Critical(errStr)
+			panic(errStr)
 		}
 	}
 	var child = newMuxAPI(mux.frame, name, methodset, pattern, handlers...)
@@ -219,7 +221,9 @@ func (mux *MuxAPI) NamedDELETE(name string, pattern string, handlers ...Handler)
 //     frame.StaticFS("/src/*filepath", http.Dir("/var/www"))
 func (mux *MuxAPI) NamedStaticFS(name, pattern string, fs http.FileSystem) *MuxAPI {
 	if fs == nil {
-		panic("For file server, fs (http.FileSystem) cannot be nil")
+		errStr := "For file server, fs (http.FileSystem) cannot be nil"
+		mux.frame.Log().Critical(errStr)
+		panic(errStr)
 	}
 	if len(pattern) < 10 || pattern[len(pattern)-10:] != "/*filepath" {
 		pattern = path.Join(pattern, "/*filepath")
@@ -255,10 +259,14 @@ func (mux *MuxAPI) Use(handlers ...HandlerWithoutPath) *MuxAPI {
 	_handlers := make([]Handler, len(handlers))
 	for i, h := range handlers {
 		if h == nil {
-			panic("For using middleware, handler cannot be nil:" + reflect.TypeOf(h).String())
+			errStr := "For using middleware, handler cannot be nil:" + reflect.TypeOf(h).String()
+			mux.frame.Log().Critical(errStr)
+			panic(errStr)
 		}
 		if !IsHandlerWithoutPath(h) {
-			panic("For using middleware, the handlers can not bind the path parameter:" + reflect.TypeOf(h).String())
+			errStr := "For using middleware, the handlers can not bind the path parameter:" + reflect.TypeOf(h).String()
+			mux.frame.Log().Critical(errStr)
+			panic(errStr)
 		}
 		_handlers[i] = h
 	}
@@ -277,7 +285,12 @@ func (mux *MuxAPI) comb() {
 		if apiHandler == nil {
 			continue
 		}
-		h := newHandlerStruct(apiHandler, mux.frame.paramMapping)
+		h, err := newHandlerStruct(apiHandler, mux.frame.paramMapping)
+		if err != nil {
+			errStr := "[Thinkgo-newHandlerStruct] " + err.Error()
+			mux.frame.Log().Critical(errStr)
+			panic(errStr)
+		}
 		if h.paramsAPI.Number() == 0 {
 			continue
 		}
@@ -292,13 +305,14 @@ func (mux *MuxAPI) comb() {
 	}
 
 	// check path params defined, and panic if there is any error.
-	checkPathParams(mux.pattern, mux.paramInfos)
+	mux.checkPathParams()
 
 	mux.path = mux.pattern
 	if mux.parent != nil {
 		mux.path = path.Join(mux.parent.path, mux.path)
-		mux.returns = append(mux.returns, mux.parent.returns...)
-		mux.paramInfos = append(mux.paramInfos, mux.parent.paramInfos...)
+		mux.returns = append(mux.parent.returns, mux.returns...)
+		mux.paramInfos = append(mux.parent.paramInfos, mux.paramInfos...)
+		mux.handlers = append(mux.parent.handlers, mux.handlers...)
 	}
 
 	// Get distinct and sorted parameters information.
@@ -306,7 +320,7 @@ func (mux *MuxAPI) comb() {
 
 	if len(mux.children) == 0 {
 		// Check for body parameter conflicts
-		checkBodyParamConflicts(mux.paramInfos, mux.path)
+		mux.checkBodyParamConflicts()
 	} else {
 		for _, child := range mux.children {
 			child.comb()
@@ -316,37 +330,44 @@ func (mux *MuxAPI) comb() {
 }
 
 // check path params defined, and panic if there is any error.
-func checkPathParams(pattern string, paramInfos []ParamInfo) {
-	for _, paramInfo := range paramInfos {
+func (mux *MuxAPI) checkPathParams() {
+	for _, paramInfo := range mux.paramInfos {
 		if paramInfo.In != "path" {
 			continue
 		}
-		count := strings.Count(pattern, "/:"+paramInfo.Name) + strings.Count(pattern, "/*"+paramInfo.Name)
+		count := strings.Count(mux.pattern, "/:"+paramInfo.Name) + strings.Count(mux.pattern, "/*"+paramInfo.Name)
 		if count != 1 {
-			panic("[Thinkgo-checkPathParams] the router pattern does not match the path param:\nname: " +
-				paramInfo.Name + "\ndesc:" + paramInfo.Desc,
-			)
+			errStr := "[Thinkgo-checkPathParams] the router pattern does not match the path param:\nname: " +
+				paramInfo.Name + "\ndesc:" + paramInfo.Desc
+			mux.frame.Log().Critical(errStr)
+			panic(errStr)
 		}
 	}
 }
 
 // check path params defined, and panic if there is any error.
-func checkBodyParamConflicts(paramInfos []ParamInfo, path string) {
+func (mux *MuxAPI) checkBodyParamConflicts() {
 	var hasBody bool
 	var hasFormData bool
-	for _, paramInfo := range paramInfos {
+	for _, paramInfo := range mux.paramInfos {
 		switch paramInfo.In {
 		case "formData":
 			if hasBody {
-				panic("[Thinkgo-checkBodyParamConflicts] handler struct tags of `in(formData)` and `in(body)` can not exist at the same time:\nURL path: " + path)
+				errStr := "[Thinkgo-checkBodyParamConflicts] handler struct tags of `in(formData)` and `in(body)` can not exist at the same time:\nURL path: " + mux.path
+				mux.frame.Log().Critical(errStr)
+				panic(errStr)
 			}
 			hasFormData = true
 		case "body":
 			if hasFormData {
-				panic("[Thinkgo-checkBodyParamConflicts] handler struct tags of `in(formData)` and `in(body)` can not exist at the same time:\nURL path: " + path)
+				errStr := "[Thinkgo-checkBodyParamConflicts] handler struct tags of `in(formData)` and `in(body)` can not exist at the same time:\nURL path: " + mux.path
+				mux.frame.Log().Critical(errStr)
+				panic(errStr)
 			}
 			if hasBody {
-				panic("[Thinkgo-checkBodyParamConflicts] there should not be more than one handler struct tag `in(body)`:\nURL path: " + path)
+				errStr := "[Thinkgo-checkBodyParamConflicts] there should not be more than one handler struct tag `in(body)`:\nURL path: " + mux.path
+				mux.frame.Log().Critical(errStr)
+				panic(errStr)
 			}
 			hasBody = true
 		}

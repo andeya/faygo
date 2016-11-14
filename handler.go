@@ -111,7 +111,7 @@ func IsHandlerWithoutPath(handler Handler) bool {
 }
 
 // Create a `*handlerStruct`.
-func newHandlerStruct(structPointer APIHandler, paramMapping apiware.ParamNameFunc) *handlerStruct {
+func newHandlerStruct(structPointer APIHandler, paramMapping apiware.ParamNameFunc) (*handlerStruct, error) {
 	// The default is json format decoding
 	var bodyDecodeFunc apiware.BodyDecodeFunc
 	if h, ok := structPointer.(APIHandlerWithBody); ok {
@@ -120,7 +120,7 @@ func newHandlerStruct(structPointer APIHandler, paramMapping apiware.ParamNameFu
 
 	paramsAPI, err := apiware.NewParamsAPI(structPointer, paramMapping, bodyDecodeFunc)
 	if err != nil {
-		panic("[Thinkgo-newHandlerStruct] " + err.Error())
+		return nil, err
 	}
 
 	_, paramValues := paramsAPI.NewReceiver()
@@ -133,7 +133,7 @@ func newHandlerStruct(structPointer APIHandler, paramMapping apiware.ParamNameFu
 		paramsAPI:  paramsAPI,
 		paramTypes: paramTypes,
 		handler:    structPointer,
-	}
+	}, nil
 }
 
 // Create a new `*handlerStruct` by itself.

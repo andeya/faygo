@@ -26,7 +26,6 @@ import (
 	"fmt"
 	"html/template"
 	"io"
-	"log"
 	"mime"
 	"net"
 	"net/http"
@@ -84,7 +83,7 @@ func (resp *Response) Header() http.Header {
 // send error codes.
 func (resp *Response) WriteHeader(status int) {
 	if resp.committed {
-		log.Print("multiple response.WriteHeader calls")
+		resp.context.Log().Warning("multiple response.WriteHeader calls")
 		return
 	}
 	resp.status = status
