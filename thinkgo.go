@@ -161,29 +161,55 @@ func (frame *Framework) Version() string {
 	return frame.version
 }
 
+func (frame *Framework) NameWithVersion() string {
+	if len(frame.version) == 0 {
+		return frame.name
+	}
+	return frame.name + "_" + frame.version
+}
+
 // Start web service.
 func Run() {
 	defaultFramework.Run()
 }
 
+// Make sure that the initialization logs for multiple applications are printed in sequence
+var mutexForRun sync.Mutex
+
 // Start web service.
 func (frame *Framework) Run() {
-	bannerOnce.Do(func() { fmt.Println(banner[1:]) })
+	// Make sure that the initialization logs for multiple applications are printed in sequence
+	mutexForRun.Lock()
+
 	frame.build()
 	var err error
+	var protocol = "HTTP"
 	switch frame.config.NetType {
 	case NETTYPE_NORMAL:
+		frame.syslog.Criticalf("[%s] listen and serve %s/HTTP2 on %v (model:%s)", frame.NameWithVersion(), protocol, frame.config.Addr, frame.config.RunMode)
+		mutexForRun.Unlock()
 		err = frame.listenAndServe()
 	case NETTYPE_TLS:
+		protocol = "HTTPS"
+		frame.syslog.Criticalf("[%s] listen and serve %s/HTTP2 on %v (model:%s)", frame.NameWithVersion(), protocol, frame.config.Addr, frame.config.RunMode)
+		mutexForRun.Unlock()
 		err = frame.listenAndServeTLS(frame.config.TLSCertFile, frame.config.TLSKeyFile)
 	case NETTYPE_LETSENCRYPT:
+		protocol = "HTTPS"
+		frame.syslog.Criticalf("[%s] listen and serve %s/HTTP2 on %v (model:%s|pid:%d)", frame.NameWithVersion(), protocol, frame.config.Addr, frame.config.RunMode, os.Getpid())
+		mutexForRun.Unlock()
 		err = frame.listenAndServeLETSENCRYPT(frame.config.LetsencryptFile)
 	case NETTYPE_UNIX:
+		frame.syslog.Criticalf("[%s] listen and serve %s/HTTP2 on %v (model:%s|pid:%d)", frame.NameWithVersion(), protocol, frame.config.Addr, frame.config.RunMode, os.Getpid())
+		mutexForRun.Unlock()
 		err = frame.listenAndServeUNIX(frame.config.UNIXFileMode)
 	}
 	if err != nil {
+		frame.syslog.Critical(err)
+		mutexForRun.Unlock()
 		panic(err)
 	}
+	mutexForRun.Unlock()
 }
 
 // listenAndServe listens on the TCP network address and then

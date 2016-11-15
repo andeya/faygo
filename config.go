@@ -291,6 +291,18 @@ func newConfig(filename string, addrs ...string) Config {
 	return background
 }
 
+func syncConfigToFile(filename string, config *Config) error {
+	cfg, err := ini.LooseLoad(filename)
+	if err != nil {
+		return err
+	}
+	err = cfg.ReflectFrom(&config)
+	if err != nil {
+		return err
+	}
+	return cfg.SaveTo(filename)
+}
+
 func (conf *APIdocConfig) Comb() {
 	ipPrefixMap := map[string]bool{}
 	for _, ipPrefix := range conf.PrefixList {
