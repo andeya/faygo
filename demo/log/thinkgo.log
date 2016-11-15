@@ -1,0 +1,20 @@
+[2016/11/15T11:33:00.283+08:00] [SYS] APIdoc's URL path is '/apidoc' [check direct ip for filter] <defaultapp>
+[2016/11/15T11:33:00.291+08:00] [SYS]     GET | /apidoc/*filepath              <defaultapp>
+[2016/11/15T11:33:00.297+08:00] [SYS]     GET | /home/test/:id                 <defaultapp>
+[2016/11/15T11:33:00.301+08:00] [SYS]    POST | /home/test/:id                 <defaultapp>
+[2016/11/15T11:33:00.307+08:00] [SYS]     GET | /public/*filepath              <defaultapp>
+[2016/11/15T11:33:00.311+08:00] [SYS]     GET | /public2/*filepath             <defaultapp>
+[2016/11/15T11:33:00.317+08:00] [SYS]     GET | /static/*filepath              <defaultapp>
+[2016/11/15T11:33:00.322+08:00] [SYS]     GET | /swagger.json                  <defaultapp>
+[2016/11/15T11:33:00.326+08:00] [SYS]     GET | /upload/*filepath              <defaultapp>
+[2016/11/15T11:33:00.33+08:00] [SYS] [defaultapp] listen and serve HTTP/HTTP2 on 0.0.0.0:8080 (model:dev) <defaultapp>
+[2016/11/15T11:33:00.335+08:00] [SYS] APIdoc's URL path is '/apidoc' [check direct ip for filter] <testapp_0.1>
+[2016/11/15T11:33:00.34+08:00] [SYS]     GET | /apidoc/*filepath              <testapp_0.1>
+[2016/11/15T11:33:00.344+08:00] [SYS]     GET | /home/test/:id                 <testapp_0.1>
+[2016/11/15T11:33:00.348+08:00] [SYS]    POST | /home/test/:id                 <testapp_0.1>
+[2016/11/15T11:33:00.352+08:00] [SYS]     GET | /public/*filepath              <testapp_0.1>
+[2016/11/15T11:33:00.358+08:00] [SYS]     GET | /public2/*filepath             <testapp_0.1>
+[2016/11/15T11:33:00.364+08:00] [SYS]     GET | /static/*filepath              <testapp_0.1>
+[2016/11/15T11:33:00.371+08:00] [SYS]     GET | /swagger.json                  <testapp_0.1>
+[2016/11/15T11:33:00.382+08:00] [SYS]     GET | /upload/*filepath              <testapp_0.1>
+[2016/11/15T11:33:00.388+08:00] [SYS] [testapp_0.1] listen and serve HTTP/HTTP2 on 0.0.0.0:8081 (model:dev) <testapp_0.1>

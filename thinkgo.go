@@ -118,6 +118,8 @@ var (
 
 	initOnce   = new(sync.Once)
 	bannerOnce = new(sync.Once)
+	// Make sure that the initialization logs for multiple applications are printed in sequence
+	mutexForRun sync.Mutex
 )
 
 // Initializes the name and version of the default application,
@@ -173,11 +175,10 @@ func Run() {
 	defaultFramework.Run()
 }
 
-// Make sure that the initialization logs for multiple applications are printed in sequence
-var mutexForRun sync.Mutex
-
 // Start web service.
 func (frame *Framework) Run() {
+	bannerOnce.Do(func() { fmt.Println(banner[1:]) })
+
 	// Make sure that the initialization logs for multiple applications are printed in sequence
 	mutexForRun.Lock()
 
