@@ -177,7 +177,10 @@ func Run() {
 
 // Start web service.
 func (frame *Framework) Run() {
-	bannerOnce.Do(func() { fmt.Println(banner[1:]) })
+	bannerOnce.Do(func() {
+		fmt.Println(banner[1:])
+		globalSysLogger.Criticalf("The PID of the current process is %d", os.Getpid())
+	})
 
 	// Make sure that the initialization logs for multiple applications are printed in sequence
 	mutexForRun.Lock()
