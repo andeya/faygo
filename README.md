@@ -1,5 +1,7 @@
 # Thinkgo    [![GoDoc](https://godoc.org/github.com/tsuna/gohbase?status.png)](https://godoc.org/github.com/henrylee2cn/thinkgo)
 
+![Lessgo Favicon](https://github.com/henrylee2cn/thinkgo/raw/master/doc/thinkgo_96x96.png)
+
 # 概述
 Thinkgo目前进行了全面重构，是一款面向Handler接口开发、智能参数映射与校验、自动化API文档的Go语言web框架。
 
@@ -19,7 +21,7 @@ go get github.com/henrylee2cn/thinkgo
 
 Go Version ≥1.6
 
-## 最新功能特性
+# 最新功能特性
 
 - 面向Handler接口开发（func or struct），中间件与操作完全等同可任意拼接路由操作链
 - 支持用struct Handler在Tag标签定义请求参数信息及其校验信息
