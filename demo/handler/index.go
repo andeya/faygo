@@ -23,15 +23,13 @@ var once sync.Once
 
 func (i *Index) Serve(ctx *thinkgo.Context) error {
 	// name, id := ctx.GetSession("name"), ctx.GetSession("id")
-	// once.Do(func() {
-	// 	println("SetSession...")
-	// 	ctx.SetSession("name", "henry")
-	// 	ctx.SetSession("id", 123)
-	// })
-
 	once.Do(func() {
+		println("SetSession...")
+		ctx.SetSession("name", "henry")
+		ctx.SetSession("id", 123)
 		ctx.SetCookie("thinkgo", "henrylee")
 	})
+
 	return ctx.JSON(200, i)
 	// return ctx.String(200, "name: %v\nid: %d", name, id)
 }

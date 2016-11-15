@@ -215,7 +215,7 @@ func newConfig(filename string, addrs ...string) Config {
 		},
 		Cache: CacheConfig{
 			Enable: false,
-			SizeMB: 1,
+			SizeMB: 32,
 			Expire: 60,
 		},
 		XSRF: XSRFConfig{
