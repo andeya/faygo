@@ -29,7 +29,7 @@ var (
 		Color:  true,
 	}
 	fileBackend = func() *logging.FileBackend {
-		fileBackend, err := logging.NewDefaultFileBackend(LOG_DIR + "/thinkgo.log")
+		fileBackend, err := logging.NewDefaultFileBackend(Global.logDir + "thinkgo.log")
 		if err != nil {
 			panic(err)
 		}

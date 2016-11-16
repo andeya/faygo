@@ -340,12 +340,12 @@ func (ctx *Context) NoContent(status int) {
 
 // Send error message and stop handler chain.
 func (ctx *Context) Error(status int, errStr string) {
-	ctx.frame.errorFunc(ctx, errStr, status)
+	Global.errorFunc(ctx, errStr, status)
 	ctx.Stop()
 }
 
-// Send writes the data to the connection as part of an HTTP reply.
-func (ctx *Context) Send(status int, content []byte) error {
+// Bytes writes the data bytes to the connection as part of an HTTP reply.
+func (ctx *Context) Bytes(status int, content []byte) error {
 	if ctx.W.committed {
 		return errors.New("multiple response.WriteHeader calls")
 	}
@@ -373,9 +373,9 @@ func (ctx *Context) Send(status int, content []byte) error {
 func (ctx *Context) String(status int, format string, s ...interface{}) error {
 	ctx.W.Header().Set(HeaderContentType, MIMETextPlainCharsetUTF8)
 	if len(s) == 0 {
-		return ctx.Send(status, []byte(format))
+		return ctx.Bytes(status, []byte(format))
 	}
-	return ctx.Send(status, []byte(fmt.Sprintf(format, s...)))
+	return ctx.Bytes(status, []byte(fmt.Sprintf(format, s...)))
 }
 
 // HTML sends an HTTP response with status code.
@@ -383,7 +383,7 @@ func (ctx *Context) HTML(status int, html string) error {
 	x := (*[2]uintptr)(unsafe.Pointer(&html))
 	h := [3]uintptr{x[0], x[1], x[1]}
 	ctx.W.Header().Set(HeaderContentType, MIMETextHTMLCharsetUTF8)
-	return ctx.Send(status, *(*[]byte)(unsafe.Pointer(&h)))
+	return ctx.Bytes(status, *(*[]byte)(unsafe.Pointer(&h)))
 }
 
 // JSON sends a JSON response with status code.
@@ -406,7 +406,7 @@ func (ctx *Context) JSON(status int, data interface{}) error {
 // JSONBlob sends a JSON blob response with status code.
 func (ctx *Context) JSONBlob(status int, b []byte) error {
 	ctx.W.Header().Set(HeaderContentType, MIMEApplicationJSONCharsetUTF8)
-	return ctx.Send(status, b)
+	return ctx.Bytes(status, b)
 }
 
 // JSONP sends a JSONP response with status code. It uses `callback` to construct
@@ -430,7 +430,7 @@ func (ctx *Context) JSONP(status int, callback string, data interface{}) error {
 	callbackContent.WriteString("(")
 	callbackContent.Write(b)
 	callbackContent.WriteString(");\r\n")
-	return ctx.Send(status, callbackContent.Bytes())
+	return ctx.Bytes(status, callbackContent.Bytes())
 }
 
 // XML sends an XML response with status code.
@@ -455,7 +455,7 @@ func (ctx *Context) XMLBlob(status int, b []byte) error {
 	ctx.W.Header().Set(HeaderContentType, MIMEApplicationXMLCharsetUTF8)
 	content := bytes.NewBufferString(xml.Header)
 	content.Write(b)
-	return ctx.Send(status, content.Bytes())
+	return ctx.Bytes(status, content.Bytes())
 }
 
 // JSONOrXML serve Xml OR Json, depending on the value of the Accept header
@@ -480,5 +480,15 @@ func (ctx *Context) File(file string, filename ...string) {
 	ctx.W.Header().Set(HeaderExpires, "0")
 	ctx.W.Header().Set(HeaderCacheControl, "must-revalidate")
 	ctx.W.Header().Set(HeaderPragma, "public")
-	ctx.frame.fileServerManager.ServeFile(ctx, file)
+	Global.fsManager.ServeFile(ctx, file)
+}
+
+// Render renders a template with data and sends a text/html response with status code.
+func (ctx *Context) Render(status int, name string, data Map) error {
+	b, err := Global.pongo2Render.Render(name, (data))
+	if err != nil {
+		return err
+	}
+	ctx.W.Header().Set(HeaderContentType, MIMETextHTMLCharsetUTF8)
+	return ctx.Bytes(status, b)
 }

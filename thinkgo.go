@@ -25,12 +25,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/henrylee2cn/apiware"
-	"github.com/henrylee2cn/thinkgo/acceptencoder"
 	"github.com/henrylee2cn/thinkgo/logging"
 	"github.com/henrylee2cn/thinkgo/session"
 	"github.com/henrylee2cn/thinkgo/swagger"
-	"github.com/henrylee2cn/thinkgo/utils"
 	"github.com/henrylee2cn/thinkgo/utils/errors"
 	"github.com/rsc/letsencrypt"
 	// "github.com/facebookgo/grace/gracehttp"
@@ -57,20 +54,7 @@ type Framework struct {
 	*MuxAPI        // root muxAPI node
 	muxesForRouter MuxAPIs
 	server         *http.Server
-	// Error replies to the request with the specified error message and HTTP code.
-	// It does not otherwise end the request; the caller should ensure no further
-	// writes are done to response.
-	// The error message should be plain text.
-	errorFunc         ErrorFunc
-	fileServerManager *FileServerManager
-	once              sync.Once
-	// The following is only for the APIHandler
-	bindErrorFunc BindErrorFunc
-	// When the APIHander's parameter name (struct tag) is unsetted,
-	// it is mapped from the structure field name by default.
-	// If `paramMapping` is nil, use snake style.
-	// If the APIHander's parameter binding fails, the default handler is invoked
-	paramMapping   apiware.ParamNameFunc
+	once           sync.Once
 	sessionManager *session.Manager
 	syslog         *logging.Logger // for framework
 	bizlog         *logging.Logger // for user bissness
@@ -81,11 +65,10 @@ type Framework struct {
 func New(name string, version ...string) *Framework {
 	configFileName, ver := createConfigFilenameAndVersion(name, version...)
 	frame := &Framework{
-		name:              name,
-		version:           ver,
-		muxesForRouter:    nil,
-		config:            newConfig(configFileName),
-		fileServerManager: new(FileServerManager),
+		name:           name,
+		version:        ver,
+		muxesForRouter: nil,
+		config:         newConfig(configFileName),
 	}
 	frame.initSysLogger()
 	frame.initBizLogger()
@@ -97,24 +80,6 @@ func New(name string, version ...string) *Framework {
 var (
 	defaultName      = "myapp"
 	defaultFramework = New(defaultName)
-	defaultErrorFunc = func(ctx *Context, errStr string, status int) {
-		statusText := http.StatusText(status)
-		if len(errStr) > 0 {
-			errStr = `<br><p><b style="color:red;">[ERROR]</b> <pre>` + errStr + `</pre></p>`
-		}
-		ctx.W.Header().Set(HeaderXContentTypeOptions, nosniff)
-		ctx.HTML(status, fmt.Sprintf("<html>\n"+
-			"<head><title>%d %s</title></head>\n"+
-			"<body bgcolor=\"white\">\n"+
-			"<center><h1>%d %s</h1></center>\n"+
-			"<hr>\n<center>thinkgo/%s</center>\n%s\n</body>\n</html>\n",
-			status, statusText, status, statusText, VERSION, errStr),
-		)
-	}
-
-	defaultBindErrorFunc = func(ctx *Context, err error) {
-		ctx.String(http.StatusBadRequest, "%v", err)
-	}
 
 	initOnce   = new(sync.Once)
 	bannerOnce = new(sync.Once)
@@ -320,16 +285,6 @@ func (frame *Framework) build() {
 			frame.presetSystemMuxes()
 		}
 
-		if frame.errorFunc == nil {
-			frame.errorFunc = defaultErrorFunc
-		}
-		if frame.bindErrorFunc == nil {
-			frame.bindErrorFunc = defaultBindErrorFunc
-		}
-		if frame.paramMapping == nil {
-			frame.paramMapping = utils.SnakeString
-		}
-
 		// build router
 		var router = &Router{
 			RedirectTrailingSlash:  frame.config.Router.RedirectTrailingSlash,
@@ -360,53 +315,9 @@ func (frame *Framework) build() {
 			WriteTimeout: frame.config.WriteTimeout,
 		}
 
-		// init file cache
-		acceptencoder.InitGzip(frame.config.Gzip.MinLength, frame.config.Gzip.CompressLevel, frame.config.Gzip.Methods)
-		*frame.fileServerManager = *newFileServerManager(
-			frame.config.Cache.SizeMB*1024*1024,
-			frame.config.Cache.Expire,
-			frame.config.Cache.Enable,
-			frame.config.Gzip.Enable,
-			frame.errorFunc,
-		)
-
 		// register session
 		frame.registerSession()
 	})
-}
-
-// When an error occurs, the default handler is invoked.
-func SetErrorFunc(errorFunc ErrorFunc) {
-	defaultFramework.SetErrorFunc(errorFunc)
-}
-
-// When an error occurs, the default handler is invoked.
-func (frame *Framework) SetErrorFunc(errorFunc ErrorFunc) {
-	frame.errorFunc = errorFunc
-}
-
-// If the APIHander's parameter binding fails, the default handler is invoked.
-func SetBindErrorFunc(bindErrorFunc BindErrorFunc) {
-	defaultFramework.SetBindErrorFunc(bindErrorFunc)
-}
-
-// If the APIHander's parameter binding fails, the default handler is invoked.
-func (frame *Framework) SetBindErrorFunc(bindErrorFunc BindErrorFunc) {
-	frame.bindErrorFunc = bindErrorFunc
-}
-
-// When the APIHander's parameter name (struct tag) is unsetted,
-// it is mapped from the structure field name by default.
-// If `paramMapping` is nil, use snake style.
-func SetParamMapping(paramMapping apiware.ParamNameFunc) {
-	defaultFramework.SetParamMapping(paramMapping)
-}
-
-// When the APIHander's parameter name (struct tag) is unsetted,
-// it is mapped from the structure field name by default.
-// If `paramMapping` is nil, use snake style.
-func (frame *Framework) SetParamMapping(paramMapping apiware.ParamNameFunc) {
-	frame.paramMapping = paramMapping
 }
 
 // Default returns the default framework.
@@ -830,7 +741,7 @@ func (frame *Framework) makeHandle(handlerChain HandlerChain) Handle {
 // Create the handle to be called by the router
 func (frame *Framework) makeErrorHandler(status int) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		frame.errorFunc(newEmptyContext(frame, w, r), http.StatusText(status), status)
+		Global.errorFunc(newEmptyContext(frame, w, r), http.StatusText(status), status)
 	})
 }
 
@@ -845,14 +756,14 @@ func (frame *Framework) makePanicHandler() func(http.ResponseWriter, *http.Reque
 		stack = stack[start:length]
 		start = bytes.Index(stack, line) + 1
 		errStr := fmt.Sprintf("%v\n\n[STACK]\n%s", rcv, stack[start:])
-		frame.errorFunc(newEmptyContext(frame, w, r), errStr, http.StatusInternalServerError)
+		Global.errorFunc(newEmptyContext(frame, w, r), errStr, http.StatusInternalServerError)
 	}
 }
 
 func (frame *Framework) presetSystemMuxes() {
 	frame.Use(AccessLogWare())
-	frame.MuxAPI.NamedStatic("Directory for uploading files", "/upload/", UPLOAD_DIR)
-	frame.MuxAPI.NamedStatic("Directory for public static files", "/static/", STATIC_DIR)
+	frame.MuxAPI.NamedStatic("Directory for uploading files", "/upload/", Global.uploadDir)
+	frame.MuxAPI.NamedStatic("Directory for public static files", "/static/", Global.staticDir)
 }
 
 func (frame *Framework) registerSession() {

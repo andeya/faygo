@@ -11,7 +11,8 @@ func init() {
 	// Register the route in a tree style
 	thinkgo.Route(
 		thinkgo.NewGroup("home",
-			thinkgo.NewNamedAPI("test", "GETPOST", "test/:id", &handler.Index{
+			thinkgo.NewNamedAPI("test", "GET", "render", &handler.Render{}),
+			thinkgo.NewNamedAPI("test", "GET POST", "test/:id", &handler.Index{
 				Paragraph: []string{"abc"},
 				Returns: thinkgo.Returns{{
 					Code:        200,

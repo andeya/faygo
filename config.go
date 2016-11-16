@@ -26,6 +26,10 @@ import (
 )
 
 type (
+	GlobalConfig struct {
+		Cache CacheConfig `ini:"cache"`
+		Gzip  GzipConfig  `ini:"gzip"`
+	}
 	Config struct {
 		RunMode         string      `ini:"run_mode"`         // run mode: dev | prod
 		NetType         string      `ini:"net_type"`         // network type: normal | tls | letsencrypt | unix
@@ -48,8 +52,6 @@ type (
 		MultipartMaxMemoryMB int64         `ini:"multipart_maxmemory_mb"`
 		multipartMaxMemory   int64         `ini:"-"`
 		Router               RouterConfig  `ini:"router"`
-		Gzip                 GzipConfig    `ini:"gzip"`
-		Cache                CacheConfig   `ini:"cache"`
 		XSRF                 XSRFConfig    `ini:"xsrf"`
 		Session              SessionConfig `ini:"session"`
 		Log                  LogConfig     `ini:"log"`
@@ -157,35 +159,53 @@ const (
 	defaultMultipartMaxMemory   = 32 * MB // 32 MB
 	defaultMultipartMaxMemoryMB = 32
 	defaultPort                 = 8080
+
 	// The path for the configuration files
-	CONFIG_DIR = "./config"
-	// The path for the log files
-	LOG_DIR = "./log"
-	// The default path for the upload files
-	defaultUploadDir = "./upload"
-	// The default path for the static files
-	defaultStaticDir = "./static"
+	CONFIG_DIR = "./config/"
+	// global config file name
+	GLOBAL_CONFIG_FILE = "__global___.ini"
 )
 
 var (
 	appCount uint32
-	// The path for the upload files
-	UPLOAD_DIR = defaultUploadDir
-	// The path for the static files
-	STATIC_DIR = defaultStaticDir
 )
 
-// SetUploadDir upload folder path
-// note: it should be called before Run()
-func SetUploadDir(dir string) {
-	UPLOAD_DIR = dir
-}
+// global config
+var globalConfig = func() GlobalConfig {
+	var background = GlobalConfig{
+		Cache: CacheConfig{
+			Enable: false,
+			SizeMB: 32,
+			Expire: 60,
+		},
+		Gzip: GzipConfig{
+			Enable:        false,
+			MinLength:     20,
+			CompressLevel: 1,
+			Methods:       []string{"GET"},
+		},
+	}
+	filename := CONFIG_DIR + GLOBAL_CONFIG_FILE
+	os.MkdirAll(filepath.Dir(filename), 0777)
 
-// SetStaticDir set static folder path
-// note: it should be called before Run()
-func SetStaticDir(dir string) {
-	STATIC_DIR = dir
-}
+	cfg, err := ini.LooseLoad(filename)
+	if err != nil {
+		panic(err)
+	}
+	err = cfg.MapTo(&background)
+	if err != nil {
+		panic(err)
+	}
+	err = cfg.ReflectFrom(&background)
+	if err != nil {
+		panic(err)
+	}
+	err = cfg.SaveTo(filename)
+	if err != nil {
+		panic(err)
+	}
+	return background
+}()
 
 func newConfig(filename string, addrs ...string) Config {
 	var addr string
@@ -206,17 +226,6 @@ func newConfig(filename string, addrs ...string) Config {
 			RedirectFixedPath:      true,
 			HandleMethodNotAllowed: true,
 			HandleOPTIONS:          true,
-		},
-		Gzip: GzipConfig{
-			Enable:        false,
-			MinLength:     20,
-			CompressLevel: 1,
-			Methods:       []string{"GET"},
-		},
-		Cache: CacheConfig{
-			Enable: false,
-			SizeMB: 32,
-			Expire: 60,
 		},
 		XSRF: XSRFConfig{
 			Enable: false,

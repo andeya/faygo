@@ -92,6 +92,8 @@ response:
 
 # 配置文件说明
 
+- 应用的各实例均有单独一份配置，其文件名格式 `config/{appname}[_{version}].ini`，配置详情：
+
 ```
 run_mode               = dev                 # 运行模式 dev | prod
 net_type               = normal              # Server类型 normal | tls | letsencrypt | unix
@@ -109,17 +111,6 @@ redirect_trailing_slash   = true             # 当前请求含`/`后缀的URL如
 redirect_fixed_path       = true             # 自动修复URL，如`/FOO` `/..//Foo`均被跳转至`/foo`（依赖redirect_trailing_slash=true）
 handle_method_not_allowed = true             # 若开启，当前请求方法不存在时返回405，否则返回404
 handle_options            = true             # 若开启，自动应答OPTIONS类请求，可在Thinkgo中设置默认Handler
-
-[gzip]                                       # gzip压缩配置区
-enable         = false                       # 是否开启
-min_length     = 20                          # 进行压缩的最小内容长度
-compress_level = 1                           # 非文件类响应Body的压缩水平（0-9），注意文件压缩始终为最优压缩比（9）
-methods        = GET                         # 允许压缩的请求方法，为空时默认为GET
-
-[cache]                                      # 文件内存缓存配置区
-enable  = false                              # 是否开启
-size_mb = 32                                 # 允许缓存使用的最大内存（单位MB），为0时系统自动设置为512KB
-expire  = 60                                 # 缓存最大时长
 
 [xsrf]                                       # XSRF跨站请求伪造过滤配置区
 enable = false                               # 是否开启
@@ -156,6 +147,21 @@ email       =                                # 联系人邮箱
 terms_url   =                                # 服务条款URL
 license     =                                # 协议类型
 license_url =                                # 协议内容URL
+```
+
+- 应用只有一份全局配置，文件名为 `config/__global__.ini`，配置详情：
+
+```
+[cache]                                      # 文件内存缓存配置区
+enable  = false                              # 是否开启
+size_mb = 32                                 # 允许缓存使用的最大内存（单位MB），为0时系统自动设置为512KB
+expire  = 60                                 # 缓存最大时长
+
+[gzip]                                       # gzip压缩配置区
+enable         = false                       # 是否开启
+min_length     = 20                          # 进行压缩的最小内容长度
+compress_level = 1                           # 非文件类响应Body的压缩水平（0-9），注意文件压缩始终为最优压缩比（9）
+methods        = GET                         # 允许压缩的请求方法，为空时默认为GET
 ```
 
 # Handler结构体字段标签说明

@@ -42,6 +42,7 @@ import (
 
 const indexPage = "/index.html"
 
+// File cache system manager
 type FileServerManager struct {
 	files             map[string]CacheFile
 	cache             *freecache.Cache
@@ -58,7 +59,7 @@ type FileServerManager struct {
 // `debug.SetGCPercent()`, set it to a much smaller value
 // to limit the memory consumption and GC pause time.
 // expireSeconds <= 0 means no expire.
-func newFileServerManager(cacheSize int64, fileExpireSeconds int, enableCache bool, enableGzip bool, errorFunc ErrorFunc) *FileServerManager {
+func newFileServerManager(cacheSize int64, fileExpireSeconds int, enableCache bool, enableGzip bool) *FileServerManager {
 	manager := new(FileServerManager)
 	manager.fileExpireSeconds = fileExpireSeconds
 	manager.cache = freecache.NewCache(int(cacheSize))
@@ -69,8 +70,36 @@ func newFileServerManager(cacheSize int64, fileExpireSeconds int, enableCache bo
 	}
 	manager.enableCache = enableCache
 	manager.enableGzip = enableGzip
-	manager.errorFunc = errorFunc
 	return manager
+}
+
+// Gets or stores the cache file without compression.
+func (c *FileServerManager) OpenFile(name string) (http.File, error) {
+	f, err := c.Get(name)
+	if err == nil {
+		return f, nil
+	}
+	f, err = os.Open(name)
+	if err != nil {
+		return nil, err
+	}
+	fileInfo, err := f.Stat()
+	if err != nil || fileInfo.IsDir() {
+		return f, err
+	}
+	// If the name is larger than 65535 or body is larger than 1/1024 of the cache size,
+	// the entry will not be written to the cache. expireSeconds <= 0 means no expire,
+	// but it can be evicted when cache is full.
+	if fileInfo.Size() <= c.maxSizeOfSingle {
+		var content []byte
+		content, err = ioutil.ReadAll(f)
+		defer f.Close()
+		if err != nil {
+			return nil, err
+		}
+		return c.Set(name, content, fileInfo, "")
+	}
+	return f, err
 }
 
 func (c *FileServerManager) Open(ctx *Context, name string, fs http.FileSystem) (http.File, error) {
@@ -89,29 +118,26 @@ func (c *FileServerManager) Open(ctx *Context, name string, fs http.FileSystem) 
 	if err != nil || fileInfo.IsDir() {
 		return f, err
 	}
+	var content []byte
+	var encoding string
+	if c.enableGzip {
+		content, encoding, err = readWithCompress(ctx, f)
+		defer f.Close()
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		content, err = ioutil.ReadAll(f)
+		defer f.Close()
+		if err != nil {
+			return nil, err
+		}
+	}
 	// If the name is larger than 65535 or body is larger than 1/1024 of the cache size,
 	// the entry will not be written to the cache. expireSeconds <= 0 means no expire,
 	// but it can be evicted when cache is full.
-	if fileInfo.Size() <= c.maxSizeOfSingle {
-		var content []byte
-		var encoding string
-		if c.enableGzip {
-			content, encoding, err = readWithCompress(ctx, f)
-			defer f.Close()
-			if err != nil {
-				return nil, err
-			}
-		} else {
-			content, err = ioutil.ReadAll(f)
-			defer f.Close()
-			if err != nil {
-				return nil, err
-			}
-		}
+	if int64(len(content)) <= c.maxSizeOfSingle {
 		return c.Set(name, content, fileInfo, encoding)
-	}
-	if c.enableGzip {
-		return compressFile(ctx, f)
 	}
 	return f, err
 }
@@ -175,7 +201,7 @@ func (c *FileServerManager) dirList(ctx *Context, f http.File) {
 		// TODO: log err.Error() to the Server.ErrorLog, once it's possible
 		// for a handler to get at its Server via the *Context. See
 		// Issue 12438.
-		c.errorFunc(ctx, "Error reading directory", http.StatusInternalServerError)
+		Global.errorFunc(ctx, "Error reading directory", http.StatusInternalServerError)
 		return
 	}
 	sort.Sort(byName(dirs))
@@ -282,7 +308,7 @@ func (c *FileServerManager) serveContent(ctx *Context, name string, modtime time
 			ctype = http.DetectContentType(buf[:n])
 			_, err := content.Seek(0, io.SeekStart) // rewind to output whole file
 			if err != nil {
-				c.errorFunc(ctx, "seeker can't seek", http.StatusInternalServerError)
+				Global.errorFunc(ctx, "seeker can't seek", http.StatusInternalServerError)
 				return
 			}
 		}
@@ -293,7 +319,7 @@ func (c *FileServerManager) serveContent(ctx *Context, name string, modtime time
 
 	size, err := sizeFunc()
 	if err != nil {
-		c.errorFunc(ctx, err.Error(), http.StatusInternalServerError)
+		Global.errorFunc(ctx, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
@@ -303,7 +329,7 @@ func (c *FileServerManager) serveContent(ctx *Context, name string, modtime time
 	if size >= 0 {
 		ranges, err := parseRange(rangeReq, size)
 		if err != nil {
-			c.errorFunc(ctx, err.Error(), http.StatusRequestedRangeNotSatisfiable)
+			Global.errorFunc(ctx, err.Error(), http.StatusRequestedRangeNotSatisfiable)
 			return
 		}
 		if sumRangesSize(ranges) > size {
@@ -328,7 +354,7 @@ func (c *FileServerManager) serveContent(ctx *Context, name string, modtime time
 			// be sent using the multipart/byteranges media type."
 			ra := ranges[0]
 			if _, err := content.Seek(ra.start, io.SeekStart); err != nil {
-				c.errorFunc(ctx, err.Error(), http.StatusRequestedRangeNotSatisfiable)
+				Global.errorFunc(ctx, err.Error(), http.StatusRequestedRangeNotSatisfiable)
 				return
 			}
 			sendSize = ra.length
@@ -484,7 +510,7 @@ func (c *FileServerManager) serveFile(ctx *Context, fs http.FileSystem, name str
 	}
 	if err != nil {
 		msg, code := toHTTPError(err)
-		c.errorFunc(ctx, msg, code)
+		Global.errorFunc(ctx, msg, code)
 		return
 	}
 	defer f.Close()
@@ -492,7 +518,7 @@ func (c *FileServerManager) serveFile(ctx *Context, fs http.FileSystem, name str
 	d, err := f.Stat()
 	if err != nil {
 		msg, code := toHTTPError(err)
-		c.errorFunc(ctx, msg, code)
+		Global.errorFunc(ctx, msg, code)
 		return
 	}
 
@@ -632,7 +658,7 @@ func (c *FileServerManager) ServeFile(ctx *Context, name string) {
 		// here and ".." may not be wanted.
 		// Note that name might not contain "..", for example if code (still
 		// incorrectly) used filepath.Join(myDir, ctx.R.URL.Path).
-		c.errorFunc(ctx, "invalid URL path", http.StatusBadRequest)
+		Global.errorFunc(ctx, "invalid URL path", http.StatusBadRequest)
 		return
 	}
 	dir, file := filepath.Split(name)

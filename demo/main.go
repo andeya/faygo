@@ -6,8 +6,8 @@ import (
 )
 
 func main() {
-	thinkgo.SetUploadDir("./upload/0")
-	thinkgo.SetStaticDir("./static/0")
+	thinkgo.Global.SetUpload("./upload/0")
+	thinkgo.Global.SetStatic("./static/0")
 	thinkgo.Init("defaultapp")
 	go thinkgo.Run()
 

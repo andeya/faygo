@@ -473,9 +473,9 @@ func (ctx *Context) FormFile(key string) (multipart.File, *multipart.FileHeader,
 	return ctx.R.FormFile(key)
 }
 
-// SaveFile saves the file *Context.FormFile to UPLOAD_DIR,
+// SaveFile saves the file *Context.FormFile to Global.uploadDir,
 // character "?" indicates that the original file name.
-// for example newfname="a/?" -> UPLOAD_DIR/a/fname.
+// for example newfname="a/?" -> Global.uploadDir/a/fname.
 func (ctx *Context) SaveFile(key string, cover bool, newfname ...string) (fileUrl string, size int64, err error) {
 	f, fh, err := ctx.R.FormFile(key)
 	if err != nil {
@@ -491,16 +491,16 @@ func (ctx *Context) SaveFile(key string, cover bool, newfname ...string) (fileUr
 	// Sets the full file name
 	var fullname string
 	if len(newfname) == 0 {
-		fullname = filepath.Join(UPLOAD_DIR, fh.Filename)
+		fullname = filepath.Join(Global.uploadDir, fh.Filename)
 	} else {
 		if strings.Contains(newfname[0], "?") {
-			fullname = filepath.Join(UPLOAD_DIR, strings.Replace(newfname[0], "?", fh.Filename, -1))
+			fullname = filepath.Join(Global.uploadDir, strings.Replace(newfname[0], "?", fh.Filename, -1))
 		} else {
 			fname := strings.TrimRight(newfname[0], ".")
 			if filepath.Ext(fname) == "" {
-				fullname = filepath.Join(UPLOAD_DIR, fname+filepath.Ext(fh.Filename))
+				fullname = filepath.Join(Global.uploadDir, fname+filepath.Ext(fh.Filename))
 			} else {
-				fullname = filepath.Join(UPLOAD_DIR, fname)
+				fullname = filepath.Join(Global.uploadDir, fname)
 			}
 		}
 	}
