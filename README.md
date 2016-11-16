@@ -3,7 +3,7 @@
 ![Lessgo Favicon](https://github.com/henrylee2cn/thinkgo/raw/master/doc/thinkgo_96x96.png)
 
 # 概述
-Thinkgo目前进行了全面重构，它是一款面向Handler接口开发，支持智能参数映射与校验、支持自动化API文档的Go语言web框架。
+Thinkgo以全新的架构实现，它面向Handler接口开发，支持智能参数映射与校验、支持自动化API文档的Go语言web框架。
 
 官方QQ群：Go-Web 编程 42730308    [![Go-Web 编程群](http://pub.idqqimg.com/wpa/images/group.png)](http://jq.qq.com/?_wv=1027&k=fzi4p1)
 
