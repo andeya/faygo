@@ -387,15 +387,15 @@ func (ctx *Context) HTML(status int, html string) error {
 }
 
 // JSON sends a JSON response with status code.
-func (ctx *Context) JSON(status int, data interface{}) error {
+func (ctx *Context) JSON(status int, data interface{}, isIndent ...bool) error {
 	var (
 		b   []byte
 		err error
 	)
-	if ctx.frame.config.RunMode == RUNMODE_PROD {
-		b, err = json.Marshal(data)
-	} else {
+	if len(isIndent) > 0 && isIndent[0] {
 		b, err = json.MarshalIndent(data, "", "  ")
+	} else {
+		b, err = json.Marshal(data)
 	}
 	if err != nil {
 		return err
@@ -411,15 +411,15 @@ func (ctx *Context) JSONBlob(status int, b []byte) error {
 
 // JSONP sends a JSONP response with status code. It uses `callback` to construct
 // the JSONP payload.
-func (ctx *Context) JSONP(status int, callback string, data interface{}) error {
+func (ctx *Context) JSONP(status int, callback string, data interface{}, isIndent ...bool) error {
 	var (
 		b   []byte
 		err error
 	)
-	if ctx.frame.config.RunMode == RUNMODE_PROD {
-		b, err = json.Marshal(data)
-	} else {
+	if len(isIndent) > 0 && isIndent[0] {
 		b, err = json.MarshalIndent(data, "", "  ")
+	} else {
+		b, err = json.Marshal(data)
 	}
 	if err != nil {
 		return err
@@ -434,15 +434,15 @@ func (ctx *Context) JSONP(status int, callback string, data interface{}) error {
 }
 
 // XML sends an XML response with status code.
-func (ctx *Context) XML(status int, data interface{}) error {
+func (ctx *Context) XML(status int, data interface{}, isIndent ...bool) error {
 	var (
 		b   []byte
 		err error
 	)
-	if ctx.frame.config.RunMode == RUNMODE_PROD {
-		b, err = xml.Marshal(data)
-	} else {
+	if len(isIndent) > 0 && isIndent[0] {
 		b, err = xml.MarshalIndent(data, "", "  ")
+	} else {
+		b, err = xml.Marshal(data)
 	}
 	if err != nil {
 		return err
@@ -459,11 +459,11 @@ func (ctx *Context) XMLBlob(status int, b []byte) error {
 }
 
 // JSONOrXML serve Xml OR Json, depending on the value of the Accept header
-func (ctx *Context) JSONOrXML(status int, data interface{}) error {
+func (ctx *Context) JSONOrXML(status int, data interface{}, isIndent ...bool) error {
 	if ctx.AcceptJSON() || !ctx.AcceptXML() {
-		return ctx.JSON(status, data)
+		return ctx.JSON(status, data, isIndent...)
 	}
-	return ctx.XML(status, data)
+	return ctx.XML(status, data, isIndent...)
 }
 
 // File forces response for download file.

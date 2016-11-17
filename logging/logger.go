@@ -224,6 +224,16 @@ func (l *Logger) Warningf(format string, args ...interface{}) {
 	l.log(WARNING, &format, args...)
 }
 
+// Warn is an alias for Warning.
+func (l *Logger) Warn(args ...interface{}) {
+	l.log(WARNING, nil, args...)
+}
+
+// Warnf is an alias for Warningf.
+func (l *Logger) Warnf(format string, args ...interface{}) {
+	l.log(WARNING, &format, args...)
+}
+
 // Notice logs a message using NOTICE as log level.
 func (l *Logger) Notice(args ...interface{}) {
 	l.log(NOTICE, nil, args...)
@@ -251,6 +261,16 @@ func (l *Logger) Debug(args ...interface{}) {
 
 // Debugf logs a message using DEBUG as log level.
 func (l *Logger) Debugf(format string, args ...interface{}) {
+	l.log(DEBUG, &format, args...)
+}
+
+// Print is an alias for Debug.
+func (l *Logger) Print(args ...interface{}) {
+	l.log(DEBUG, nil, args...)
+}
+
+// Printf is an alias for Debugf.
+func (l *Logger) Printf(format string, args ...interface{}) {
 	l.log(DEBUG, &format, args...)
 }
 

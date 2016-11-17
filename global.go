@@ -17,10 +17,12 @@ package thinkgo
 import (
 	"fmt"
 	"net/http"
+	"os"
 	"strings"
 
 	"github.com/henrylee2cn/apiware"
 	"github.com/henrylee2cn/thinkgo/acceptencoder"
+	"github.com/henrylee2cn/thinkgo/logging"
 	"github.com/henrylee2cn/thinkgo/utils"
 )
 
@@ -48,33 +50,38 @@ type GlobalSetting struct {
 	staticDir string
 	// The path for the log files
 	logDir string
+
+	syslog *logging.Logger
+	bizlog *logging.Logger
 }
 
+// global configuration and functions...
+var Global = func() *GlobalSetting {
+	global := &GlobalSetting{
+		config:        globalConfig,
+		errorFunc:     defaultErrorFunc,
+		bindErrorFunc: defaultBindErrorFunc,
+		paramMapping:  defaultParamMapping,
+		fsManager: newFileServerManager(
+			globalConfig.Cache.SizeMB*1024*1024,
+			globalConfig.Cache.Expire,
+			globalConfig.Cache.Enable,
+			globalConfig.Gzip.Enable,
+		),
+		uploadDir: defaultUploadDir,
+		staticDir: defaultStaticDir,
+		logDir:    defaultLogDir,
+	}
+	if globalConfig.Cache.Enable {
+		global.pongo2Render = newPongo2Render(global.fsManager.OpenFile)
+	} else {
+		global.pongo2Render = newPongo2Render(nil)
+	}
+	global.initLogger()
+	return global
+}()
+
 var (
-	// global configuration and functions...
-	Global = func() *GlobalSetting {
-		global := &GlobalSetting{
-			config:        globalConfig,
-			errorFunc:     defaultErrorFunc,
-			bindErrorFunc: defaultBindErrorFunc,
-			paramMapping:  defaultParamMapping,
-			fsManager: newFileServerManager(
-				globalConfig.Cache.SizeMB*1024*1024,
-				globalConfig.Cache.Expire,
-				globalConfig.Cache.Enable,
-				globalConfig.Gzip.Enable,
-			),
-			uploadDir: defaultUploadDir,
-			staticDir: defaultStaticDir,
-			logDir:    defaultLogDir,
-		}
-		if globalConfig.Cache.Enable {
-			global.pongo2Render = newPongo2Render(global.fsManager.OpenFile)
-		} else {
-			global.pongo2Render = newPongo2Render(nil)
-		}
-		return global
-	}()
 	defaultErrorFunc = func(ctx *Context, errStr string, status int) {
 		statusText := http.StatusText(status)
 		if len(errStr) > 0 {
@@ -102,6 +109,12 @@ var (
 )
 
 func init() {
+	fmt.Println(banner[1:])
+	Global.syslog.Criticalf("The PID of the current process is %d", os.Getpid())
+	if Global.config.warnMsg != "" {
+		Warning(Global.config.warnMsg)
+		Global.config.warnMsg = ""
+	}
 	// init file cache
 	acceptencoder.InitGzip(Global.config.Gzip.MinLength, Global.config.Gzip.CompressLevel, Global.config.Gzip.Methods)
 }

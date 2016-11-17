@@ -22,16 +22,18 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/go-ini/ini"
+	"github.com/henrylee2cn/thinkgo/ini"
 )
 
 type (
 	GlobalConfig struct {
-		Cache CacheConfig `ini:"cache"`
-		Gzip  GzipConfig  `ini:"gzip"`
+		Cache   CacheConfig `ini:"cache"`
+		Gzip    GzipConfig  `ini:"gzip"`
+		Log     LogConfig   `ini:"log"`
+		warnMsg string      `int:"-"`
 	}
 	Config struct {
-		RunMode         string      `ini:"run_mode"`         // run mode: dev | prod
+		// RunMode         string      `ini:"run_mode"`         // run mode: dev | prod
 		NetType         string      `ini:"net_type"`         // network type: normal | tls | letsencrypt | unix
 		Addr            string      `ini:"addr"`             // Service monitoring address
 		TLSCertFile     string      `ini:"tls_certfile"`     // for TLS
@@ -54,7 +56,6 @@ type (
 		Router               RouterConfig  `ini:"router"`
 		XSRF                 XSRFConfig    `ini:"xsrf"`
 		Session              SessionConfig `ini:"session"`
-		Log                  LogConfig     `ini:"log"`
 		APIdoc               APIdocConfig  `ini:"apidoc"`
 	}
 	RouterConfig struct {
@@ -149,8 +150,8 @@ type (
 )
 
 const (
-	RUNMODE_DEV                 = "dev"
-	RUNMODE_PROD                = "prod"
+	// RUNMODE_DEV                 = "dev"
+	// RUNMODE_PROD                = "prod"
 	NETTYPE_NORMAL              = "normal"
 	NETTYPE_TLS                 = "tls"
 	NETTYPE_LETSENCRYPT         = "letsencrypt"
@@ -184,6 +185,12 @@ var globalConfig = func() GlobalConfig {
 			CompressLevel: 1,
 			Methods:       []string{"GET"},
 		},
+		Log: LogConfig{
+			ConsoleEnable: true,
+			ConsoleLevel:  "debug",
+			FileEnable:    true,
+			FileLevel:     "debug",
+		},
 	}
 	filename := CONFIG_DIR + GLOBAL_CONFIG_FILE
 	os.MkdirAll(filepath.Dir(filename), 0777)
@@ -196,6 +203,14 @@ var globalConfig = func() GlobalConfig {
 	if err != nil {
 		panic(err)
 	}
+
+	{
+		if !(background.Log.ConsoleEnable || background.Log.FileEnable) {
+			background.Log.ConsoleEnable = true
+			background.warnMsg = "config: log::enable_console and log::enable_file can not be disabled at the same time, so automatically open console log."
+		}
+	}
+
 	err = cfg.ReflectFrom(&background)
 	if err != nil {
 		panic(err)
@@ -216,7 +231,7 @@ func newConfig(filename string, addrs ...string) Config {
 		atomic.AddUint32(&appCount, 1)
 	}
 	var background = Config{
-		RunMode:              RUNMODE_DEV,
+		// RunMode:              RUNMODE_DEV,
 		NetType:              "normal",
 		Addr:                 addr,
 		UNIXFileMode:         0666,
@@ -245,12 +260,6 @@ func newConfig(filename string, addrs ...string) Config {
 			NameInHttpHeader:      "Thinkgosessionid",
 			EnableSidInUrlQuery:   false, //	enable get the sessionId from Url Query params
 		},
-		Log: LogConfig{
-			ConsoleEnable: true,
-			ConsoleLevel:  "debug",
-			FileEnable:    true,
-			FileLevel:     "debug",
-		},
 		APIdoc: APIdocConfig{
 			Enable:  true,
 			Path:    "/apidoc",
@@ -275,18 +284,18 @@ func newConfig(filename string, addrs ...string) Config {
 	}
 
 	{
-		switch background.RunMode {
-		case RUNMODE_DEV, RUNMODE_PROD:
-		default:
-			panic("Please set a valid config item run_mode, refer to the following:\ndev | prod")
-		}
+		// switch background.RunMode {
+		// case RUNMODE_DEV, RUNMODE_PROD:
+		// default:
+		// 	panic("Please set a valid config item run_mode, refer to the following:\ndev | prod")
+		// }
 		switch background.NetType {
 		case NETTYPE_NORMAL, NETTYPE_TLS, NETTYPE_LETSENCRYPT, NETTYPE_UNIX:
 		default:
 			panic("Please set a valid config item net_type, refer to the following:\nnormal | tls | letsencrypt | unix")
 		}
-		background.APIdoc.Comb()
 		background.multipartMaxMemory = background.MultipartMaxMemoryMB * MB
+		background.APIdoc.Comb()
 	}
 
 	err = cfg.ReflectFrom(&background)

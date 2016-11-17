@@ -62,16 +62,18 @@ func (i *Index) Serve(ctx *thinkgo.Context) error {
 }
 
 func main() {
+  app := thinkgo.New("myapp", "0.1")
+
   // Register the route in a chain style
-  // thinkgo.GET("/index/:id", new(Index))
+  app.GET("/index/:id", new(Index))
 
   // Register the route in a tree style
-  thinkgo.Route(
-    thinkgo.NewGET("/index/:id", new(Index)),
-  )
+  // app.Route(
+  //   app.NewGET("/index/:id", new(Index)),
+  // )
 
   // Start the service
-  thinkgo.Run()
+  app.Run()
 }
 
 /*
@@ -130,12 +132,6 @@ enable_sid_in_header   = false               # 是否将session ID写入Header
 name_in_header         = Thinkgosessionid    # 将session ID写入Header时的头名称
 enable_sid_in_urlquery = false               # 是否将session ID写入url的query部分
 
-[log]                                        # 日志配置区
-console_enable = true                        # 是否启用控制台日志
-console_level  = debug                       # 控制台日志打印水平
-file_enable    = true                        # 是否启用文件日志
-file_level     = debug                       # 文件日志打印水平
-
 [apidoc]                                     # API文档
 enable      = true                           # 是否启用
 path        = /apidoc                        # 访问的URL路径
@@ -162,6 +158,12 @@ enable         = false                       # 是否开启
 min_length     = 20                          # 进行压缩的最小内容长度
 compress_level = 1                           # 非文件类响应Body的压缩水平（0-9），注意文件压缩始终为最优压缩比（9）
 methods        = GET                         # 允许压缩的请求方法，为空时默认为GET
+
+[log]                                        # 日志配置区
+console_enable = true                        # 是否启用控制台日志
+console_level  = debug                       # 控制台日志打印水平
+file_enable    = true                        # 是否启用文件日志
+file_level     = debug                       # 文件日志打印水平
 ```
 
 # Handler结构体字段标签说明

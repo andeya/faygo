@@ -7,12 +7,12 @@ import (
 	"github.com/henrylee2cn/thinkgo/demo/handler"
 )
 
-func init() {
+func Route1(frame *thinkgo.Framework) {
 	// Register the route in a tree style
-	thinkgo.Route(
-		thinkgo.NewGroup("home",
-			thinkgo.NewNamedAPI("test", "GET", "render", &handler.Render{}),
-			thinkgo.NewNamedAPI("test", "GET POST", "test/:id", &handler.Index{
+	frame.Route(
+		frame.NewGroup("home",
+			frame.NewNamedAPI("test", "GET", "render", &handler.Render{}),
+			frame.NewNamedAPI("test", "GET POST", "test/:id", &handler.Index{
 				Paragraph: []string{"abc"},
 				Returns: thinkgo.Returns{{
 					Code:        200,
@@ -24,12 +24,12 @@ func init() {
 				}},
 			}),
 		),
-		thinkgo.NewStaticFS("/public", http.Dir("./static/public")),
-		thinkgo.NewStatic("/public2", "./static/public"),
+		frame.NewStaticFS("/public", http.Dir("./static/public")),
+		frame.NewStatic("/public2", "./static/public"),
 	)
 }
 
-func Route(frame *thinkgo.Framework) {
+func Route2(frame *thinkgo.Framework) {
 	// Register the route in a chain style
 	home := frame.Group("home")
 	{

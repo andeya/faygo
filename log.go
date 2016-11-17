@@ -17,55 +17,154 @@ package thinkgo
 import (
 	"log"
 	"strings"
-	"sync"
 
 	"github.com/henrylee2cn/thinkgo/logging"
 	"github.com/henrylee2cn/thinkgo/logging/color"
 )
+
+// NewLog gets a global logger
+func NewLog() *logging.Logger {
+	newlog := *Global.bizlog
+	newlog.ExtraCalldepth--
+	return &newlog
+}
+
+// Fatal is equivalent to l.Critical(fmt.Sprint()) followed by a call to os.Exit(1).
+func Fatal(args ...interface{}) {
+	Global.bizlog.Fatal(args...)
+}
+
+// Fatalf is equivalent to l.Critical followed by a call to os.Exit(1).
+func Fatalf(format string, args ...interface{}) {
+	Global.bizlog.Fatalf(format, args...)
+}
+
+// Panic is equivalent to l.Critical(fmt.Sprint()) followed by a call to panic().
+func Panic(args ...interface{}) {
+	Global.bizlog.Panic(args...)
+}
+
+// Panicf is equivalent to l.Critical followed by a call to panic().
+func Panicf(format string, args ...interface{}) {
+	Global.bizlog.Panicf(format, args...)
+}
+
+// Critical logs a message using CRITICAL as log level.
+func Critical(args ...interface{}) {
+	Global.bizlog.Critical(args...)
+}
+
+// Criticalf logs a message using CRITICAL as log level.
+func Criticalf(format string, args ...interface{}) {
+	Global.bizlog.Criticalf(format, args...)
+}
+
+// Error logs a message using ERROR as log level.
+func Error(args ...interface{}) {
+	Global.bizlog.Error(args...)
+}
+
+// Errorf logs a message using ERROR as log level.
+func Errorf(format string, args ...interface{}) {
+	Global.bizlog.Errorf(format, args...)
+}
+
+// Warning logs a message using WARNING as log level.
+func Warning(args ...interface{}) {
+	Global.bizlog.Warning(args...)
+}
+
+// Warningf logs a message using WARNING as log level.
+func Warningf(format string, args ...interface{}) {
+	Global.bizlog.Warningf(format, args...)
+}
+
+// Notice logs a message using NOTICE as log level.
+func Notice(args ...interface{}) {
+	Global.bizlog.Notice(args...)
+}
+
+// Noticef logs a message using NOTICE as log level.
+func Noticef(format string, args ...interface{}) {
+	Global.bizlog.Noticef(format, args...)
+}
+
+// Info logs a message using INFO as log level.
+func Info(args ...interface{}) {
+	Global.bizlog.Info(args...)
+}
+
+// Infof logs a message using INFO as log level.
+func Infof(format string, args ...interface{}) {
+	Global.bizlog.Infof(format, args...)
+}
+
+// Debug logs a message using DEBUG as log level.
+func Debug(args ...interface{}) {
+	Global.bizlog.Debug(args...)
+}
+
+// Debugf logs a message using DEBUG as log level.
+func Debugf(format string, args ...interface{}) {
+	Global.bizlog.Debugf(format, args...)
+}
 
 var (
 	consoleLogBackend = &logging.LogBackend{
 		Logger: log.New(color.NewColorableStdout(), "", 0),
 		Color:  true,
 	}
+	fileBackend *logging.FileBackend
+)
+
+func (global *GlobalSetting) initLogger() {
 	fileBackend = func() *logging.FileBackend {
-		fileBackend, err := logging.NewDefaultFileBackend(Global.logDir + "thinkgo.log")
+		fileBackend, err := logging.NewDefaultFileBackend(global.logDir + "thinkgo.log")
 		if err != nil {
 			panic(err)
 		}
 		return fileBackend
 	}()
-	globalSysLogger     *logging.Logger
-	globalSysLoggerOnce sync.Once
-)
+	consoleFormat := logging.MustStringFormatter("[%{time:01/02 15:04:05}] %{message}")
+	consoleBackendLevel := logging.AddModuleLevel(logging.NewBackendFormatter(consoleLogBackend, consoleFormat))
+	level, err := logging.LogLevel(global.config.Log.ConsoleLevel)
+	if err != nil {
+		panic(err)
+	}
+	consoleBackendLevel.SetLevel(level, "")
+	global.syslog = logging.MustGetLogger("globalsys")
+	global.syslog.SetBackend(consoleBackendLevel)
 
-func initGlobalSysLogger(config LogConfig) {
-	globalSysLoggerOnce.Do(func() {
-		consoleFormat := logging.MustStringFormatter("[%{time:01/02 15:04:05}] %{message}")
-		consoleBackendLevel := logging.AddModuleLevel(logging.NewBackendFormatter(consoleLogBackend, consoleFormat))
-		level, err := logging.LogLevel("warning")
-		if err != nil {
-			panic(err)
-		}
-		consoleBackendLevel.SetLevel(level, "")
-		globalSysLogger = logging.MustGetLogger("global")
-		globalSysLogger.SetBackend(consoleBackendLevel)
-	})
+	var consoleFormatString string
+	var fileFormatString string
+	// switch frame.config.RunMode {
+	// case RUNMODE_DEV:
+	consoleFormatString = "[%{time:01/02 15:04:05}] %{color}[%{level:.1s}]%{color:reset} %{message} <%{shortfile}>"
+	fileFormatString = "[%{time:2006/01/02T15:04:05.999Z07:00}] [%{level:.1s}] %{message} <%{shortfile}>"
+	// case RUNMODE_PROD:
+	// consoleFormat = "[%{time:01/02 15:04:05}] %{color}[%{level:.1s}]%{color:reset} %{message} <%{module} #%{shortfile}>"
+	// fileFormat = "[%{time:2006/01/02T15:04:05.999Z07:00}] [%{level:.1s}] %{message} <%{module} #%{shortfile}>"
+	// }
+	global.bizlog = global.newLogger(
+		"globalbiz",
+		consoleFormatString,
+		fileFormatString,
+	)
+	global.bizlog.ExtraCalldepth++
 }
 
 func (frame *Framework) initSysLogger() {
-	initGlobalSysLogger(frame.config.Log)
 	var consoleFormat string
 	var fileFormat string
-	switch frame.config.RunMode {
-	case RUNMODE_DEV:
-		consoleFormat = "[%{time:01/02 15:04:05}] \x1b[46m[SYS]\x1b[0m %{message} <%{module}>"
-		fileFormat = "[%{time:2006/01/02T15:04:05.999Z07:00}] [SYS] %{message} <%{module}>"
-	case RUNMODE_PROD:
-		consoleFormat = "[%{time:01/02 15:04:05}] \x1b[46m[SYS]\x1b[0m %{message} <%{module}>"
-		fileFormat = "[%{time:2006/01/02T15:04:05.999Z07:00}] [SYS] %{message} <%{module}>"
-	}
-	frame.syslog = frame.newLogger(
+	// switch frame.config.RunMode {
+	// case RUNMODE_DEV:
+	consoleFormat = "[%{time:01/02 15:04:05}] \x1b[46m[SYS]\x1b[0m %{message} <%{module}>"
+	fileFormat = "[%{time:2006/01/02T15:04:05.999Z07:00}] [SYS] %{message} <%{module}>"
+	// case RUNMODE_PROD:
+	// consoleFormat = "[%{time:01/02 15:04:05}] \x1b[46m[SYS]\x1b[0m %{message} <%{module}>"
+	// fileFormat = "[%{time:2006/01/02T15:04:05.999Z07:00}] [SYS] %{message} <%{module}>"
+	// }
+	frame.syslog = Global.newLogger(
 		strings.ToLower(frame.NameWithVersion()),
 		consoleFormat,
 		fileFormat,
@@ -75,27 +174,27 @@ func (frame *Framework) initSysLogger() {
 func (frame *Framework) initBizLogger() {
 	var consoleFormat string
 	var fileFormat string
-	switch frame.config.RunMode {
-	case RUNMODE_DEV:
-		consoleFormat = "[%{time:01/02 15:04:05}] %{color}[%{level:.1s}]%{color:reset} %{message} <%{module} #%{shortfile}>"
-		fileFormat = "[%{time:2006/01/02T15:04:05.999Z07:00}] %{color}[%{level:.1s}]%{color:reset} %{message} <%{module} #%{shortfile}>"
-	case RUNMODE_PROD:
-		consoleFormat = "[%{time:01/02 15:04:05}] %{color}[%{level:.1s}]%{color:reset} %{message} <%{module} #%{shortfile}>"
-		fileFormat = "[%{time:2006/01/02T15:04:05.999Z07:00}] %{color}[%{level:.1s}]%{color:reset} %{message} <%{module} #%{shortfile}>"
-	}
-	frame.bizlog = frame.newLogger(
+	// switch frame.config.RunMode {
+	// case RUNMODE_DEV:
+	consoleFormat = "[%{time:01/02 15:04:05}] %{color}[%{level:.1s}]%{color:reset} %{message} <%{module} #%{shortfile}>"
+	fileFormat = "[%{time:2006/01/02T15:04:05.999Z07:00}] [%{level:.1s}] %{message} <%{module} #%{shortfile}>"
+	// case RUNMODE_PROD:
+	// consoleFormat = "[%{time:01/02 15:04:05}] %{color}[%{level:.1s}]%{color:reset} %{message} <%{module} #%{shortfile}>"
+	// fileFormat = "[%{time:2006/01/02T15:04:05.999Z07:00}] [%{level:.1s}] %{message} <%{module} #%{shortfile}>"
+	// }
+	frame.bizlog = Global.newLogger(
 		strings.ToLower(frame.NameWithVersion()),
 		consoleFormat,
 		fileFormat,
 	)
 }
 
-func (frame *Framework) newLogger(module string, consoleFormatString, fileFormatString string) *logging.Logger {
-	consoleLevel, err := logging.LogLevel(frame.config.Log.ConsoleLevel)
+func (global *GlobalSetting) newLogger(module string, consoleFormatString, fileFormatString string) *logging.Logger {
+	consoleLevel, err := logging.LogLevel(global.config.Log.ConsoleLevel)
 	if err != nil {
 		panic(err)
 	}
-	fileLevel, err := logging.LogLevel(frame.config.Log.FileLevel)
+	fileLevel, err := logging.LogLevel(global.config.Log.FileLevel)
 	if err != nil {
 		panic(err)
 	}
@@ -103,13 +202,13 @@ func (frame *Framework) newLogger(module string, consoleFormatString, fileFormat
 	fileFormat := logging.MustStringFormatter(fileFormatString)
 	backends := []logging.Backend{}
 
-	if frame.config.Log.ConsoleEnable {
+	if global.config.Log.ConsoleEnable {
 		consoleBackendLevel := logging.AddModuleLevel(logging.NewBackendFormatter(consoleLogBackend, consoleFormat))
 		consoleBackendLevel.SetLevel(consoleLevel, "")
 		backends = append(backends, consoleBackendLevel)
 	}
 
-	if frame.config.Log.FileEnable {
+	if global.config.Log.FileEnable {
 		fileBackendLevel := logging.AddModuleLevel(logging.NewBackendFormatter(fileBackend, fileFormat))
 		fileBackendLevel.SetLevel(fileLevel, "")
 		backends = append(backends, fileBackendLevel)
@@ -119,18 +218,8 @@ func (frame *Framework) newLogger(module string, consoleFormatString, fileFormat
 	switch len(backends) {
 	case 1:
 		newLog.SetBackend(backends[0].(logging.LeveledBackend))
-	case 2:
-		newLog.SetBackend(logging.MultiLogger(backends...))
 	default:
-		globalSysLogger.Warning("config: log::enable_console and log::enable_file can not be disabled at the same time, so automatically open console log.")
-		frame.config.Log.ConsoleEnable = true
-		configFileName, _ := createConfigFilenameAndVersion(frame.name, frame.version)
-		err := syncConfigToFile(configFileName, &frame.config)
-		if err != nil {
-			globalSysLogger.Critical("[C] config: log::enable_console and log::enable_file must be at least one for true.")
-			return globalSysLogger
-		}
-		return frame.newLogger(module, consoleFormatString, fileFormatString)
+		newLog.SetBackend(logging.MultiLogger(backends...))
 	}
 	return newLog
 }
