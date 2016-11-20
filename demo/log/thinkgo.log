@@ -1,21 +1,21 @@
-[2016/11/17T20:03:10.395+08:00] [SYS] APIdoc's URL path is '/apidoc' [check direct ip for filter] <testapp1_0.1>
-[2016/11/17T20:03:10.399+08:00] [SYS]     GET | /apidoc/*filepath              <testapp1_0.1>
-[2016/11/17T20:03:10.402+08:00] [SYS]     GET | /home/render                   <testapp1_0.1>
-[2016/11/17T20:03:10.405+08:00] [SYS]     GET | /home/test/:id                 <testapp1_0.1>
-[2016/11/17T20:03:10.408+08:00] [SYS]    POST | /home/test/:id                 <testapp1_0.1>
-[2016/11/17T20:03:10.412+08:00] [SYS]     GET | /public/*filepath              <testapp1_0.1>
-[2016/11/17T20:03:10.415+08:00] [SYS]     GET | /public2/*filepath             <testapp1_0.1>
-[2016/11/17T20:03:10.418+08:00] [SYS]     GET | /static/*filepath              <testapp1_0.1>
-[2016/11/17T20:03:10.421+08:00] [SYS]     GET | /swagger.json                  <testapp1_0.1>
-[2016/11/17T20:03:10.424+08:00] [SYS]     GET | /upload/*filepath              <testapp1_0.1>
-[2016/11/17T20:03:10.427+08:00] [SYS] [testapp1_0.1] listen and serve HTTP/HTTP2 on 0.0.0.0:8080 <testapp1_0.1>
-[2016/11/17T20:03:10.431+08:00] [SYS] APIdoc's URL path is '/apidoc' [check direct ip for filter] <testapp2_0.1>
-[2016/11/17T20:03:10.435+08:00] [SYS]     GET | /apidoc/*filepath              <testapp2_0.1>
-[2016/11/17T20:03:10.438+08:00] [SYS]     GET | /home/test/:id                 <testapp2_0.1>
-[2016/11/17T20:03:10.441+08:00] [SYS]    POST | /home/test/:id                 <testapp2_0.1>
-[2016/11/17T20:03:10.444+08:00] [SYS]     GET | /public/*filepath              <testapp2_0.1>
-[2016/11/17T20:03:10.447+08:00] [SYS]     GET | /public2/*filepath             <testapp2_0.1>
-[2016/11/17T20:03:10.45+08:00] [SYS]     GET | /static/*filepath              <testapp2_0.1>
-[2016/11/17T20:03:10.453+08:00] [SYS]     GET | /swagger.json                  <testapp2_0.1>
-[2016/11/17T20:03:10.456+08:00] [SYS]     GET | /upload/*filepath              <testapp2_0.1>
-[2016/11/17T20:03:10.46+08:00] [SYS] [testapp2_0.1] listen and serve HTTP/HTTP2 on 0.0.0.0:8081 <testapp2_0.1>
+[2016/11/20T12:07:19.037+08:00] [SYS] APIdoc's URL path is '/apidoc' [check direct ip for filter] <testapp1_0.1>
+[2016/11/20T12:07:19.045+08:00] [SYS]     GET | /apidoc/*filepath              <testapp1_0.1>
+[2016/11/20T12:07:19.05+08:00] [SYS]     GET | /home/render                   <testapp1_0.1>
+[2016/11/20T12:07:19.054+08:00] [SYS]     GET | /home/test/:id                 <testapp1_0.1>
+[2016/11/20T12:07:19.058+08:00] [SYS]    POST | /home/test/:id                 <testapp1_0.1>
+[2016/11/20T12:07:19.063+08:00] [SYS]     GET | /public/*filepath              <testapp1_0.1>
+[2016/11/20T12:07:19.067+08:00] [SYS]     GET | /public2/*filepath             <testapp1_0.1>
+[2016/11/20T12:07:19.072+08:00] [SYS]     GET | /static/*filepath              <testapp1_0.1>
+[2016/11/20T12:07:19.076+08:00] [SYS]     GET | /swagger.json                  <testapp1_0.1>
+[2016/11/20T12:07:19.08+08:00] [SYS]     GET | /upload/*filepath              <testapp1_0.1>
+[2016/11/20T12:07:19.085+08:00] [SYS] [testapp1_0.1] listen and serve HTTP/HTTP2 on 0.0.0.0:8080 <testapp1_0.1>
+[2016/11/20T12:07:19.092+08:00] [SYS] APIdoc's URL path is '/apidoc' [check direct ip for filter] <testapp2_0.1>
+[2016/11/20T12:07:19.099+08:00] [SYS]     GET | /apidoc/*filepath              <testapp2_0.1>
+[2016/11/20T12:07:19.103+08:00] [SYS]     GET | /home/test/:id                 <testapp2_0.1>
+[2016/11/20T12:07:19.108+08:00] [SYS]    POST | /home/test/:id                 <testapp2_0.1>
+[2016/11/20T12:07:19.111+08:00] [SYS]     GET | /public/*filepath              <testapp2_0.1>
+[2016/11/20T12:07:19.116+08:00] [SYS]     GET | /public2/*filepath             <testapp2_0.1>
+[2016/11/20T12:07:19.12+08:00] [SYS]     GET | /static/*filepath              <testapp2_0.1>
+[2016/11/20T12:07:19.126+08:00] [SYS]     GET | /swagger.json                  <testapp2_0.1>
+[2016/11/20T12:07:19.132+08:00] [SYS]     GET | /upload/*filepath              <testapp2_0.1>
+[2016/11/20T12:07:19.136+08:00] [SYS] [testapp2_0.1] listen and serve HTTP/HTTP2 on 0.0.0.0:8081 <testapp2_0.1>

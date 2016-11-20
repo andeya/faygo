@@ -455,6 +455,7 @@ func (frame *Framework) makeErrorHandler(status int) http.Handler {
 // Create the handle to be called by the router
 func (frame *Framework) makePanicHandler() func(http.ResponseWriter, *http.Request, interface{}) {
 	s := []byte("/src/runtime/panic.go")
+	e := []byte("\ngoroutine ")
 	line := []byte("\n")
 	return func(w http.ResponseWriter, r *http.Request, rcv interface{}) {
 		stack := make([]byte, 4<<10) //4KB
@@ -462,7 +463,11 @@ func (frame *Framework) makePanicHandler() func(http.ResponseWriter, *http.Reque
 		start := bytes.Index(stack, s)
 		stack = stack[start:length]
 		start = bytes.Index(stack, line) + 1
-		errStr := fmt.Sprintf("%v\n\n[STACK]\n%s", rcv, stack[start:])
+		stack = stack[start:]
+		if end := bytes.Index(stack, e); end != -1 {
+			stack = stack[:end]
+		}
+		errStr := fmt.Sprintf("%v\n\n[TRACE]\n%s", rcv, stack)
 		Global.errorFunc(newEmptyContext(frame, w, r), errStr, http.StatusInternalServerError)
 	}
 }
