@@ -34,7 +34,7 @@ import (
 )
 
 const (
-	VERSION = "0.1"
+	VERSION = "0.5"
 	banner  = `
    _______  _                _                    
   |__   __|| |    [ ]       | |                   
