@@ -136,15 +136,15 @@ type (
 		FileLevel     string `ini:"file_level"` // critical | error | warning | notice | info | debug
 	}
 	APIdocConfig struct {
-		Enable     bool     `ini:"enable"`                // Whether to enable API doc
-		Path       string   `ini:"path"`                  // API doc url
-		NoLimit    bool     `ini:"nolimit"`               // if true, access is not restricted
-		RealIP     bool     `ini:"real_ip"`               // if true, means verifying the real IP of the visitor
-		PrefixList []string `ini:"prefix_list" delim:"|"` // `prefix_list=192;202` means that only IP addresses with 192 or 202 prefixes are allowed
-		Desc       string   `ini:"desc"`                  // description of the application
-		Email      string   `ini:"email"`                 // technician's Email
-		TermsURL   string   `ini:"terms_url"`             // terms of service
-		License    string   `ini:"license"`               // the license used by the API
+		Enable     bool     `ini:"enable"`              // Whether to enable API doc
+		Path       string   `ini:"path"`                // API doc url
+		NoLimit    bool     `ini:"nolimit"`             // if true, access is not restricted
+		RealIP     bool     `ini:"real_ip"`             // if true, means verifying the real IP of the visitor
+		Whitelist  []string `ini:"whitelist" delim:"|"` // `whitelist=192.*|202.122.246.170` means: only IP addresses that are prefixed with `192 'or equal to` 202.122.246.170' are allowed
+		Desc       string   `ini:"desc"`                // description of the application
+		Email      string   `ini:"email"`               // technician's Email
+		TermsURL   string   `ini:"terms_url"`           // terms of service
+		License    string   `ini:"license"`             // the license used by the API
 		LicenseURL string   `ini:"license_url"`
 	}
 )
@@ -265,9 +265,9 @@ func newConfig(filename string, addrs ...string) Config {
 			Path:    "/apidoc",
 			NoLimit: false,
 			RealIP:  false,
-			PrefixList: []string{
-				"127.",
-				"192.168.",
+			Whitelist: []string{
+				"127.*",
+				"192.168.*",
 			},
 		},
 	}
@@ -323,14 +323,14 @@ func syncConfigToFile(filename string, config *Config) error {
 
 func (conf *APIdocConfig) Comb() {
 	ipPrefixMap := map[string]bool{}
-	for _, ipPrefix := range conf.PrefixList {
+	for _, ipPrefix := range conf.Whitelist {
 		if len(ipPrefix) > 0 {
 			ipPrefixMap[ipPrefix] = true
 		}
 	}
-	conf.PrefixList = conf.PrefixList[:0]
+	conf.Whitelist = conf.Whitelist[:0]
 	for ipPrefix := range ipPrefixMap {
-		conf.PrefixList = append(conf.PrefixList, ipPrefix)
+		conf.Whitelist = append(conf.Whitelist, ipPrefix)
 	}
-	sort.Strings(conf.PrefixList)
+	sort.Strings(conf.Whitelist)
 }

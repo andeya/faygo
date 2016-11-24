@@ -34,7 +34,7 @@ func (frame *Framework) regAPIdoc() {
 		frame.MuxAPI.NamedStaticFS("APIdoc-Swagger", frame.config.APIdoc.Path, swagger.AssetFS())
 		frame.MuxAPI.NamedGET("APIdoc-Swagger-JSON", jsonPattern, newAPIdocJSONHandler())
 	} else {
-		allowApidoc := NewIPFilter(frame.config.APIdoc.PrefixList, frame.config.APIdoc.RealIP)
+		allowApidoc := NewIPFilter(frame.config.APIdoc.Whitelist, frame.config.APIdoc.RealIP)
 		frame.MuxAPI.NamedStaticFS("APIdoc-Swagger", frame.config.APIdoc.Path, swagger.AssetFS()).Use(allowApidoc)
 		frame.MuxAPI.NamedGET("APIdoc-Swagger-JSON", jsonPattern, newAPIdocJSONHandler(), allowApidoc)
 	}
@@ -42,7 +42,7 @@ func (frame *Framework) regAPIdoc() {
 	tip := `APIdoc's URL path is '` + frame.config.APIdoc.Path
 	if frame.config.APIdoc.NoLimit {
 		frame.syslog.Criticalf(tip + `' [free access]`)
-	} else if len(frame.config.APIdoc.PrefixList) == 0 {
+	} else if len(frame.config.APIdoc.Whitelist) == 0 {
 		frame.syslog.Criticalf(tip + `' [no access]`)
 	} else if frame.config.APIdoc.RealIP {
 		frame.syslog.Criticalf(tip + `' [check real ip for filter]`)
