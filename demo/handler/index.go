@@ -30,6 +30,6 @@ func (i *Index) Serve(ctx *thinkgo.Context) error {
 		ctx.SetCookie("thinkgo", "henrylee")
 	})
 
-	return ctx.JSON(200, i)
+	return ctx.JSON(200, i, true)
 	// return ctx.String(200, "name: %v\nid: %d", name, id)
 }
