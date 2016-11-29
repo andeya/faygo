@@ -99,7 +99,7 @@ response:
 
 ```
 net_types              = normal|tls              # 多种Server类型列表，支持 normal | tls | letsencrypt | unix
-addrs                  = 0.0.0.0:80|0.0.0.0:443  # 多个监控地址列表
+addrs                  = 0.0.0.0:80|0.0.0.0:443  # 多个监听地址列表
 tls_certfile           =                         # TLS证书文件路径
 tls_keyfile            =                         # TLS密钥文件路径
 letsencrypt_file       =                         # SSL免费证书路径
