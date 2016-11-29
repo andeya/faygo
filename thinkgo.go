@@ -16,21 +16,14 @@ package thinkgo
 
 import (
 	"bytes"
-	"crypto/tls"
 	"fmt"
-	"net"
 	"net/http"
-	"os"
 	"runtime"
 	"sync"
-	"time"
 
 	"github.com/henrylee2cn/thinkgo/logging"
 	"github.com/henrylee2cn/thinkgo/session"
 	"github.com/henrylee2cn/thinkgo/swagger"
-	"github.com/henrylee2cn/thinkgo/utils/errors"
-	"github.com/rsc/letsencrypt"
-	// "github.com/facebookgo/grace/gracehttp"
 )
 
 const (
@@ -53,7 +46,7 @@ type Framework struct {
 	config         Config
 	*MuxAPI        // root muxAPI node
 	muxesForRouter MuxAPIs
-	server         *http.Server
+	servers        []*Server
 	once           sync.Once
 	sessionManager *session.Manager
 	syslog         *logging.Logger // for framework
@@ -88,11 +81,9 @@ func New(name string, version ...string) *Framework {
 
 var (
 	// The list of applications that have been created.
-	Apps        = make(map[string]*Framework)
-	mutexNewApp sync.Mutex
-
-	// Make sure that the initialization logs for multiple applications are printed in sequence
-	mutexForRun sync.Mutex
+	Apps          = make(map[string]*Framework)
+	mutexNewApp   sync.Mutex
+	mutexForBuild sync.Mutex
 )
 
 // name of the application
@@ -112,179 +103,75 @@ func (frame *Framework) NameWithVersion() string {
 	return frame.name + "_" + frame.version
 }
 
-// Start web service.
+// Start web services.
 func (frame *Framework) Run() {
-	// Make sure that the initialization logs for multiple applications are printed in sequence
-	mutexForRun.Lock()
-
-	frame.build()
-	var err error
-	var protocol = "HTTP"
-	switch frame.config.NetType {
-	case NETTYPE_NORMAL:
-		frame.syslog.Criticalf("[%s] listen and serve %s/HTTP2 on %v", frame.NameWithVersion(), protocol, frame.config.Addr)
-		mutexForRun.Unlock()
-		err = frame.listenAndServe()
-	case NETTYPE_TLS:
-		protocol = "HTTPS"
-		frame.syslog.Criticalf("[%s] listen and serve %s/HTTP2 on %v", frame.NameWithVersion(), protocol, frame.config.Addr)
-		mutexForRun.Unlock()
-		err = frame.listenAndServeTLS(frame.config.TLSCertFile, frame.config.TLSKeyFile)
-	case NETTYPE_LETSENCRYPT:
-		protocol = "HTTPS"
-		frame.syslog.Criticalf("[%s] listen and serve %s/HTTP2 on %v (pid:%d)", frame.NameWithVersion(), protocol, frame.config.Addr, os.Getpid())
-		mutexForRun.Unlock()
-		err = frame.listenAndServeLETSENCRYPT(frame.config.LetsencryptFile)
-	case NETTYPE_UNIX:
-		frame.syslog.Criticalf("[%s] listen and serve %s/HTTP2 on %v (pid:%d)", frame.NameWithVersion(), protocol, frame.config.Addr, os.Getpid())
-		mutexForRun.Unlock()
-		err = frame.listenAndServeUNIX(frame.config.UNIXFileMode)
-	default:
-		mutexForRun.Unlock()
-		frame.syslog.Fatal("Please set a valid config item net_type, refer to the following:\nnormal | tls | letsencrypt | unix")
-	}
-	if err != nil {
-		frame.syslog.Fatal(err)
-	}
-}
-
-// listenAndServe listens on the TCP network address and then
-// calls Serve to handle requests on incoming connections.
-// Accepted connections are configured to enable TCP keep-alives.
-// If srv.Addr is blank, ":http" is used, listenAndServe always returns a non-nil error.
-func (frame *Framework) listenAndServe() error {
-	return frame.server.ListenAndServe()
-}
-
-// listenAndServeTLS listens on the TCP network address and
-// then calls Serve to handle requests on incoming TLS connections.
-// Accepted connections are configured to enable TCP keep-alives.
-//
-// Filenames containing a certificate and matching private key for the
-// server must be provided if neither the Server's TLSConfig.Certificates
-// nor TLSConfig.GetCertificate are populated. If the certificate is
-// signed by a certificate authority, the certFile should be the
-// concatenation of the server's certificate, any intermediates, and
-// the CA's certificate.
-//
-// If frame.config.Addr is blank, ":https" is used, listenAndServeTLS always returns a non-nil error.
-func (frame *Framework) listenAndServeTLS(certFile, keyFile string) error {
-	return frame.server.ListenAndServeTLS(certFile, keyFile)
-}
-
-// listenAndServeLETSENCRYPT listens on a new Automatic TLS using letsencrypt.org service.
-// if you want to disable cache file then simple give cacheFileOptional a value of empty string ""
-func (frame *Framework) listenAndServeLETSENCRYPT(cacheFileOptional string) error {
-	if frame.server.Addr == "" {
-		frame.server.Addr = ":https"
-	}
-
-	ln, err := net.Listen("tcp4", frame.server.Addr)
-	if err != nil {
-		return err
-	}
-
-	var m letsencrypt.Manager
-	if cacheFileOptional != "" {
-		if err = m.CacheFile(cacheFileOptional); err != nil {
-			return err
+	frame.once.Do(func() {
+		frame.build()
+		last := len(frame.servers) - 1
+		for i := 0; i < last; i++ {
+			go frame.servers[i].run()
 		}
-	}
-
-	tlsConfig := &tls.Config{GetCertificate: m.GetCertificate}
-	tlsListener := tls.NewListener(tcpKeepAliveListener{ln.(*net.TCPListener)}, tlsConfig)
-
-	return frame.server.Serve(tlsListener)
-}
-
-var (
-	errPortAlreadyUsed = errors.New("Port is already used")
-	errRemoveUnix      = errors.New("Unexpected error when trying to remove unix socket file. Addr: %s | Trace: %s")
-	errChmod           = errors.New("Cannot chmod %#o for %q: %s")
-	errCertKeyMissing  = errors.New("You should provide certFile and keyFile for TLS/SSL")
-	errParseTLS        = errors.New("Couldn't load TLS, certFile=%q, keyFile=%q. Trace: %s")
-)
-
-// listenAndServeUNIX announces on the Unix domain socket laddr and listens a Unix service.
-func (frame *Framework) listenAndServeUNIX(fileMode os.FileMode) error {
-	if errOs := os.Remove(frame.server.Addr); errOs != nil && !os.IsNotExist(errOs) {
-		return errRemoveUnix.Format(frame.server.Addr, errOs.Error())
-	}
-
-	ln, err := net.Listen("unix", frame.server.Addr)
-	if err != nil {
-		return errPortAlreadyUsed.AppendErr(err)
-	}
-
-	if err = os.Chmod(frame.server.Addr, fileMode); err != nil {
-		return errChmod.Format(fileMode, frame.server.Addr, err.Error())
-	}
-	return frame.server.Serve(tcpKeepAliveListener{ln.(*net.TCPListener)})
-}
-
-// tcpKeepAliveListener sets TCP keep-alive timeouts on accepted
-// connections. It's used by ListenAndServe and ListenAndServeTLS so
-// dead TCP connections (e.g. closing laptop mid-download) eventually
-// go away.
-type tcpKeepAliveListener struct {
-	*net.TCPListener
-}
-
-func (ln tcpKeepAliveListener) Accept() (c net.Conn, err error) {
-	tc, err := ln.AcceptTCP()
-	if err != nil {
-		return
-	}
-	tc.SetKeepAlive(true)
-	tc.SetKeepAlivePeriod(3 * time.Minute)
-	return tc, nil
+		frame.servers[last].run()
+	})
 }
 
 func (frame *Framework) build() {
-	frame.once.Do(func() {
-		// register the default MuxAPIs
-		{
-			// apidoc
-			if frame.config.APIdoc.Enable {
-				frame.regAPIdoc()
-			}
-			// static
-			frame.presetSystemMuxes()
+	// Make sure that the initialization logs for multiple applications are printed in sequence
+	mutexForBuild.Lock()
+	defer mutexForBuild.Unlock()
+
+	// register the default MuxAPIs
+	{
+		// apidoc
+		if frame.config.APIdoc.Enable {
+			frame.regAPIdoc()
 		}
+		// static
+		frame.presetSystemMuxes()
+	}
 
-		// build router
-		var router = &Router{
-			RedirectTrailingSlash:  frame.config.Router.RedirectTrailingSlash,
-			RedirectFixedPath:      frame.config.Router.RedirectFixedPath,
-			HandleMethodNotAllowed: frame.config.Router.HandleMethodNotAllowed,
-			HandleOPTIONS:          frame.config.Router.HandleOPTIONS,
-			NotFound:               frame.makeErrorHandler(http.StatusNotFound),
-			MethodNotAllowed:       frame.makeErrorHandler(http.StatusMethodNotAllowed),
-			PanicHandler:           frame.makePanicHandler(),
+	// build router
+	var router = &Router{
+		RedirectTrailingSlash:  frame.config.Router.RedirectTrailingSlash,
+		RedirectFixedPath:      frame.config.Router.RedirectFixedPath,
+		HandleMethodNotAllowed: frame.config.Router.HandleMethodNotAllowed,
+		HandleOPTIONS:          frame.config.Router.HandleOPTIONS,
+		NotFound:               frame.makeErrorHandler(http.StatusNotFound),
+		MethodNotAllowed:       frame.makeErrorHandler(http.StatusMethodNotAllowed),
+		PanicHandler:           frame.makePanicHandler(),
+	}
+
+	// register router
+	for _, node := range frame.MuxAPIsForRouter() {
+		handle := frame.makeHandle(node.handlers)
+		for _, method := range node.methods {
+			frame.syslog.Criticalf("%7s | %-30s", method, node.path)
+			router.Handle(method, node.path, handle)
 		}
+	}
 
-		// register router
-		for _, node := range frame.MuxAPIsForRouter() {
-			handle := frame.makeHandle(node.handlers)
-			for _, method := range node.methods {
+	// new server
+	nameWithVersion := frame.NameWithVersion()
+	for i, netType := range frame.config.NetTypes {
+		frame.servers = append(frame.servers, &Server{
+			nameWithVersion: nameWithVersion,
+			netType:         netType,
+			tlsCertFile:     frame.config.TLSCertFile,
+			tlsKeyFile:      frame.config.TLSKeyFile,
+			letsencryptFile: frame.config.LetsencryptFile,
+			unixFileMode:    frame.config.UNIXFileMode,
+			Server: &http.Server{
+				Addr:         frame.config.Addrs[i],
+				Handler:      router,
+				ReadTimeout:  frame.config.ReadTimeout,
+				WriteTimeout: frame.config.WriteTimeout,
+			},
+			log: frame.syslog,
+		})
+	}
 
-				frame.syslog.Criticalf("%7s | %-30s", method, node.path)
-
-				router.Handle(method, node.path, handle)
-			}
-		}
-
-		// new server
-		frame.server = &http.Server{
-			Addr:         frame.config.Addr,
-			Handler:      router,
-			ReadTimeout:  frame.config.ReadTimeout,
-			WriteTimeout: frame.config.WriteTimeout,
-		}
-
-		// register session
-		frame.registerSession()
-	})
+	// register session
+	frame.registerSession()
 }
 
 // The log used by the user bissness
@@ -486,7 +373,7 @@ func (frame *Framework) registerSession() {
 		CookieName:              frame.config.Session.Name,
 		EnableSetCookie:         frame.config.Session.AutoSetCookie,
 		Gclifetime:              frame.config.Session.GCMaxLifetime,
-		Secure:                  frame.config.NetType == "tls" || frame.config.NetType == "letsencrypt",
+		Secure:                  true,
 		CookieLifeTime:          frame.config.Session.CookieLifetime,
 		ProviderConfig:          frame.config.Session.ProviderConfig,
 		Domain:                  frame.config.Session.Domain,

@@ -34,12 +34,12 @@ type (
 	}
 	Config struct {
 		// RunMode         string      `ini:"run_mode"`         // run mode: dev | prod
-		NetType         string      `ini:"net_type"`         // network type: normal | tls | letsencrypt | unix
-		Addr            string      `ini:"addr"`             // Service monitoring address
-		TLSCertFile     string      `ini:"tls_certfile"`     // for TLS
-		TLSKeyFile      string      `ini:"tls_keyfile"`      // for TLS
-		LetsencryptFile string      `ini:"letsencrypt_file"` // for Let's Encrypt (free SSL)
-		UNIXFileMode    os.FileMode `ini:"unix_filemode"`    // for UNIX listener file mode
+		NetTypes        []string    `ini:"net_types" delim:"|"` // network type: normal | tls | letsencrypt | unix
+		Addrs           []string    `ini:"addrs" delim:"|"`     // service monitoring address
+		TLSCertFile     string      `ini:"tls_certfile"`        // for TLS
+		TLSKeyFile      string      `ini:"tls_keyfile"`         // for TLS
+		LetsencryptFile string      `ini:"letsencrypt_file"`    // for Let's Encrypt (free SSL)
+		UNIXFileMode    os.FileMode `ini:"unix_filemode"`       // for UNIX listener file mode
 		// Maximum duration for reading the full request (including body).
 		//
 		// This also limits the maximum duration for idle keep-alive
@@ -222,18 +222,15 @@ var globalConfig = func() GlobalConfig {
 	return background
 }()
 
-func newConfig(filename string, addrs ...string) Config {
+func newConfig(filename string) Config {
 	var addr string
-	if len(addrs) > 0 {
-		addr = addrs[0]
-	} else {
-		addr = fmt.Sprintf("0.0.0.0:%d", defaultPort+atomic.LoadUint32(&appCount))
-		atomic.AddUint32(&appCount, 1)
-	}
+
+	addr = fmt.Sprintf("0.0.0.0:%d", defaultPort+atomic.LoadUint32(&appCount))
+	atomic.AddUint32(&appCount, 1)
 	var background = Config{
 		// RunMode:              RUNMODE_DEV,
-		NetType:              "normal",
-		Addr:                 addr,
+		NetTypes:             []string{"normal"},
+		Addrs:                []string{addr},
 		UNIXFileMode:         0666,
 		MultipartMaxMemoryMB: defaultMultipartMaxMemoryMB,
 		Router: RouterConfig{
@@ -289,10 +286,18 @@ func newConfig(filename string, addrs ...string) Config {
 		// default:
 		// 	panic("Please set a valid config item run_mode, refer to the following:\ndev | prod")
 		// }
-		switch background.NetType {
-		case NETTYPE_NORMAL, NETTYPE_TLS, NETTYPE_LETSENCRYPT, NETTYPE_UNIX:
-		default:
-			panic("Please set a valid config item net_type, refer to the following:\nnormal | tls | letsencrypt | unix")
+		if len(background.NetTypes) != len(background.Addrs) {
+			panic("The number of configuration items `net_types` and `addrs` must be equal")
+		}
+		if len(background.NetTypes) == 0 {
+			panic("The number of configuration items `net_types` and `addrs` must be greater than zero")
+		}
+		for _, t := range background.NetTypes {
+			switch t {
+			case NETTYPE_NORMAL, NETTYPE_TLS, NETTYPE_LETSENCRYPT, NETTYPE_UNIX:
+			default:
+				panic("Please set a valid config item `net_types`, refer to the following:\nnormal | tls | letsencrypt | unix")
+			}
 		}
 		background.multipartMaxMemory = background.MultipartMaxMemoryMB * MB
 		background.APIdoc.Comb()

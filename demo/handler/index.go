@@ -22,6 +22,7 @@ type Index struct {
 var once sync.Once
 
 func (i *Index) Serve(ctx *thinkgo.Context) error {
+	ctx.Log().Info(ctx.R.Host)
 	// name, id := ctx.GetSession("name"), ctx.GetSession("id")
 	once.Do(func() {
 		println("SetSession...")

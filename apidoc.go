@@ -20,7 +20,6 @@ import (
 	"fmt"
 	"path"
 	"strings"
-	"sync"
 
 	"github.com/henrylee2cn/thinkgo/swagger"
 )
@@ -52,11 +51,11 @@ func (frame *Framework) regAPIdoc() {
 }
 
 func newAPIdocJSONHandler() HandlerFunc {
-	once := new(sync.Once)
 	return func(ctx *Context) error {
-		once.Do(func() {
+		if ctx.frame.apidoc == nil {
 			ctx.frame.initAPIdoc(ctx.R.Host)
-		})
+		}
+		ctx.frame.apidoc.Schemes = []string{ctx.Scheme()}
 		ctx.frame.apidoc.Host = ctx.R.Host
 		return ctx.JSON(200, ctx.frame.apidoc)
 	}
@@ -73,22 +72,11 @@ var apiStaticParam = &swagger.Parameter{
 }
 
 func (frame *Framework) initAPIdoc(host string) {
-	if frame.apidoc != nil {
-		return
-	}
 	rootMuxAPI := frame.MuxAPI
 	rootTag := &swagger.Tag{
 		Name:        rootMuxAPI.Path(),
 		Description: apiTagDesc(rootMuxAPI.Name()),
 	}
-	scheme := func() string {
-		switch frame.config.NetType {
-		case "tls", "letsencrypt":
-			return "https"
-		default:
-			return "http"
-		}
-	}()
 	frame.apidoc = &swagger.Swagger{
 		Version: swagger.Version,
 		Info: &swagger.Info{
@@ -105,7 +93,7 @@ func (frame *Framework) initAPIdoc(host string) {
 		Host:     host,
 		BasePath: "/",
 		Tags:     []*swagger.Tag{rootTag},
-		Schemes:  []string{scheme},
+		Schemes:  []string{"http", "https"},
 		Paths:    map[string]map[string]*swagger.Opera{},
 		// SecurityDefinitions: map[string]map[string]interface{}{},
 		// Definitions:         map[string]Definition{},
