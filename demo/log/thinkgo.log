@@ -1,22 +1,23 @@
-[2016/11/29T17:58:23.541+08:00] [SYS] APIdoc's URL path is '/apidoc' [check direct ip for filter] <myapp1_1.0>
-[2016/11/29T17:58:23.563+08:00] [SYS]     GET | /apidoc/*filepath              <myapp1_1.0>
-[2016/11/29T17:58:23.575+08:00] [SYS]     GET | /home/render                   <myapp1_1.0>
-[2016/11/29T17:58:23.582+08:00] [SYS]     GET | /home/test/:id                 <myapp1_1.0>
-[2016/11/29T17:58:23.593+08:00] [SYS]    POST | /home/test/:id                 <myapp1_1.0>
-[2016/11/29T17:58:23.598+08:00] [SYS]     GET | /public/*filepath              <myapp1_1.0>
-[2016/11/29T17:58:23.602+08:00] [SYS]     GET | /public2/*filepath             <myapp1_1.0>
-[2016/11/29T17:58:23.609+08:00] [SYS]     GET | /static/*filepath              <myapp1_1.0>
-[2016/11/29T17:58:23.623+08:00] [SYS]     GET | /swagger.json                  <myapp1_1.0>
-[2016/11/29T17:58:23.631+08:00] [SYS]     GET | /upload/*filepath              <myapp1_1.0>
-[2016/11/29T17:58:23.637+08:00] [SYS] [myapp1_1.0] listen and serve HTTP/HTTP2 on 0.0.0.0:8080 <myapp1_1.0>
-[2016/11/29T17:58:23.637+08:00] [SYS] APIdoc's URL path is '/apidoc' [check direct ip for filter] <myapp2_1.0>
-[2016/11/29T17:58:23.645+08:00] [SYS]     GET | /apidoc/*filepath              <myapp2_1.0>
-[2016/11/29T17:58:23.648+08:00] [SYS]     GET | /home/test/:id                 <myapp2_1.0>
-[2016/11/29T17:58:23.658+08:00] [SYS]    POST | /home/test/:id                 <myapp2_1.0>
-[2016/11/29T17:58:23.661+08:00] [SYS]     GET | /public/*filepath              <myapp2_1.0>
-[2016/11/29T17:58:23.664+08:00] [SYS]     GET | /public2/*filepath             <myapp2_1.0>
-[2016/11/29T17:58:23.668+08:00] [SYS]     GET | /static/*filepath              <myapp2_1.0>
-[2016/11/29T17:58:23.672+08:00] [SYS]     GET | /swagger.json                  <myapp2_1.0>
-[2016/11/29T17:58:23.675+08:00] [SYS]     GET | /upload/*filepath              <myapp2_1.0>
-[2016/11/29T17:58:23.68+08:00] [SYS] [myapp2_1.0] listen and serve HTTP/HTTP2 on 0.0.0.0:80 <myapp2_1.0>
-[2016/11/29T17:58:23.68+08:00] [SYS] [myapp2_1.0] listen and serve HTTPS(TLS)/HTTP2 on 0.0.0.0:443 <myapp2_1.0>
+[2016/11/30T19:29:20.595+08:00] [SYS] APIdoc's URL path is '/apidoc' [check direct ip for filter] <myapp1_1.0>
+[2016/11/30T19:29:20.6+08:00] [SYS]     GET | /apidoc/*filepath              <myapp1_1.0>
+[2016/11/30T19:29:20.604+08:00] [SYS]    POST | /body                          <myapp1_1.0>
+[2016/11/30T19:29:20.607+08:00] [SYS]     GET | /home/render                   <myapp1_1.0>
+[2016/11/30T19:29:20.61+08:00] [SYS]     GET | /home/test/:id                 <myapp1_1.0>
+[2016/11/30T19:29:20.613+08:00] [SYS]    POST | /home/test/:id                 <myapp1_1.0>
+[2016/11/30T19:29:20.617+08:00] [SYS]     GET | /public/*filepath              <myapp1_1.0>
+[2016/11/30T19:29:20.621+08:00] [SYS]     GET | /public2/*filepath             <myapp1_1.0>
+[2016/11/30T19:29:20.624+08:00] [SYS]     GET | /static/*filepath              <myapp1_1.0>
+[2016/11/30T19:29:20.628+08:00] [SYS]     GET | /swagger.json                  <myapp1_1.0>
+[2016/11/30T19:29:20.632+08:00] [SYS]     GET | /upload/*filepath              <myapp1_1.0>
+[2016/11/30T19:29:20.635+08:00] [SYS] [myapp1_1.0] listen and serve HTTP/HTTP2 on 0.0.0.0:8080 <myapp1_1.0>
+[2016/11/30T19:29:20.635+08:00] [SYS] APIdoc's URL path is '/apidoc' [check direct ip for filter] <myapp2_1.0>
+[2016/11/30T19:29:20.643+08:00] [SYS]     GET | /apidoc/*filepath              <myapp2_1.0>
+[2016/11/30T19:29:20.646+08:00] [SYS]     GET | /home/test/:id                 <myapp2_1.0>
+[2016/11/30T19:29:20.65+08:00] [SYS]    POST | /home/test/:id                 <myapp2_1.0>
+[2016/11/30T19:29:20.653+08:00] [SYS]     GET | /public/*filepath              <myapp2_1.0>
+[2016/11/30T19:29:20.657+08:00] [SYS]     GET | /public2/*filepath             <myapp2_1.0>
+[2016/11/30T19:29:20.66+08:00] [SYS]     GET | /static/*filepath              <myapp2_1.0>
+[2016/11/30T19:29:20.664+08:00] [SYS]     GET | /swagger.json                  <myapp2_1.0>
+[2016/11/30T19:29:20.668+08:00] [SYS]     GET | /upload/*filepath              <myapp2_1.0>
+[2016/11/30T19:29:20.672+08:00] [SYS] [myapp2_1.0] listen and serve HTTP/HTTP2 on 0.0.0.0:80 <myapp2_1.0>
+[2016/11/30T19:29:20.672+08:00] [SYS] [myapp2_1.0] listen and serve HTTPS(TLS)/HTTP2 on 0.0.0.0:443 <myapp2_1.0>

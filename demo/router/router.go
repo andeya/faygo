@@ -24,6 +24,7 @@ func Route1(frame *thinkgo.Framework) {
 				}},
 			}),
 		),
+		frame.NewNamedPOST("body的JSON绑定", "/body", &handler.Body{}),
 		frame.NewStaticFS("/public", http.Dir("./static/public")),
 		frame.NewStatic("/public2", "./static/public"),
 	)
