@@ -32,7 +32,7 @@ type (
 		methods    []string
 		handlers   []Handler
 		paramInfos []ParamInfo
-		returns    Returns
+		notes      []Notes
 		parent     *MuxAPI
 		children   []*MuxAPI
 		frame      *Framework
@@ -60,7 +60,7 @@ func newMuxAPI(frame *Framework, name string, methodset Methodset, pattern strin
 		methods:    methodset.Methods(),
 		handlers:   handlers,
 		paramInfos: []ParamInfo{},
-		returns:    Returns{},
+		notes:      []Notes{},
 		children:   []*MuxAPI{},
 		frame:      frame,
 	}
@@ -268,12 +268,12 @@ func (mux *MuxAPI) Use(handlers ...HandlerWithoutPath) *MuxAPI {
 	return mux
 }
 
-// comb mux.handlers, mux.paramInfos, mux.returns and mux.path,.
+// comb mux.handlers, mux.paramInfos, mux.notes and mux.path,.
 // sort children by path.
 // note: can only be executed once before HTTP serving.
 func (mux *MuxAPI) comb() {
 	mux.paramInfos = mux.paramInfos[:0]
-	mux.returns = mux.returns[:0]
+	mux.notes = mux.notes[:0]
 	for i, handler := range mux.handlers {
 		apiHandler := ToAPIHandler(handler)
 		if apiHandler == nil {
@@ -294,7 +294,9 @@ func (mux *MuxAPI) comb() {
 
 		// Get the information for apidoc
 		mux.paramInfos = append(mux.paramInfos, h.paramInfos()...)
-		mux.returns = append(mux.returns, h.returns()...)
+		if r := h.getNotes(); r != nil {
+			mux.notes = append(mux.notes, *r)
+		}
 	}
 
 	// check path params defined, and panic if there is any error.
@@ -303,7 +305,7 @@ func (mux *MuxAPI) comb() {
 	mux.path = mux.pattern
 	if mux.parent != nil {
 		mux.path = path.Join(mux.parent.path, mux.path)
-		mux.returns = append(mux.parent.returns, mux.returns...)
+		mux.notes = append(mux.parent.notes, mux.notes...)
 		mux.paramInfos = append(mux.parent.paramInfos, mux.paramInfos...)
 		mux.handlers = append(mux.parent.handlers, mux.handlers...)
 	}
@@ -379,8 +381,8 @@ func (mux *MuxAPI) ParamInfos() []ParamInfo {
 	return mux.paramInfos
 }
 
-func (mux *MuxAPI) Returns() []Return {
-	return mux.returns
+func (mux *MuxAPI) Notes() []Notes {
+	return mux.notes
 }
 
 func (mux *MuxAPI) Parent() *MuxAPI {

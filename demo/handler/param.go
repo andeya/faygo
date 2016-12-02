@@ -14,13 +14,13 @@ type Param struct {
 	Title     string   `param:"in(query),nonzero"`
 	Paragraph []string `param:"in(query),name(p),len(1:10)" regexp:"(^[\\w]*$)"`
 	// Picture         multipart.FileHeader `param:"in(formData),name(pic),maxmb(30)"`
-	Cookie          http.Cookie `param:"in(cookie),name(thinkgo)"`
-	CookieString    string      `param:"in(cookie),name(thinkgo)"`
-	thinkgo.Returns `param:"-" json:"-"`
+	Cookie       http.Cookie `param:"in(cookie),name(thinkgo)"`
+	CookieString string      `param:"in(cookie),name(thinkgo)"`
 }
 
 var once sync.Once
 
+// Implement the handler interface
 func (p *Param) Serve(ctx *thinkgo.Context) error {
 	ctx.Log().Info(ctx.R.Host)
 	// name, id := ctx.GetSession("name"), ctx.GetSession("id")
@@ -33,4 +33,15 @@ func (p *Param) Serve(ctx *thinkgo.Context) error {
 
 	return ctx.JSON(200, p, true)
 	// return ctx.String(200, "name: %v\nid: %d", name, id)
+}
+
+// Implementation notes of a response.
+func (p *Param) Notes() thinkgo.Notes {
+	return thinkgo.Notes{
+		Note: "param desc",
+		Return: thinkgo.JsonMsg{
+			Code: 1,
+			Info: "success",
+		},
+	}
 }

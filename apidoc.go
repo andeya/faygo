@@ -17,6 +17,7 @@
 package thinkgo
 
 import (
+	"encoding/json"
 	"fmt"
 	"path"
 	"strings"
@@ -135,7 +136,7 @@ func addpath(mux *MuxAPI, tag *swagger.Tag) {
 	operas := map[string]*swagger.Opera{}
 	pid := apiCreatePath(mux.Path())
 	summary := apiSummary(mux.Name())
-	desc := apiDesc(mux.Name())
+	desc := apiDesc(mux.Notes())
 	for _, method := range mux.Methods() {
 		if method == "CONNECT" || method == "TRACE" {
 			continue
@@ -219,45 +220,6 @@ func addpath(mux *MuxAPI, tag *swagger.Tag) {
 			o.Parameters = append(o.Parameters, apiStaticParam)
 		}
 
-		// response
-		for _, r := range mux.Returns() {
-			var resp = &swagger.Resp{
-				Description: r.Description,
-				Schema: &swagger.Schema{
-					Type: swagger.ParamType(r.ExampleValue),
-				},
-			}
-			status := fmt.Sprint(r.Code)
-			name := "http" + status
-			switch resp.Schema.Type {
-			case "array":
-				subtyp, first, count := swagger.SliceInfo(r.ExampleValue)
-				switch subtyp {
-				case "object":
-					ref := apiDefinitions(mux, name, method, r.ExampleValue)
-					resp.Schema.Items = &swagger.Items{
-						Ref: "#/definitions/" + ref,
-					}
-
-				default:
-					resp.Schema.Items = &swagger.Items{
-						Type:    subtyp,
-						Default: first,
-					}
-					if count > 0 {
-						resp.Schema.Items.Enum = r.ExampleValue
-					}
-				}
-
-			case "object":
-				ref := apiDefinitions(mux, name, method, r.ExampleValue)
-				resp.Schema.Ref = "#/definitions/" + ref
-			}
-			o.Responses[status] = resp
-		}
-		if len(o.Responses) == 0 {
-			o.Responses["200"] = &swagger.Resp{Description: "ok"}
-		}
 		operas[strings.ToLower(method)] = o
 	}
 	if _operas, ok := mux.frame.apidoc.Paths[pid]; ok {
@@ -308,6 +270,23 @@ func apiSummary(desc string) string {
 	return strings.TrimSpace(strings.Split(strings.TrimSpace(desc), "\n")[0])
 }
 
-func apiDesc(name string) string {
-	return "<pre style=\"line-height:18px;\">" + name + "</pre>"
+func apiDesc(notes []Notes) string {
+	var desc string
+	count := len(notes)
+	for i, n := range notes {
+		if count > 1 {
+			desc += fmt.Sprintf("\n\n======================= Handler %d =======================", i)
+		}
+		if n.Note != "" {
+			desc += fmt.Sprintf("\nNote: %s", strings.TrimSpace(n.Note))
+		}
+		if n.Return != "" {
+			b, _ := json.MarshalIndent(n.Return, "", "  ")
+			desc += fmt.Sprintf("\nReturn: %s", string(b))
+		}
+	}
+	if desc != "" {
+		return "<pre style=\"line-height:18px;\">" + strings.TrimSpace(desc) + "</pre>"
+	}
+	return ""
 }

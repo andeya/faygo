@@ -15,14 +15,6 @@ func Route1(frame *thinkgo.Framework) {
 			frame.NewNamedGET("html", "render", &handler.Render{}),
 			frame.NewNamedAPI("params", "GET POST", "param/:id", &handler.Param{
 				Paragraph: []string{"abc"},
-				Returns: thinkgo.Returns{{
-					Code:        200,
-					Description: "success",
-				}, {
-					Code:         400,
-					Description:  "parsing parameters error",
-					ExampleValue: "error:???",
-				}},
 			}),
 		),
 		frame.NewNamedGET("websocket", "/ws", handler.WebsocketPage()),
@@ -41,14 +33,6 @@ func Route2(frame *thinkgo.Framework) {
 		home.NamedGET("html", "render", &handler.Render{})
 		home.NamedAPI("params", "GET POST", "param/:id", &handler.Param{
 			Paragraph: []string{"abc"},
-			Returns: thinkgo.Returns{{
-				Code:        200,
-				Description: "success",
-			}, {
-				Code:         400,
-				Description:  "parsing parameters error",
-				ExampleValue: "error:???",
-			}},
 		})
 	}
 	frame.NamedPOST("binds the body in JSON format", "/body", &handler.Body{})

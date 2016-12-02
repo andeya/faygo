@@ -225,13 +225,25 @@ type (
 		// a parameter value that is used to infer a value type and as a default value
 		Model interface{}
 	}
+	Doc interface {
+		Notes() Notes
+	}
 	// response description
-	Returns []Return
-	Return  struct {
-		Code         int         // HTTP status code (required)
-		Description  string      // response's reason (optional)
-		ExampleValue interface{} // response's schema and example value (optional)
-		Headers      interface{} // response's headers (optional)
+	// Return struct {
+	// 	Code         int         // HTTP status code (required)
+	// 	Description  string      // response's reason (optional)
+	// 	ExampleValue interface{} // response's schema and example value (optional)
+	// 	Headers      interface{} // response's headers (optional)
+	// }
+
+	// implementation notes of a response
+	Notes struct {
+		Note   string
+		Return interface{}
+	}
+	JsonMsg struct {
+		Code int         `json:"code"`           // the status code of the business process (required)
+		Info interface{} `json:"info,omitempty"` // response's schema and example value (optional)
 	}
 )
 
@@ -253,17 +265,12 @@ func (h *handlerStruct) paramInfos() []ParamInfo {
 }
 
 // Only the original instance is invoked.
-func (h *handlerStruct) returns() Returns {
-	elem := reflect.Indirect(reflect.ValueOf(h.handler))
-	for i, count := 0, elem.NumField(); i < count; i++ {
-		switch field := elem.Field(i).Interface().(type) {
-		case Returns:
-			return field
-		case []Return:
-			return field
-		}
+func (h *handlerStruct) getNotes() *Notes {
+	if doc, ok := h.handler.(Doc); ok {
+		n := doc.Notes()
+		return &n
 	}
-	return Returns{}
+	return nil
 }
 
 // Get distinct and sorted parameters information.
