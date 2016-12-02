@@ -1,45 +1,45 @@
-[2016/12/02T14:37:11.436+08:00] [SYS] APIdoc's URL path is '/apidoc' [check direct ip for filter] <myapp1_1.0>
-[2016/12/02T14:37:11.441+08:00] [SYS] CONNECT | /                              <myapp1_1.0>
-[2016/12/02T14:37:11.444+08:00] [SYS]  DELETE | /                              <myapp1_1.0>
-[2016/12/02T14:37:11.449+08:00] [SYS]     GET | /                              <myapp1_1.0>
-[2016/12/02T14:37:11.452+08:00] [SYS]    HEAD | /                              <myapp1_1.0>
-[2016/12/02T14:37:11.456+08:00] [SYS] OPTIONS | /                              <myapp1_1.0>
-[2016/12/02T14:37:11.459+08:00] [SYS]   PATCH | /                              <myapp1_1.0>
-[2016/12/02T14:37:11.462+08:00] [SYS]    POST | /                              <myapp1_1.0>
-[2016/12/02T14:37:11.466+08:00] [SYS]     PUT | /                              <myapp1_1.0>
-[2016/12/02T14:37:11.469+08:00] [SYS]   TRACE | /                              <myapp1_1.0>
-[2016/12/02T14:37:11.474+08:00] [SYS]     GET | /apidoc/*filepath              <myapp1_1.0>
-[2016/12/02T14:37:11.477+08:00] [SYS]    POST | /body                          <myapp1_1.0>
-[2016/12/02T14:37:11.481+08:00] [SYS]     GET | /home/param/:id                <myapp1_1.0>
-[2016/12/02T14:37:11.484+08:00] [SYS]    POST | /home/param/:id                <myapp1_1.0>
-[2016/12/02T14:37:11.489+08:00] [SYS]     GET | /home/render                   <myapp1_1.0>
-[2016/12/02T14:37:11.492+08:00] [SYS]     GET | /public/*filepath              <myapp1_1.0>
-[2016/12/02T14:37:11.495+08:00] [SYS]     GET | /static/*filepath              <myapp1_1.0>
-[2016/12/02T14:37:11.499+08:00] [SYS]     GET | /swagger.json                  <myapp1_1.0>
-[2016/12/02T14:37:11.502+08:00] [SYS]     GET | /syso/*filepath                <myapp1_1.0>
-[2016/12/02T14:37:11.506+08:00] [SYS]     GET | /upload/*filepath              <myapp1_1.0>
-[2016/12/02T14:37:11.51+08:00] [SYS]     GET | /ws                            <myapp1_1.0>
-[2016/12/02T14:37:11.514+08:00] [SYS]     GET | /ws_server                     <myapp1_1.0>
-[2016/12/02T14:37:11.518+08:00] [SYS] [myapp1_1.0] listen and serve HTTP/HTTP2 on 0.0.0.0:8080 <myapp1_1.0>
-[2016/12/02T14:37:11.518+08:00] [SYS] APIdoc's URL path is '/apidoc' [check direct ip for filter] <myapp2_1.0>
-[2016/12/02T14:37:11.529+08:00] [SYS] CONNECT | /                              <myapp2_1.0>
-[2016/12/02T14:37:11.533+08:00] [SYS]  DELETE | /                              <myapp2_1.0>
-[2016/12/02T14:37:11.538+08:00] [SYS]     GET | /                              <myapp2_1.0>
-[2016/12/02T14:37:11.542+08:00] [SYS]    HEAD | /                              <myapp2_1.0>
-[2016/12/02T14:37:11.546+08:00] [SYS] OPTIONS | /                              <myapp2_1.0>
-[2016/12/02T14:37:11.551+08:00] [SYS]   PATCH | /                              <myapp2_1.0>
-[2016/12/02T14:37:11.556+08:00] [SYS]    POST | /                              <myapp2_1.0>
-[2016/12/02T14:37:11.56+08:00] [SYS]     PUT | /                              <myapp2_1.0>
-[2016/12/02T14:37:11.565+08:00] [SYS]   TRACE | /                              <myapp2_1.0>
-[2016/12/02T14:37:11.57+08:00] [SYS]     GET | /apidoc/*filepath              <myapp2_1.0>
-[2016/12/02T14:37:11.574+08:00] [SYS]    POST | /body                          <myapp2_1.0>
-[2016/12/02T14:37:11.578+08:00] [SYS]     GET | /home/param/:id                <myapp2_1.0>
-[2016/12/02T14:37:11.582+08:00] [SYS]    POST | /home/param/:id                <myapp2_1.0>
-[2016/12/02T14:37:11.588+08:00] [SYS]     GET | /home/render                   <myapp2_1.0>
-[2016/12/02T14:37:11.591+08:00] [SYS]     GET | /public/*filepath              <myapp2_1.0>
-[2016/12/02T14:37:11.594+08:00] [SYS]     GET | /static/*filepath              <myapp2_1.0>
-[2016/12/02T14:37:11.598+08:00] [SYS]     GET | /swagger.json                  <myapp2_1.0>
-[2016/12/02T14:37:11.602+08:00] [SYS]     GET | /syso/*filepath                <myapp2_1.0>
-[2016/12/02T14:37:11.606+08:00] [SYS]     GET | /upload/*filepath              <myapp2_1.0>
-[2016/12/02T14:37:11.61+08:00] [SYS] [myapp2_1.0] listen and serve HTTP/HTTP2 on 0.0.0.0:80 <myapp2_1.0>
-[2016/12/02T14:37:11.61+08:00] [SYS] [myapp2_1.0] listen and serve HTTPS(TLS)/HTTP2 on 0.0.0.0:443 <myapp2_1.0>
+[2016/12/02T14:45:53.232+08:00] [SYS] APIdoc's URL path is '/apidoc' [check direct ip for filter] <myapp1_1.0>
+[2016/12/02T14:45:53.251+08:00] [SYS] CONNECT | /                              <myapp1_1.0>
+[2016/12/02T14:45:53.263+08:00] [SYS]  DELETE | /                              <myapp1_1.0>
+[2016/12/02T14:45:53.276+08:00] [SYS]     GET | /                              <myapp1_1.0>
+[2016/12/02T14:45:53.289+08:00] [SYS]    HEAD | /                              <myapp1_1.0>
+[2016/12/02T14:45:53.3+08:00] [SYS] OPTIONS | /                              <myapp1_1.0>
+[2016/12/02T14:45:53.312+08:00] [SYS]   PATCH | /                              <myapp1_1.0>
+[2016/12/02T14:45:53.324+08:00] [SYS]    POST | /                              <myapp1_1.0>
+[2016/12/02T14:45:53.335+08:00] [SYS]     PUT | /                              <myapp1_1.0>
+[2016/12/02T14:45:53.345+08:00] [SYS]   TRACE | /                              <myapp1_1.0>
+[2016/12/02T14:45:53.356+08:00] [SYS]     GET | /apidoc/*filepath              <myapp1_1.0>
+[2016/12/02T14:45:53.36+08:00] [SYS]    POST | /body                          <myapp1_1.0>
+[2016/12/02T14:45:53.365+08:00] [SYS]     GET | /home/param/:id                <myapp1_1.0>
+[2016/12/02T14:45:53.373+08:00] [SYS]    POST | /home/param/:id                <myapp1_1.0>
+[2016/12/02T14:45:53.381+08:00] [SYS]     GET | /home/render                   <myapp1_1.0>
+[2016/12/02T14:45:53.392+08:00] [SYS]     GET | /public/*filepath              <myapp1_1.0>
+[2016/12/02T14:45:53.398+08:00] [SYS]     GET | /static/*filepath              <myapp1_1.0>
+[2016/12/02T14:45:53.403+08:00] [SYS]     GET | /swagger.json                  <myapp1_1.0>
+[2016/12/02T14:45:53.406+08:00] [SYS]     GET | /syso/*filepath                <myapp1_1.0>
+[2016/12/02T14:45:53.41+08:00] [SYS]     GET | /upload/*filepath              <myapp1_1.0>
+[2016/12/02T14:45:53.417+08:00] [SYS]     GET | /ws                            <myapp1_1.0>
+[2016/12/02T14:45:53.421+08:00] [SYS]     GET | /ws_server                     <myapp1_1.0>
+[2016/12/02T14:45:53.425+08:00] [SYS] [myapp1_1.0] listen and serve HTTP/HTTP2 on 0.0.0.0:8080 <myapp1_1.0>
+[2016/12/02T14:45:53.425+08:00] [SYS] APIdoc's URL path is '/apidoc' [check direct ip for filter] <myapp2_1.0>
+[2016/12/02T14:45:53.434+08:00] [SYS] CONNECT | /                              <myapp2_1.0>
+[2016/12/02T14:45:53.438+08:00] [SYS]  DELETE | /                              <myapp2_1.0>
+[2016/12/02T14:45:53.443+08:00] [SYS]     GET | /                              <myapp2_1.0>
+[2016/12/02T14:45:53.447+08:00] [SYS]    HEAD | /                              <myapp2_1.0>
+[2016/12/02T14:45:53.451+08:00] [SYS] OPTIONS | /                              <myapp2_1.0>
+[2016/12/02T14:45:53.455+08:00] [SYS]   PATCH | /                              <myapp2_1.0>
+[2016/12/02T14:45:53.459+08:00] [SYS]    POST | /                              <myapp2_1.0>
+[2016/12/02T14:45:53.463+08:00] [SYS]     PUT | /                              <myapp2_1.0>
+[2016/12/02T14:45:53.467+08:00] [SYS]   TRACE | /                              <myapp2_1.0>
+[2016/12/02T14:45:53.471+08:00] [SYS]     GET | /apidoc/*filepath              <myapp2_1.0>
+[2016/12/02T14:45:53.475+08:00] [SYS]    POST | /body                          <myapp2_1.0>
+[2016/12/02T14:45:53.479+08:00] [SYS]     GET | /home/param/:id                <myapp2_1.0>
+[2016/12/02T14:45:53.483+08:00] [SYS]    POST | /home/param/:id                <myapp2_1.0>
+[2016/12/02T14:45:53.487+08:00] [SYS]     GET | /home/render                   <myapp2_1.0>
+[2016/12/02T14:45:53.492+08:00] [SYS]     GET | /public/*filepath              <myapp2_1.0>
+[2016/12/02T14:45:53.496+08:00] [SYS]     GET | /static/*filepath              <myapp2_1.0>
+[2016/12/02T14:45:53.5+08:00] [SYS]     GET | /swagger.json                  <myapp2_1.0>
+[2016/12/02T14:45:53.504+08:00] [SYS]     GET | /syso/*filepath                <myapp2_1.0>
+[2016/12/02T14:45:53.509+08:00] [SYS]     GET | /upload/*filepath              <myapp2_1.0>
+[2016/12/02T14:45:53.513+08:00] [SYS] [myapp2_1.0] listen and serve HTTP/HTTP2 on 0.0.0.0:80 <myapp2_1.0>
+[2016/12/02T14:45:53.513+08:00] [SYS] [myapp2_1.0] listen and serve HTTPS(TLS)/HTTP2 on 0.0.0.0:443 <myapp2_1.0>
