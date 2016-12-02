@@ -140,9 +140,9 @@ func addpath(mux *MuxAPI, tag *swagger.Tag) {
 		if method == "CONNECT" || method == "TRACE" {
 			continue
 		}
-		if method == "WS" {
-			method = "GET"
-		}
+		// if method == "WS" {
+		// 	method = "GET"
+		// }
 		o := &swagger.Opera{
 			Tags:        []string{tag.Name},
 			Summary:     summary,

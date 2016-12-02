@@ -120,6 +120,15 @@ func (r *Response) DelCookie() {
 	r.Header().Del(HeaderSetCookie)
 }
 
+// ReadFrom is here to optimize copying from an *os.File regular file
+// to a *net.TCPConn with sendfile.
+func (resp *Response) ReadFrom(src io.Reader) (n int64, err error) {
+	if rf, ok := resp.writer.(io.ReaderFrom); ok {
+		return rf.ReadFrom(src)
+	}
+	return 0, errors.New("webserver doesn't support ReadFrom")
+}
+
 // Flush implements the http.Flusher interface to allow an HTTP handler to flush
 // buffered data to the client.
 func (resp *Response) Flush() {
@@ -131,11 +140,10 @@ func (resp *Response) Flush() {
 // Hijack implements the http.Hijacker interface to allow an HTTP handler to
 // take over the connection.
 func (resp *Response) Hijack() (net.Conn, *bufio.ReadWriter, error) {
-	hj, ok := resp.writer.(http.Hijacker)
-	if !ok {
-		return nil, nil, errors.New("webserver doesn't support hijacking")
+	if hj, ok := resp.writer.(http.Hijacker); ok {
+		return hj.Hijack()
 	}
-	return hj.Hijack()
+	return nil, nil, errors.New("webserver doesn't support Hijack")
 }
 
 // CloseNotify implements the http.CloseNotifier interface to allow detecting

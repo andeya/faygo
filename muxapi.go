@@ -81,13 +81,11 @@ func newMuxAPI(frame *Framework, name string, methodset Methodset, pattern strin
  * PUT
  * TRACE
  *
- * Special identification：
- * "REST"——CONNECT/DELETE/GET/HEAD/OPTIONS/PATCH/POST/PUT/TRACE
- * "WS"——web socket
+ * "*"——CONNECT/DELETE/GET/HEAD/OPTIONS/PATCH/POST/PUT/TRACE
  */
 func (m *Methodset) Methods() []string {
 	s := strings.ToUpper(string(*m))
-	if strings.Contains(s, "REST") {
+	if strings.Contains(s, "*") {
 		methods := make([]string, len(RESTfulMethodList))
 		copy(methods, RESTfulMethodList)
 		return methods

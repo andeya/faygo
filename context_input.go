@@ -542,18 +542,22 @@ func (ctx *Context) Session(key interface{}) interface{} {
 	return ctx.CruSession.Get(key)
 }
 
-// CopyBody returns the raw request body data as bytes.
-func (ctx *Context) CopyBody(MaxMemory int64) []byte {
-	if ctx.R.Body == nil {
-		return []byte{}
+// BodyBytes returns the raw request body data as bytes.
+func (ctx *Context) BodyBytes() []byte {
+	if ctx.limitedRequestBody != nil {
+		return ctx.limitedRequestBody
 	}
-	safe := &io.LimitedReader{R: ctx.R.Body, N: MaxMemory}
-	requestbody, _ := ioutil.ReadAll(safe)
+	if ctx.R.Body == nil {
+		ctx.limitedRequestBody = []byte{}
+		return ctx.limitedRequestBody
+	}
+	safe := &io.LimitedReader{R: ctx.R.Body, N: ctx.frame.config.multipartMaxMemory}
+	limitedRequestBody, _ := ioutil.ReadAll(safe)
 	ctx.R.Body.Close()
-	bf := bytes.NewBuffer(requestbody)
+	bf := bytes.NewBuffer(limitedRequestBody)
 	ctx.R.Body = ioutil.NopCloser(bf)
-	ctx.RequestBody = requestbody
-	return requestbody
+	ctx.limitedRequestBody = limitedRequestBody
+	return limitedRequestBody
 }
 
 // BizBind data from ctx.BizParam(key) to dest

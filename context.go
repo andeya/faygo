@@ -117,23 +117,23 @@ type (
 	// Context is resetting every time a ruest is coming to the server
 	// it is not good practice to use this object in goroutines, for these cases use the .Clone()
 	Context struct {
-		R               *http.Request // the *http.Request
-		W               *Response     // the *Response cooked by the http.ResponseWriter
-		CruSession      session.Store
-		RequestBody     []byte
-		frame           *Framework
-		handlerChain    HandlerChain                // keep track all registed handlers
-		pathParams      Params                      // The parameter values on the URL path
-		queryParams     url.Values                  // URL query string values
-		data            map[interface{}]interface{} // Used to transfer variables between Handler-chains
-		handlerChainLen int8
-		pos             int8 // pos is the position number of the Context, look .Next to understand
-		enableGzip      bool // Note: Never reset!
-		enableSession   bool // Note: Never reset!
-		enableXSRF      bool // Note: Never reset!
-		xsrfExpire      int
-		_xsrfToken      string
-		_xsrfTokenReset bool
+		R                  *http.Request // the *http.Request
+		W                  *Response     // the *Response cooked by the http.ResponseWriter
+		CruSession         session.Store
+		limitedRequestBody []byte // the copy of requset body(Limited by maximum length)
+		frame              *Framework
+		handlerChain       HandlerChain                // keep track all registed handlers
+		pathParams         Params                      // The parameter values on the URL path
+		queryParams        url.Values                  // URL query string values
+		data               map[interface{}]interface{} // Used to transfer variables between Handler-chains
+		handlerChainLen    int8
+		pos                int8 // pos is the position number of the Context, look .Next to understand
+		enableGzip         bool // Note: Never reset!
+		enableSession      bool // Note: Never reset!
+		enableXSRF         bool // Note: Never reset!
+		xsrfExpire         int
+		_xsrfToken         string
+		_xsrfTokenReset    bool
 	}
 )
 
@@ -444,7 +444,7 @@ func (ctx *Context) Stop() {
 // reset ctx.
 // Note: Never reset `ctx.frame`, `ctx.W`, `ctx.enableGzip`, `ctx.enableSession` and `ctx.enableXSRF`!
 func (ctx *Context) reset(w http.ResponseWriter, r *http.Request, pathParams Params) {
-	ctx.RequestBody = []byte{}
+	ctx.limitedRequestBody = nil
 	ctx.data = nil
 	ctx.queryParams = nil
 	ctx._xsrfToken = ""
