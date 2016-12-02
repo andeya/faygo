@@ -11,10 +11,12 @@ Thinkgo以全新的架构实现，它面向Handler接口开发，支持智能参
 
 ![thinkgo apidoc](https://github.com/henrylee2cn/thinkgo/raw/master/doc/apidoc.png)
 
+![thinkgo index](https://github.com/henrylee2cn/thinkgo/raw/master/doc/index.png)
+
 # 框架下载
 
 ```sh
-go get github.com/henrylee2cn/thinkgo
+go get -u -v github.com/henrylee2cn/thinkgo
 ```
 
 # 安装要求
@@ -92,6 +94,7 @@ response:
     }
 */
 ```
+[完整demo示例](https://github.com/henrylee2cn/thinkgo/raw/master/demo)
 
 # 配置文件说明
 
@@ -216,5 +219,18 @@ uint64  |  []uint64  |
 float32 |  []float32 |
 float64 |  []float64 |
 
-## 开源协议
+# 扩展包
+- 各种条码:       [github.com/henrylee2cn/thinkgo/ext/barcode](https://github.com/henrylee2cn/thinkgo/raw/master/ext/barcode)
+- 比特单位:       [github.com/henrylee2cn/thinkgo/ext/bitconv](https://github.com/henrylee2cn/thinkgo/raw/master/ext/bitconv)
+- 定时器:         [github.com/henrylee2cn/thinkgo/ext/cron](https://github.com/henrylee2cn/thinkgo/raw/master/ext/cron)
+- gorm数据库引擎: [github.com/henrylee2cn/thinkgo/ext/db/grom](https://github.com/henrylee2cn/thinkgo/raw/master/ext/db/grom)
+- sqlx数据库引擎: [github.com/henrylee2cn/thinkgo/ext/db/sqlx](https://github.com/henrylee2cn/thinkgo/raw/master/ext/db/sqlx)
+- xrom数据库引擎: [github.com/henrylee2cn/thinkgo/ext/db/xrom](https://github.com/henrylee2cn/thinkgo/raw/master/ext/db/xrom)
+- 口令算法:       [github.com/henrylee2cn/thinkgo/ext/otp](https://github.com/henrylee2cn/thinkgo/raw/master/ext/otp)
+- UUID:           [github.com/henrylee2cn/thinkgo/ext/uuid](https://github.com/henrylee2cn/thinkgo/raw/master/ext/uuid)
+- Websocket:      [github.com/henrylee2cn/thinkgo/ext/uuid](https://github.com/henrylee2cn/thinkgo/raw/master/ext/websocket)
+- ini配置:        [github.com/henrylee2cn/thinkgo/ini](https://github.com/henrylee2cn/thinkgo/raw/master/ini)
+
+
+# 开源协议
 Thinkgo 项目采用商业应用友好的 [Apache2.0](https://github.com/henrylee2cn/thinkgo/raw/master/LICENSE) 协议发布。
