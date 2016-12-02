@@ -557,13 +557,13 @@ func (ctx *Context) CopyBody(MaxMemory int64) []byte {
 }
 
 // BizBind data from ctx.BizParam(key) to dest
-// like /?id=123&isok=true&ft=1.2&ol[0]=1&ol[1]=2&ul[]=str&ul[]=array&user.Name=astaxie
+// like /?id=123&isok=true&ft=1.2&ol[0]=1&ol[1]=2&ul[]=str&ul[]=array&user.Name=abc
 // var id int  ctx.BizBind(&id, "id")  id ==123
 // var isok bool  ctx.BizBind(&isok, "isok")  isok ==true
 // var ft float64  ctx.BizBind(&ft, "ft")  ft ==1.2
 // ol := make([]int, 0, 2)  ctx.BizBind(&ol, "ol")  ol ==[1 2]
 // ul := make([]string, 0, 2)  ctx.BizBind(&ul, "ul")  ul ==[str array]
-// user struct{Name}  ctx.BizBind(&user, "user")  user == {Name:"astaxie"}
+// user struct{Name}  ctx.BizBind(&user, "user")  user == {Name:"abc"}
 func (ctx *Context) BizBind(dest interface{}, key string) error {
 	value := reflect.ValueOf(dest)
 	if value.Kind() != reflect.Ptr {
