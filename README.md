@@ -220,16 +220,16 @@ float32 |  []float32 |
 float64 |  []float64 |
 
 # 扩展包
-- 各种条码:       [github.com/henrylee2cn/thinkgo/ext/barcode](https://github.com/henrylee2cn/thinkgo/raw/master/ext/barcode)
-- 比特单位:       [github.com/henrylee2cn/thinkgo/ext/bitconv](https://github.com/henrylee2cn/thinkgo/raw/master/ext/bitconv)
-- 定时器:         [github.com/henrylee2cn/thinkgo/ext/cron](https://github.com/henrylee2cn/thinkgo/raw/master/ext/cron)
-- gorm数据库引擎: [github.com/henrylee2cn/thinkgo/ext/db/grom](https://github.com/henrylee2cn/thinkgo/raw/master/ext/db/grom)
-- sqlx数据库引擎: [github.com/henrylee2cn/thinkgo/ext/db/sqlx](https://github.com/henrylee2cn/thinkgo/raw/master/ext/db/sqlx)
-- xrom数据库引擎: [github.com/henrylee2cn/thinkgo/ext/db/xrom](https://github.com/henrylee2cn/thinkgo/raw/master/ext/db/xrom)
-- 口令算法:       [github.com/henrylee2cn/thinkgo/ext/otp](https://github.com/henrylee2cn/thinkgo/raw/master/ext/otp)
-- UUID:           [github.com/henrylee2cn/thinkgo/ext/uuid](https://github.com/henrylee2cn/thinkgo/raw/master/ext/uuid)
-- Websocket:      [github.com/henrylee2cn/thinkgo/ext/uuid](https://github.com/henrylee2cn/thinkgo/raw/master/ext/websocket)
-- ini配置:        [github.com/henrylee2cn/thinkgo/ini](https://github.com/henrylee2cn/thinkgo/raw/master/ini)
+- [各种条码](https://github.com/henrylee2cn/thinkgo/raw/master/ext/barcode):       `github.com/henrylee2cn/thinkgo/ext/barcode`
+- [比特单位](https://github.com/henrylee2cn/thinkgo/raw/master/ext/bitconv):       `github.com/henrylee2cn/thinkgo/ext/bitconv`
+- [定时器](https://github.com/henrylee2cn/thinkgo/raw/master/ext/cron):            `github.com/henrylee2cn/thinkgo/ext/cron`
+- [gorm数据库引擎](https://github.com/henrylee2cn/thinkgo/raw/master/ext/db/grom): `github.com/henrylee2cn/thinkgo/ext/db/grom`
+- [sqlx数据库引擎](https://github.com/henrylee2cn/thinkgo/raw/master/ext/db/sqlx): `github.com/henrylee2cn/thinkgo/ext/db/sqlx`
+- [xrom数据库引擎](https://github.com/henrylee2cn/thinkgo/raw/master/ext/db/xrom): `github.com/henrylee2cn/thinkgo/ext/db/xrom`
+- [口令算法](https://github.com/henrylee2cn/thinkgo/raw/master/ext/otp):           `github.com/henrylee2cn/thinkgo/ext/otp`
+- [UUID](https://github.com/henrylee2cn/thinkgo/raw/master/ext/uuid):              `github.com/henrylee2cn/thinkgo/ext/uuid`
+- [Websocket](https://github.com/henrylee2cn/thinkgo/raw/master/ext/websocket):    `github.com/henrylee2cn/thinkgo/ext/uuid`
+- [ini配置](https://github.com/henrylee2cn/thinkgo/raw/master/ini):                `github.com/henrylee2cn/thinkgo/ini`
 
 
 # 开源协议
