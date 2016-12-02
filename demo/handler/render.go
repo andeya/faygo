@@ -15,3 +15,18 @@ func (r *Render) Serve(ctx *thinkgo.Context) error {
 		"p":     r.Paragraph,
 	})
 }
+
+func init() {
+	thinkgo.Global.TemplateVariable("__PUBLIC__", "/syso")
+}
+
+func Index() thinkgo.HandlerFunc {
+	return func(ctx *thinkgo.Context) error {
+		return ctx.Render(200, "../_syso/index.html", thinkgo.Map{
+			"TITLE":   "thinkgo",
+			"VERSION": thinkgo.VERSION,
+			"CONTENT": "Welcome To Thinkgo",
+			"AUTHOR":  "HenryLee",
+		})
+	}
+}

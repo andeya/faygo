@@ -10,45 +10,48 @@ import (
 func Route1(frame *thinkgo.Framework) {
 	// Register the route in a tree style
 	frame.Route(
+		frame.NewNamedAPI("index", "*", "/", handler.Index()),
 		frame.NewGroup("home",
-			frame.NewNamedAPI("test", "GET", "render", &handler.Render{}),
-			frame.NewNamedAPI("test", "GET POST", "test/:id", &handler.Index{
+			frame.NewNamedGET("html", "render", &handler.Render{}),
+			frame.NewNamedAPI("params", "GET POST", "param/:id", &handler.Param{
 				Paragraph: []string{"abc"},
 				Returns: thinkgo.Returns{{
 					Code:        200,
-					Description: "成功",
+					Description: "success",
 				}, {
 					Code:         400,
-					Description:  "参数解析错误",
+					Description:  "parsing parameters error",
 					ExampleValue: "error:???",
 				}},
 			}),
 		),
 		frame.NewNamedGET("websocket", "/ws", handler.WebsocketPage()),
 		frame.NewNamedGET("websocket_server", "/ws_server", handler.Websocket),
-		frame.NewNamedPOST("body的JSON绑定", "/body", &handler.Body{}),
+		frame.NewNamedPOST("binds the body in JSON format", "/body", &handler.Body{}),
 		frame.NewStaticFS("/public", http.Dir("./static/public")),
-		frame.NewStatic("/public2", "./static/public"),
+		frame.NewStatic("/syso", "../_syso"),
 	)
 }
 
 func Route2(frame *thinkgo.Framework) {
 	// Register the route in a chain style
+	frame.NamedAPI("index", "*", "/", handler.Index())
 	home := frame.Group("home")
 	{
-		home.NamedAPI("test", "GETPOST", "test/:id", &handler.Index{
+		home.NamedGET("html", "render", &handler.Render{})
+		home.NamedAPI("params", "GET POST", "param/:id", &handler.Param{
 			Paragraph: []string{"abc"},
 			Returns: thinkgo.Returns{{
 				Code:        200,
-				Description: "成功",
+				Description: "success",
 			}, {
 				Code:         400,
-				Description:  "参数解析错误",
+				Description:  "parsing parameters error",
 				ExampleValue: "error:???",
 			}},
 		})
 	}
-
+	frame.NamedPOST("binds the body in JSON format", "/body", &handler.Body{})
 	frame.StaticFS("/public", http.Dir("./static/public"))
-	frame.Static("/public2", "./static/public")
+	frame.Static("/syso", "../_syso")
 }
