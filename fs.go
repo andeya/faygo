@@ -74,6 +74,8 @@ func newFileServerManager(cacheSize int64, fileExpireSeconds int, enableCache bo
 }
 
 // Gets or stores the cache file without compression.
+// If the name is larger than 65535 or body is larger than 1/1024 of the cache size,
+// the entry will not be written to the cache.
 func (c *FileServerManager) OpenFile(name string) (http.File, error) {
 	f, err := c.Get(name)
 	if err == nil {
@@ -84,24 +86,20 @@ func (c *FileServerManager) OpenFile(name string) (http.File, error) {
 		return nil, err
 	}
 	fileInfo, err := f.Stat()
-	if err != nil || fileInfo.IsDir() {
+	if err != nil || fileInfo.IsDir() || fileInfo.Size() > c.maxSizeOfSingle {
 		return f, err
 	}
-	// If the name is larger than 65535 or body is larger than 1/1024 of the cache size,
-	// the entry will not be written to the cache. expireSeconds <= 0 means no expire,
-	// but it can be evicted when cache is full.
-	if fileInfo.Size() <= c.maxSizeOfSingle {
-		var content []byte
-		content, err = ioutil.ReadAll(f)
-		defer f.Close()
-		if err != nil {
-			return nil, err
-		}
-		return c.Set(name, content, fileInfo, "")
+	content, err := ioutil.ReadAll(f)
+	f.Close()
+	if err != nil {
+		return nil, err
 	}
-	return f, err
+	return c.Set(name, content, fileInfo, "")
 }
 
+// Gets or stores the cache file.
+// If the name is larger than 65535 or body is larger than 1/1024 of the cache size,
+// the entry will not be written to the cache.
 func (c *FileServerManager) Open(ctx *Context, name string, fs http.FileSystem) (http.File, error) {
 	f, err := c.Get(name)
 	if err == nil {
@@ -122,24 +120,28 @@ func (c *FileServerManager) Open(ctx *Context, name string, fs http.FileSystem) 
 	var encoding string
 	if c.enableGzip {
 		content, encoding, err = readWithCompress(ctx, f)
+		f.Close()
+		if err != nil {
+			return nil, err
+		}
+		if int64(len(content)) > c.maxSizeOfSingle {
+			return &CacheFile{
+				fileInfo: fileInfo,
+				encoding: encoding,
+				Reader:   bytes.NewReader(content),
+			}, nil
+		}
 	} else {
+		if fileInfo.Size() > c.maxSizeOfSingle {
+			return f, nil
+		}
 		content, err = ioutil.ReadAll(f)
+		f.Close()
+		if err != nil {
+			return nil, err
+		}
 	}
-	f.Close()
-	if err != nil {
-		return nil, err
-	}
-	// If the name is larger than 65535 or body is larger than 1/1024 of the cache size,
-	// the entry will not be written to the cache. expireSeconds <= 0 means no expire,
-	// but it can be evicted when cache is full.
-	if int64(len(content)) <= c.maxSizeOfSingle {
-		return c.Set(name, content, fileInfo, encoding)
-	}
-	return &CacheFile{
-		fileInfo: fileInfo,
-		encoding: encoding,
-		Reader:   bytes.NewReader(content),
-	}, nil
+	return c.Set(name, content, fileInfo, encoding)
 }
 
 func (c *FileServerManager) Get(name string) (http.File, error) {

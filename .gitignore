@@ -6,5 +6,6 @@
 *.log
 *.sublime-project
 *.sublime-workspace
-think/*
-/example
+/think/*
+/demo/log/*
+/example/*

@@ -98,6 +98,9 @@ func (resp *Response) WriteHeader(status int) {
 // Content-Type line, Write adds a Content-Type set to the result of passing
 // the initial 512 bytes of written data to DetectContentType.
 func (resp *Response) Write(b []byte) (int, error) {
+	if !resp.committed {
+		resp.WriteHeader(200)
+	}
 	n, err := resp.writer.Write(b)
 	resp.size += int64(n)
 	return n, err
