@@ -3,6 +3,7 @@
 *.psd
 *.bmd
 *.cfg
+*.log
 *.sublime-project
 *.sublime-workspace
 think/*
