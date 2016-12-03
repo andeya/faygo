@@ -122,16 +122,12 @@ func (c *FileServerManager) Open(ctx *Context, name string, fs http.FileSystem) 
 	var encoding string
 	if c.enableGzip {
 		content, encoding, err = readWithCompress(ctx, f)
-		defer f.Close()
-		if err != nil {
-			return nil, err
-		}
 	} else {
 		content, err = ioutil.ReadAll(f)
-		defer f.Close()
-		if err != nil {
-			return nil, err
-		}
+	}
+	f.Close()
+	if err != nil {
+		return nil, err
 	}
 	// If the name is larger than 65535 or body is larger than 1/1024 of the cache size,
 	// the entry will not be written to the cache. expireSeconds <= 0 means no expire,
@@ -139,7 +135,11 @@ func (c *FileServerManager) Open(ctx *Context, name string, fs http.FileSystem) 
 	if int64(len(content)) <= c.maxSizeOfSingle {
 		return c.Set(name, content, fileInfo, encoding)
 	}
-	return f, err
+	return &CacheFile{
+		fileInfo: fileInfo,
+		encoding: encoding,
+		Reader:   bytes.NewReader(content),
+	}, nil
 }
 
 func (c *FileServerManager) Get(name string) (http.File, error) {
@@ -187,13 +187,51 @@ func (c *CacheFile) Stat() (os.FileInfo, error) {
 
 func (c *CacheFile) Close() error {
 	c.Reader = nil
-	c.fileInfo = nil
 	return nil
 }
 
 func (c *CacheFile) Readdir(count int) ([]os.FileInfo, error) {
 	return []os.FileInfo{}, errors.New("Readdir " + c.fileInfo.Name() + ": The system cannot find the path specified.")
 }
+
+// type FileInfo struct {
+// 	name    string
+// 	size    int64
+// 	mode    os.FileMode
+// 	modTime time.Time
+// 	isDir   bool
+// 	sys     interface{}
+// }
+
+// // base name of the file
+// func (info *FileInfo) Name() string {
+// 	return info.name
+// }
+
+// // length in bytes for regular files; system-dependent for others
+// func (info *FileInfo) Size() int64 {
+// 	return info.size
+// }
+
+// // file mode bits
+// func (info *FileInfo) Mode() os.FileMode {
+// 	return info.mode
+// }
+
+// // modification time
+// func (info *FileInfo) ModTime() time.Time {
+// 	return info.modTime
+// }
+
+// // abbreviation for Mode().IsDir()
+// func (info *FileInfo) IsDir() bool {
+// 	return info.isDir
+// }
+
+// // underlying data source (can return nil)
+// func (info *FileInfo) Sys() interface{} {
+// 	return info.sys
+// }
 
 func (c *FileServerManager) dirList(ctx *Context, f http.File) {
 	dirs, err := f.Readdir(-1)
@@ -490,7 +528,6 @@ func checkETag(ctx *Context, modtime time.Time) (rangeReq string, done bool) {
 
 // name is '/'-separated, not filepath.Separator.
 func (c *FileServerManager) serveFile(ctx *Context, fs http.FileSystem, name string, redirect bool) {
-
 	// redirect .../index.html to .../
 	// can't use Redirect() because that would make the path absolute,
 	// which would be a problem running under StripPrefix

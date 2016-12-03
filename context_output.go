@@ -122,11 +122,41 @@ func (r *Response) DelCookie() {
 
 // ReadFrom is here to optimize copying from an *os.File regular file
 // to a *net.TCPConn with sendfile.
-func (resp *Response) ReadFrom(src io.Reader) (n int64, err error) {
+func (resp *Response) ReadFrom(src io.Reader) (int64, error) {
 	if rf, ok := resp.writer.(io.ReaderFrom); ok {
-		return rf.ReadFrom(src)
+		n, err := rf.ReadFrom(src)
+		resp.size += int64(n)
+		return n, err
 	}
-	return 0, errors.New("webserver doesn't support ReadFrom")
+	var buf = make([]byte, 32*1024)
+	var n int64
+	var err error
+	for {
+		nr, er := src.Read(buf)
+		if nr > 0 {
+			nw, ew := resp.writer.Write(buf[0:nr])
+			if nw > 0 {
+				n += int64(nw)
+			}
+			if ew != nil {
+				err = ew
+				break
+			}
+			if nr != nw {
+				err = io.ErrShortWrite
+				break
+			}
+		}
+		if er == io.EOF {
+			break
+		}
+		if er != nil {
+			err = er
+			break
+		}
+	}
+	resp.size += n
+	return n, err
 }
 
 // Flush implements the http.Flusher interface to allow an HTTP handler to flush
