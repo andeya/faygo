@@ -97,7 +97,8 @@ func (ps Params) Get(name string) (string, bool) {
 // Router is a http.Handler which can be used to dispatch requests to different
 // handler functions via configurable routes
 type Router struct {
-	trees map[string]*node
+	trees  map[string]*node
+	before []func(w http.ResponseWriter, req *http.Request) bool
 
 	// Enables automatic redirection if the current route can't be matched but a
 	// handler for the path with (without) the trailing slash exists.
@@ -323,9 +324,12 @@ func (r *Router) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	if r.PanicHandler != nil {
 		defer r.recv(w, req)
 	}
-
+	for _, h := range r.before {
+		if !h(w, req) {
+			return
+		}
+	}
 	path := req.URL.Path
-
 	if root := r.trees[req.Method]; root != nil {
 		if handle, ps, tsr := root.getValue(path); handle != nil {
 			handle(w, req, ps)

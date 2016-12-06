@@ -46,6 +46,7 @@ type Framework struct {
 	config         Config
 	*MuxAPI        // root muxAPI node
 	muxesForRouter MuxAPIs
+	before         []func(w http.ResponseWriter, req *http.Request) bool // called before the route is matched
 	servers        []*Server
 	once           sync.Once
 	sessionManager *session.Manager
@@ -136,6 +137,7 @@ func (frame *Framework) build() {
 		RedirectFixedPath:      frame.config.Router.RedirectFixedPath,
 		HandleMethodNotAllowed: frame.config.Router.HandleMethodNotAllowed,
 		HandleOPTIONS:          frame.config.Router.HandleOPTIONS,
+		before:                 frame.before,
 		NotFound:               frame.makeErrorHandler(http.StatusNotFound),
 		MethodNotAllowed:       frame.makeErrorHandler(http.StatusMethodNotAllowed),
 		PanicHandler:           frame.makePanicHandler(),
@@ -188,6 +190,23 @@ func (frame *Framework) MuxAPIsForRouter() []*MuxAPI {
 		frame.muxesForRouter = frame.MuxAPI.HandlerProgeny()
 	}
 	return frame.muxesForRouter
+}
+
+// Filter operations that are called before the route is matched.
+func (frame *Framework) Before(fn ...func(w http.ResponseWriter, r *http.Request) error) *Framework {
+	before := make([]func(w http.ResponseWriter, r *http.Request) bool, len(fn))
+	for i, _before := range fn {
+		before[i] = func(w http.ResponseWriter, r *http.Request) bool {
+			err := _before(w, r)
+			if err != nil {
+				Global.errorFunc(newEmptyContext(frame, w, r), err.Error(), http.StatusInternalServerError)
+				return false
+			}
+			return true
+		}
+	}
+	frame.before = append(before, frame.before...)
+	return frame
 }
 
 // Append middlewares of function type to root muxAPI.
