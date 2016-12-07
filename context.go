@@ -335,6 +335,21 @@ func newEmptyContext(
 	return ctx
 }
 
+// Create the context for the filter
+func newFilterContext(
+	frame *Framework,
+) *Context {
+	ctx := &Context{
+		frame:           frame,
+		handlerChain:    frame.filter,
+		handlerChainLen: int8(len(frame.filter)),
+		pos:             0,
+		data:            make(map[interface{}]interface{}),
+	}
+	ctx.W = newResponse(ctx, nil)
+	return ctx
+}
+
 // Create the context for common handle
 func newContext(
 	frame *Framework,
@@ -381,12 +396,17 @@ func (ctx *Context) prepare() bool {
 	return pass
 }
 
-// start calls the first handler only, it's like Next with negative pos, used only on Router&MemoryRouter
-func (ctx *Context) start() {
+// reset the cursor
+func (ctx *Context) posReset() {
+	ctx.pos = -1
+}
+
+// do calls the first handler only, it's like Next with negative pos, used only on Router&MemoryRouter
+func (ctx *Context) do() {
 	if !ctx.prepare() {
 		return
 	}
-	ctx.pos = -1
+	ctx.posReset()
 	ctx.Next()
 }
 
@@ -421,7 +441,9 @@ func (ctx *Context) Next() {
 		}
 		// If the next one exists, it is executed automatically.
 		ctx.Next()
+		return
 	}
+	ctx.pos--
 }
 
 func (ctx *Context) beforeWriteHeader() {
@@ -441,11 +463,19 @@ func (ctx *Context) Stop() {
 	ctx.pos = stopExecutionposition
 }
 
+func (ctx *Context) isStop() bool {
+	return ctx.pos >= ctx.handlerChainLen
+}
+
+func (ctx *Context) isActiveStop() bool {
+	return ctx.pos == stopExecutionposition
+}
+
 // reset ctx.
 // Note: Never reset `ctx.frame`, `ctx.W`, `ctx.enableGzip`, `ctx.enableSession` and `ctx.enableXSRF`!
-func (ctx *Context) reset(w http.ResponseWriter, r *http.Request, pathParams Params) {
+func (ctx *Context) reset(w http.ResponseWriter, r *http.Request, pathParams Params, data map[interface{}]interface{}) {
 	ctx.limitedRequestBody = nil
-	ctx.data = nil
+	ctx.data = data
 	ctx.queryParams = nil
 	ctx._xsrfToken = ""
 	ctx._xsrfTokenReset = false

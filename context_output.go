@@ -30,12 +30,14 @@ import (
 	"net"
 	"net/http"
 	"path/filepath"
+	"runtime"
 	"strconv"
 	"strings"
 	"time"
 	"unsafe"
 
 	"github.com/henrylee2cn/thinkgo/acceptencoder"
+	"github.com/henrylee2cn/thinkgo/logging"
 )
 
 // Response wraps an http.ResponseWriter and implements its interface to be used
@@ -83,7 +85,7 @@ func (resp *Response) Header() http.Header {
 // send error codes.
 func (resp *Response) WriteHeader(status int) {
 	if resp.committed {
-		resp.context.Log().Warning("multiple response.WriteHeader calls")
+		multiCommitted(resp.context.Log())
 		return
 	}
 	resp.status = status
@@ -388,7 +390,8 @@ func (ctx *Context) Error(status int, errStr string) {
 // Bytes writes the data bytes to the connection as part of an HTTP reply.
 func (ctx *Context) Bytes(status int, content []byte) error {
 	if ctx.W.committed {
-		return errors.New("multiple response.WriteHeader calls")
+		multiCommitted(ctx.Log())
+		return nil
 	}
 	if ctx.W.Header().Get(HeaderContentEncoding) == "" {
 		if ctx.enableGzip {
@@ -532,4 +535,23 @@ func (ctx *Context) Render(status int, name string, data Map) error {
 	}
 	ctx.W.Header().Set(HeaderContentType, MIMETextHTMLCharsetUTF8)
 	return ctx.Bytes(status, b)
+}
+
+func multiCommitted(log *logging.Logger) {
+	line := []byte("\n")
+	e := []byte("\ngoroutine ")
+	stack := make([]byte, 2<<10) //2KB
+	runtime.Stack(stack, true)
+	start := bytes.Index(stack, line) + 1
+	stack = stack[start:]
+	end := bytes.LastIndex(stack, line)
+	if end != -1 {
+		stack = stack[:end]
+	}
+	end = bytes.Index(stack, e)
+	if end != -1 {
+		stack = stack[:end]
+	}
+	stack = bytes.TrimRight(stack, "\n")
+	log.Warningf("multiple response.WriteHeader calls\n[TRACE]\n%s\n", stack)
 }
