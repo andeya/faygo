@@ -1,16 +1,18 @@
 package middleware
 
 import (
-	"errors"
-	"net/http"
+	// "errors"
+	"github.com/henrylee2cn/thinkgo"
 )
 
-func Root2Index(w http.ResponseWriter, r *http.Request) error {
-	if r.URL.Path == "/index" {
-		return errors.New("Please access the root directory `/`")
+func Root2Index(ctx *thinkgo.Context) error {
+	if ctx.Path() == "/index" {
+		ctx.Stop()
+		return nil
+		// return errors.New("Please access the root directory `/`")
 	}
-	if r.URL.Path == "/" {
-		r.URL.Path = "/index"
+	if ctx.Path() == "/" {
+		ctx.ModifyPath("/index")
 	}
 	return nil
 }

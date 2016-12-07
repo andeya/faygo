@@ -11,7 +11,7 @@ import (
 // Register the route in a tree style
 func Route1(frame *thinkgo.Framework) {
 	frame.
-		Before(middleware.Root2Index).
+		Filter(middleware.Root2Index).
 		Route(
 			// frame.NewNamedAPI("index", "*", "/", handler.Index()),
 			frame.NewNamedAPI("index", "*", "/index", handler.Index()),
@@ -31,7 +31,7 @@ func Route1(frame *thinkgo.Framework) {
 
 // Register the route in a chain style
 func Route2(frame *thinkgo.Framework) {
-	frame.Before(middleware.Root2Index)
+	frame.Filter(middleware.Root2Index)
 	// frame.NamedAPI("index", "*", "/", handler.Index())
 	frame.NamedAPI("index", "*", "/index", handler.Index())
 	home := frame.Group("home")
