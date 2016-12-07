@@ -82,7 +82,7 @@ func CrossDomainFilter() HandlerFunc {
 }
 
 // Access log statistics
-func AccessLogWare() HandlerFunc {
+func accessLogWare() HandlerFunc {
 	return func(ctx *Context) error {
 		var u = ctx.URI()
 		start := time.Now()
