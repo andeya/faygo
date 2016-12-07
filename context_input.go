@@ -59,6 +59,11 @@ func (ctx *Context) Path() string {
 	return ctx.R.URL.Path
 }
 
+// ModifyPath modifies the access path for the request.
+func (ctx *Context) ModifyPath(p string) {
+	ctx.R.URL.Path = p
+}
+
 // Scheme returns request scheme as "http" or "https".
 func (ctx *Context) Scheme() string {
 	if scheme := ctx.HeaderParam(HeaderXForwardedProto); scheme != "" {
