@@ -83,6 +83,7 @@ var Global = func() *GlobalSetting {
 
 var (
 	defaultErrorFunc = func(ctx *Context, errStr string, status int) {
+		ctx.Log().Error(errStr)
 		statusText := http.StatusText(status)
 		if len(errStr) > 0 {
 			errStr = `<br><p><b style="color:red;">[ERROR]</b> <pre>` + errStr + `</pre></p>`
