@@ -57,7 +57,7 @@ import (
 // Handle is a function that can be registered to a route to handle HTTP
 // requests. Like http.HandlerFunc, but has a third parameter for the values of
 // wildcards (variables).
-type Handle func(http.ResponseWriter, *http.Request, Params)
+type Handle func(http.ResponseWriter, *http.Request, Params, map[interface{}]interface{})
 
 // Param is a single URL parameter, consisting of a key and a value.
 type Param struct {
@@ -94,11 +94,14 @@ func (ps Params) Get(name string) (string, bool) {
 	return "", false
 }
 
+type FilterFunc func(w http.ResponseWriter, req *http.Request) (map[interface{}]interface{}, bool)
+
 // Router is a http.Handler which can be used to dispatch requests to different
 // handler functions via configurable routes
 type Router struct {
-	trees  map[string]*node
-	before []func(w http.ResponseWriter, req *http.Request) bool
+	trees map[string]*node
+
+	filter FilterFunc
 
 	// Enables automatic redirection if the current route can't be matched but a
 	// handler for the path with (without) the trailing slash exists.
@@ -228,7 +231,7 @@ func (r *Router) Handle(method, path string, handle Handle) {
 // request handle.
 func (r *Router) Handler(method, path string, handler http.Handler) {
 	r.Handle(method, path,
-		func(w http.ResponseWriter, req *http.Request, _ Params) {
+		func(w http.ResponseWriter, req *http.Request, _ Params, _ map[interface{}]interface{}) {
 			handler.ServeHTTP(w, req)
 		},
 	)
@@ -257,7 +260,7 @@ func (r *Router) ServeFiles(path string, root http.FileSystem) {
 
 	fileServer := http.FileServer(root)
 
-	r.GET(path, func(w http.ResponseWriter, req *http.Request, ps Params) {
+	r.GET(path, func(w http.ResponseWriter, req *http.Request, ps Params, _ map[interface{}]interface{}) {
 		req.URL.Path = ps.ByName("filepath")
 		fileServer.ServeHTTP(w, req)
 	})
@@ -324,15 +327,18 @@ func (r *Router) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	if r.PanicHandler != nil {
 		defer r.recv(w, req)
 	}
-	for _, h := range r.before {
-		if !h(w, req) {
+	var data map[interface{}]interface{}
+	if r.filter != nil {
+		var pass bool
+		data, pass = r.filter(w, req)
+		if !pass {
 			return
 		}
 	}
 	path := req.URL.Path
 	if root := r.trees[req.Method]; root != nil {
 		if handle, ps, tsr := root.getValue(path); handle != nil {
-			handle(w, req, ps)
+			handle(w, req, ps, data)
 			return
 		} else if req.Method != "CONNECT" && path != "/" {
 			code := 301 // Permanent redirect, request with GET method

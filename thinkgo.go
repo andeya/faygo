@@ -20,8 +20,10 @@ import (
 	"net/http"
 	"runtime"
 	"sync"
+	"time"
 
 	"github.com/henrylee2cn/thinkgo/logging"
+	"github.com/henrylee2cn/thinkgo/logging/color"
 	"github.com/henrylee2cn/thinkgo/session"
 	"github.com/henrylee2cn/thinkgo/swagger"
 )
@@ -46,7 +48,7 @@ type Framework struct {
 	config         Config
 	*MuxAPI        // root muxAPI node
 	muxesForRouter MuxAPIs
-	before         []func(w http.ResponseWriter, req *http.Request) bool // called before the route is matched
+	filter         HandlerChain // called before the route is matched
 	servers        []*Server
 	once           sync.Once
 	sessionManager *session.Manager
@@ -137,7 +139,7 @@ func (frame *Framework) build() {
 		RedirectFixedPath:      frame.config.Router.RedirectFixedPath,
 		HandleMethodNotAllowed: frame.config.Router.HandleMethodNotAllowed,
 		HandleOPTIONS:          frame.config.Router.HandleOPTIONS,
-		before:                 frame.before,
+		filter:                 frame.makeFilterHandle(),
 		NotFound:               frame.makeErrorHandler(http.StatusNotFound),
 		MethodNotAllowed:       frame.makeErrorHandler(http.StatusMethodNotAllowed),
 		PanicHandler:           frame.makePanicHandler(),
@@ -193,19 +195,12 @@ func (frame *Framework) MuxAPIsForRouter() []*MuxAPI {
 }
 
 // Filter operations that are called before the route is matched.
-func (frame *Framework) Before(fn ...func(w http.ResponseWriter, r *http.Request) error) *Framework {
-	before := make([]func(w http.ResponseWriter, r *http.Request) bool, len(fn))
-	for i, _before := range fn {
-		before[i] = func(w http.ResponseWriter, r *http.Request) bool {
-			err := _before(w, r)
-			if err != nil {
-				Global.errorFunc(newEmptyContext(frame, w, r), err.Error(), http.StatusInternalServerError)
-				return false
-			}
-			return true
-		}
+func (frame *Framework) Filter(fn ...HandlerFunc) *Framework {
+	handlers := make([]Handler, len(fn))
+	for i, h := range fn {
+		handlers[i] = h
 	}
-	frame.before = append(before, frame.before...)
+	frame.filter = append(handlers, frame.filter...)
 	return frame
 }
 
@@ -334,6 +329,54 @@ func (frame *Framework) NewNamedStaticFS(name, pattern string, fs http.FileSyste
 	return (&MuxAPI{frame: frame}).NamedStaticFS(name, pattern, fs)
 }
 
+// makeFilterHandle makes an FilterFunc.
+func (frame *Framework) makeFilterHandle() FilterFunc {
+	if len(frame.filter) == 0 {
+		return nil
+	}
+	ctxPool := sync.Pool{
+		New: func() interface{} {
+			return newFilterContext(frame)
+		},
+	}
+	return func(w http.ResponseWriter, r *http.Request) (map[interface{}]interface{}, bool) {
+		ctx := ctxPool.Get().(*Context)
+		ctx.reset(w, r, nil, nil)
+		defer func() {
+			ctxPool.Put(ctx)
+		}()
+		ctx.posReset()
+
+		var u = ctx.URI()
+		start := time.Now()
+
+		ctx.Next()
+		if ctx.isActiveStop() {
+			if !ctx.W.Committed() {
+				ctx.Error(http.StatusNotFound, http.StatusText(http.StatusNotFound))
+			}
+			stop := time.Now()
+			method := ctx.Method()
+			if u == "" {
+				u = "/"
+			}
+			n := ctx.W.Status()
+			code := color.Green(n)
+			switch {
+			case n >= 500:
+				code = color.Red(n)
+			case n >= 400:
+				code = color.Magenta(n)
+			case n >= 300:
+				code = color.Grey(n)
+			}
+			ctx.Log().Infof("%15s %7s  %3s %10d %12s %-30s | ", ctx.RealIP(), method, code, ctx.W.Size(), stop.Sub(start), u)
+			return nil, false
+		}
+		return ctx.data, true
+	}
+}
+
 // makeHandle makes an *apiware.ParamsAPI implements the Handle interface.
 func (frame *Framework) makeHandle(handlerChain HandlerChain) Handle {
 	ctxPool := sync.Pool{
@@ -341,13 +384,13 @@ func (frame *Framework) makeHandle(handlerChain HandlerChain) Handle {
 			return newContext(frame, handlerChain)
 		},
 	}
-	return func(w http.ResponseWriter, r *http.Request, pathParams Params) {
+	return func(w http.ResponseWriter, r *http.Request, pathParams Params, data map[interface{}]interface{}) {
 		ctx := ctxPool.Get().(*Context)
-		ctx.reset(w, r, pathParams)
+		ctx.reset(w, r, pathParams, data)
 		defer func() {
 			ctxPool.Put(ctx)
 		}()
-		ctx.start()
+		ctx.do()
 	}
 }
 
@@ -370,16 +413,22 @@ func (frame *Framework) makePanicHandler() func(http.ResponseWriter, *http.Reque
 		stack = stack[start:length]
 		start = bytes.Index(stack, line) + 1
 		stack = stack[start:]
-		if end := bytes.Index(stack, e); end != -1 {
+		end := bytes.LastIndex(stack, line)
+		if end != -1 {
 			stack = stack[:end]
 		}
-		errStr := fmt.Sprintf("%v\n\n[TRACE]\n%s", rcv, stack)
+		end = bytes.Index(stack, e)
+		if end != -1 {
+			stack = stack[:end]
+		}
+		stack = bytes.TrimRight(stack, "\n")
+		errStr := fmt.Sprintf("%v\n[TRACE]\n%s\n", rcv, stack)
 		Global.errorFunc(newEmptyContext(frame, w, r), errStr, http.StatusInternalServerError)
 	}
 }
 
 func (frame *Framework) presetSystemMuxes() {
-	frame.Use(AccessLogWare())
+	frame.Use(accessLogWare())
 	frame.MuxAPI.NamedStatic("Directory for uploading files", "/upload/", Global.uploadDir)
 	frame.MuxAPI.NamedStatic("Directory for public static files", "/static/", Global.staticDir)
 }
