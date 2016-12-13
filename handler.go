@@ -112,8 +112,7 @@ func IsHandlerWithoutPath(handler Handler) bool {
 
 // Create a `*handlerStruct`.
 func newHandlerStruct(structPointer APIHandler, paramMapping apiware.ParamNameFunc) (*handlerStruct, error) {
-	// The default is json format decoding
-	var bodyDecodeFunc apiware.BodyDecodeFunc
+	var bodyDecodeFunc = Global.bodyDecodeFunc
 	if h, ok := structPointer.(APIHandlerWithBody); ok {
 		bodyDecodeFunc = h.Decode
 	}

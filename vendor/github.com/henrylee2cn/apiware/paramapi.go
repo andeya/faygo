@@ -23,20 +23,8 @@ import (
 	"net/url"
 	"reflect"
 	"strconv"
-	"strings"
 	"sync"
 	// "github.com/valyala/fasthttp"
-)
-
-const (
-	TAG_PARAM        = "param"  //request param tag name
-	TAG_REGEXP       = "regexp" //regexp validate tag name(optio)
-	TAG_ERR          = "err"    //customize the prompt for validation error(optio)
-	TAG_IGNORE_PARAM = "-"      //ignore request param tag value
-
-	MB                 = 1 << 20 // 1MB
-	defaultMaxMemory   = 32 * MB // 32 MB
-	defaultMaxMemoryMB = 32
 )
 
 type (
@@ -161,7 +149,7 @@ func (m *ParamsAPI) addFields(parentIndexPath []int, t reflect.Type, v reflect.V
 			return NewError(t.String(), field.Name, "field can not be a pointer")
 		}
 
-		var parsedTags = parseTags(tag)
+		var parsedTags = ParseTags(tag)
 		var paramPosition = parsedTags["in"]
 		var paramTypeString = field.Type.String()
 
@@ -263,20 +251,6 @@ func (m *ParamsAPI) addFields(parentIndexPath []int, t reflect.Type, v reflect.V
 		m.maxMemory = defaultMaxMemory
 	}
 	return nil
-}
-
-func parseTags(s string) map[string]string {
-	c := strings.Split(s, ",")
-	m := make(map[string]string)
-	for _, v := range c {
-		c2 := strings.Split(v, "(")
-		if len(c2) == 2 && len(c2[1]) > 1 {
-			m[c2[0]] = c2[1][:len(c2[1])-1]
-		} else {
-			m[v] = ""
-		}
-	}
-	return m
 }
 
 // get the `*ParamsAPI` object according to the type name

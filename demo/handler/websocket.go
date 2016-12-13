@@ -9,7 +9,7 @@ import (
 
 func WebsocketPage() thinkgo.HandlerFunc {
 	return func(ctx *thinkgo.Context) error {
-		return ctx.Render(200, thinkgo.JionStatic("websocket.html"), nil)
+		return ctx.Render(200, thinkgo.JoinStatic("websocket.html"), nil)
 	}
 }
 

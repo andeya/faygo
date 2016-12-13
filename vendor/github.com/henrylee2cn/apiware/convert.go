@@ -18,13 +18,18 @@ import (
 	"fmt"
 	"reflect"
 	"strconv"
+	"strings"
 )
 
 // Type conversions for request params.
 //
-// convertAssign copies to dest the value in src, converting it if possible.
+// ConvertAssign copies to dest the value in src, converting it if possible.
 // An error is returned if the copy would result in loss of information.
 // dest should be a pointer type.
+func ConvertAssign(dest reflect.Value, src ...string) (err error) {
+	return convertAssign(dest, src)
+}
+
 func convertAssign(dest reflect.Value, src []string) (err error) {
 	if len(src) == 0 {
 		return nil
@@ -63,21 +68,13 @@ func convertAssign(dest reflect.Value, src []string) (err error) {
 		return nil
 
 	case bool:
-		bol, err := strconv.ParseBool(src[0])
-		if err != nil {
-			return err
-		}
-		dest.Set(reflect.ValueOf(bol))
+		dest.Set(reflect.ValueOf(parseBool(src[0])))
 		return nil
 
 	case []bool:
 		b := make([]bool, 0, len(src))
 		for _, s := range src {
-			bol, err := strconv.ParseBool(s)
-			if err != nil {
-				return err
-			}
-			b = append(b, bol)
+			b = append(b, parseBool(s))
 		}
 		dest.Set(reflect.ValueOf(b))
 		return nil
@@ -150,6 +147,14 @@ func convertAssign(dest reflect.Value, src []string) (err error) {
 	}
 
 	return fmt.Errorf("unsupported storing type %T into type %s", src, dest.Kind())
+}
+
+func parseBool(val string) bool {
+	switch strings.TrimSpace(strings.ToLower(val)) {
+	case "true", "on", "1":
+		return true
+	}
+	return false
 }
 
 func strconvErr(err error) error {

@@ -15,9 +15,11 @@
 package thinkgo
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"os"
+	"reflect"
 	"strings"
 
 	"github.com/henrylee2cn/apiware"
@@ -34,6 +36,8 @@ type GlobalSetting struct {
 	// writes are done to response.
 	// The error message should be plain text.
 	errorFunc ErrorFunc
+	// Decode params from request body.
+	bodyDecodeFunc apiware.BodyDecodeFunc
 	// The following is only for the APIHandler
 	bindErrorFunc BindErrorFunc
 	// When the APIHander's parameter name (struct tag) is unsetted,
@@ -58,10 +62,11 @@ type GlobalSetting struct {
 // global configuration and functions...
 var Global = func() *GlobalSetting {
 	global := &GlobalSetting{
-		config:        globalConfig,
-		errorFunc:     defaultErrorFunc,
-		bindErrorFunc: defaultBindErrorFunc,
-		paramMapping:  defaultParamMapping,
+		config:         globalConfig,
+		errorFunc:      defaultErrorFunc,
+		bodyDecodeFunc: defaultBodyJSONFunc,
+		bindErrorFunc:  defaultBindErrorFunc,
+		paramMapping:   defaultParamMapping,
 		fsManager: newFileServerManager(
 			globalConfig.Cache.SizeMB*1024*1024,
 			globalConfig.Cache.Expire,
@@ -97,6 +102,16 @@ var (
 			status, statusText, status, statusText, VERSION, errStr),
 		)
 	}
+	// The default body decoder is json format decoding
+	defaultBodyJSONFunc = func(dest reflect.Value, body []byte) error {
+		var err error
+		if dest.Kind() == reflect.Ptr {
+			err = json.Unmarshal(body, dest.Interface())
+		} else {
+			err = json.Unmarshal(body, dest.Addr().Interface())
+		}
+		return err
+	}
 	defaultBindErrorFunc = func(ctx *Context, err error) {
 		ctx.String(http.StatusBadRequest, "%v", err)
 	}
@@ -121,19 +136,31 @@ func init() {
 }
 
 // When an error occurs, the default handler is invoked.
-func (global *GlobalSetting) ErrorFunc(ctx *Context, errStr string, status int) {
+func (global *GlobalSetting) Error(ctx *Context, errStr string, status int) {
 	global.errorFunc(ctx, errStr, status)
 }
 
+// Set the global default `ErrorFunc` function.
 func (global *GlobalSetting) SetErrorFunc(errorFunc ErrorFunc) {
 	global.errorFunc = errorFunc
 }
 
+// Decode params from request body.
+func (global *GlobalSetting) BodyDecode(dest reflect.Value, body []byte) error {
+	return global.bodyDecodeFunc(dest, body)
+}
+
+// Set the global default `BodyDecodeFunc` function.
+func (global *GlobalSetting) SetBodyDecodeFunc(bodyDecodeFunc apiware.BodyDecodeFunc) {
+	global.bodyDecodeFunc = bodyDecodeFunc
+}
+
 // If the APIHander's parameter binding fails, the default handler is invoked.
-func (global *GlobalSetting) BindErrorFunc(ctx *Context, err error) {
+func (global *GlobalSetting) BindError(ctx *Context, err error) {
 	global.bindErrorFunc(ctx, err)
 }
 
+// Set the global default `BindErrorFunc` function.
 func (global *GlobalSetting) SetBindErrorFunc(bindErrorFunc BindErrorFunc) {
 	global.bindErrorFunc = bindErrorFunc
 }
@@ -145,6 +172,7 @@ func (global *GlobalSetting) ParamMapping(fieldName string) (paramName string) {
 	return global.paramMapping(fieldName)
 }
 
+// Set the global default `ParamNameFunc` function.
 func (global *GlobalSetting) SetParamMapping(paramMapping apiware.ParamNameFunc) {
 	global.paramMapping = paramMapping
 }

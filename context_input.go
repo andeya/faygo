@@ -19,6 +19,8 @@ import (
 	"crypto/hmac"
 	"crypto/sha1"
 	"encoding/base64"
+	"encoding/json"
+	"encoding/xml"
 	"errors"
 	"fmt"
 	"io"
@@ -33,6 +35,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/henrylee2cn/apiware"
 	"github.com/henrylee2cn/thinkgo/utils"
 )
 
@@ -345,6 +348,18 @@ func (ctx *Context) BizParam(key string) string {
 	return ctx.R.FormValue(key)
 }
 
+// BizBind data from ctx.BizParam(key) to dest
+// like /?id=123&isok=true&ft=1.2&ol[0]=1&ol[1]=2&ul[]=str&ul[]=array&user.Name=abc
+// var id int  ctx.BizBind(&id, "id")  id ==123
+// var isok bool  ctx.BizBind(&isok, "isok")  isok ==true
+// var ft float64  ctx.BizBind(&ft, "ft")  ft ==1.2
+// ol := make([]int, 0, 2)  ctx.BizBind(&ol, "ol")  ol ==[1 2]
+// ul := make([]string, 0, 2)  ctx.BizBind(&ul, "ul")  ul ==[str array]
+// user struct{Name}  ctx.BizBind(&user, "user")  user == {Name:"abc"}
+func (ctx *Context) BizBind(dest interface{}, key string) error {
+	return apiware.ConvertAssign(reflect.ValueOf(dest), ctx.BizParam(key))
+}
+
 // PathParam returns path param by key.
 func (ctx *Context) PathParam(key string) string {
 	return ctx.pathParams.ByName(key)
@@ -541,10 +556,69 @@ func (ctx *Context) SaveFile(key string, cover bool, newfname ...string) (fileUr
 	return
 }
 
-// Session returns current session item value by a given key.
-// if non-existed, return nil.
-func (ctx *Context) Session(key interface{}) interface{} {
-	return ctx.CruSession.Get(key)
+const (
+	TAG_PARAM = apiware.TAG_PARAM
+)
+
+// FormBind reads form data from request's body
+func (ctx *Context) FormBind(structObject interface{}) {
+	value := reflect.ValueOf(structObject)
+	if value.Kind() != reflect.Ptr {
+		Global.BindError(ctx, errors.New("`*Context.FormBind` accepts only parameter of struct pointer type"))
+	}
+	value = reflect.Indirect(value)
+	if value.Kind() != reflect.Struct {
+		Global.BindError(ctx, errors.New("`*Context.FormBind` accepts only parameter of struct pointer type"))
+	}
+	t := value.Type()
+	for i, count := 0, t.NumField(); i < count; i++ {
+		fieldT := t.Field(i)
+		if fieldT.Anonymous {
+			continue
+		}
+		var key = fieldT.Tag.Get(TAG_PARAM)
+		if key == "" {
+			key = Global.ParamMapping(fieldT.Name)
+		}
+		err := apiware.ConvertAssign(value.Field(i), ctx.FormParams(key)...)
+		if err != nil {
+			Global.BindError(ctx, err)
+		}
+	}
+}
+
+// JSONBind reads JSON from request's body
+func (ctx *Context) JSONBind(jsonObject interface{}) {
+	rawData, _ := ioutil.ReadAll(ctx.R.Body)
+	// check if jsonObject is already a pointer, if yes then pass as it's
+	if reflect.TypeOf(jsonObject).Kind() == reflect.Ptr {
+		err := json.Unmarshal(rawData, jsonObject)
+		if err != nil {
+			Global.BindError(ctx, err)
+		}
+	}
+	// finally, if the jsonObject is not a pointer
+	err := json.Unmarshal(rawData, &jsonObject)
+	if err != nil {
+		Global.BindError(ctx, err)
+	}
+}
+
+// XMLBind reads XML from request's body
+func (ctx *Context) XMLBind(xmlObject interface{}) {
+	rawData, _ := ioutil.ReadAll(ctx.R.Body)
+	// check if xmlObject is already a pointer, if yes then pass as it's
+	if reflect.TypeOf(xmlObject).Kind() == reflect.Ptr {
+		err := xml.Unmarshal(rawData, xmlObject)
+		if err != nil {
+			Global.BindError(ctx, err)
+		}
+	}
+	// finally, if the xmlObject is not a pointer
+	err := xml.Unmarshal(rawData, &xmlObject)
+	if err != nil {
+		Global.BindError(ctx, err)
+	}
 }
 
 // BodyBytes returns the raw request body data as bytes.
@@ -565,246 +639,8 @@ func (ctx *Context) BodyBytes() []byte {
 	return limitedRequestBody
 }
 
-// BizBind data from ctx.BizParam(key) to dest
-// like /?id=123&isok=true&ft=1.2&ol[0]=1&ol[1]=2&ul[]=str&ul[]=array&user.Name=abc
-// var id int  ctx.BizBind(&id, "id")  id ==123
-// var isok bool  ctx.BizBind(&isok, "isok")  isok ==true
-// var ft float64  ctx.BizBind(&ft, "ft")  ft ==1.2
-// ol := make([]int, 0, 2)  ctx.BizBind(&ol, "ol")  ol ==[1 2]
-// ul := make([]string, 0, 2)  ctx.BizBind(&ul, "ul")  ul ==[str array]
-// user struct{Name}  ctx.BizBind(&user, "user")  user == {Name:"abc"}
-func (ctx *Context) BizBind(dest interface{}, key string) error {
-	value := reflect.ValueOf(dest)
-	if value.Kind() != reflect.Ptr {
-		return errors.New("thinkgo: non-pointer passed to Bind: " + key)
-	}
-	value = value.Elem()
-	if !value.CanSet() {
-		return errors.New("thinkgo: non-settable variable passed to Bind: " + key)
-	}
-	rv := ctx.bind(key, value.Type())
-	if !rv.IsValid() {
-		return errors.New("thinkgo: reflect value is empty")
-	}
-	value.Set(rv)
-	return nil
-}
-
-func (ctx *Context) bind(key string, typ reflect.Type) reflect.Value {
-	rv := reflect.Zero(typ)
-	switch typ.Kind() {
-	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
-		val := ctx.BizParam(key)
-		if len(val) == 0 {
-			return rv
-		}
-		rv = ctx.bindInt(val, typ)
-	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
-		val := ctx.BizParam(key)
-		if len(val) == 0 {
-			return rv
-		}
-		rv = ctx.bindUint(val, typ)
-	case reflect.Float32, reflect.Float64:
-		val := ctx.BizParam(key)
-		if len(val) == 0 {
-			return rv
-		}
-		rv = ctx.bindFloat(val, typ)
-	case reflect.String:
-		val := ctx.BizParam(key)
-		if len(val) == 0 {
-			return rv
-		}
-		rv = ctx.bindString(val, typ)
-	case reflect.Bool:
-		val := ctx.BizParam(key)
-		if len(val) == 0 {
-			return rv
-		}
-		rv = ctx.bindBool(val, typ)
-	case reflect.Slice:
-		rv = ctx.bindSlice(&ctx.R.Form, key, typ)
-	case reflect.Struct:
-		rv = ctx.bindStruct(&ctx.R.Form, key, typ)
-	case reflect.Ptr:
-		rv = ctx.bindPoint(key, typ)
-	case reflect.Map:
-		rv = ctx.bindMap(&ctx.R.Form, key, typ)
-	}
-	return rv
-}
-
-func (ctx *Context) bindValue(val string, typ reflect.Type) reflect.Value {
-	rv := reflect.Zero(typ)
-	switch typ.Kind() {
-	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
-		rv = ctx.bindInt(val, typ)
-	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
-		rv = ctx.bindUint(val, typ)
-	case reflect.Float32, reflect.Float64:
-		rv = ctx.bindFloat(val, typ)
-	case reflect.String:
-		rv = ctx.bindString(val, typ)
-	case reflect.Bool:
-		rv = ctx.bindBool(val, typ)
-	case reflect.Slice:
-		rv = ctx.bindSlice(&url.Values{"": {val}}, "", typ)
-	case reflect.Struct:
-		rv = ctx.bindStruct(&url.Values{"": {val}}, "", typ)
-	case reflect.Ptr:
-		rv = ctx.bindPoint(val, typ)
-	case reflect.Map:
-		rv = ctx.bindMap(&url.Values{"": {val}}, "", typ)
-	}
-	return rv
-}
-
-func (ctx *Context) bindInt(val string, typ reflect.Type) reflect.Value {
-	intValue, err := strconv.ParseInt(val, 10, 64)
-	if err != nil {
-		return reflect.Zero(typ)
-	}
-	pValue := reflect.New(typ)
-	pValue.Elem().SetInt(intValue)
-	return pValue.Elem()
-}
-
-func (ctx *Context) bindUint(val string, typ reflect.Type) reflect.Value {
-	uintValue, err := strconv.ParseUint(val, 10, 64)
-	if err != nil {
-		return reflect.Zero(typ)
-	}
-	pValue := reflect.New(typ)
-	pValue.Elem().SetUint(uintValue)
-	return pValue.Elem()
-}
-
-func (ctx *Context) bindFloat(val string, typ reflect.Type) reflect.Value {
-	floatValue, err := strconv.ParseFloat(val, 64)
-	if err != nil {
-		return reflect.Zero(typ)
-	}
-	pValue := reflect.New(typ)
-	pValue.Elem().SetFloat(floatValue)
-	return pValue.Elem()
-}
-
-func (ctx *Context) bindString(val string, typ reflect.Type) reflect.Value {
-	return reflect.ValueOf(val)
-}
-
-func (ctx *Context) bindBool(val string, typ reflect.Type) reflect.Value {
-	val = strings.TrimSpace(strings.ToLower(val))
-	switch val {
-	case "true", "on", "1":
-		return reflect.ValueOf(true)
-	}
-	return reflect.ValueOf(false)
-}
-
-type sliceValue struct {
-	index int           // Index extracted from brackets.  If -1, no index was provided.
-	value reflect.Value // the bound value for this slice element.
-}
-
-func (ctx *Context) bindSlice(params *url.Values, key string, typ reflect.Type) reflect.Value {
-	maxIndex := -1
-	numNoIndex := 0
-	sliceValues := []sliceValue{}
-	for reqKey, vals := range *params {
-		if !strings.HasPrefix(reqKey, key+"[") {
-			continue
-		}
-		// Extract the index, and the index where a sub-key starts. (e.g. field[0].subkey)
-		index := -1
-		leftBracket, rightBracket := len(key), strings.Index(reqKey[len(key):], "]")+len(key)
-		if rightBracket > leftBracket+1 {
-			index, _ = strconv.Atoi(reqKey[leftBracket+1 : rightBracket])
-		}
-		subKeyIndex := rightBracket + 1
-
-		// Handle the indexed case.
-		if index > -1 {
-			if index > maxIndex {
-				maxIndex = index
-			}
-			sliceValues = append(sliceValues, sliceValue{
-				index: index,
-				value: ctx.bind(reqKey[:subKeyIndex], typ.Elem()),
-			})
-			continue
-		}
-
-		// It's an un-indexed element.  (e.g. element[])
-		numNoIndex += len(vals)
-		for _, val := range vals {
-			// Unindexed values can only be direct-bound.
-			sliceValues = append(sliceValues, sliceValue{
-				index: -1,
-				value: ctx.bindValue(val, typ.Elem()),
-			})
-		}
-	}
-	resultArray := reflect.MakeSlice(typ, maxIndex+1, maxIndex+1+numNoIndex)
-	for _, sv := range sliceValues {
-		if sv.index != -1 {
-			resultArray.Index(sv.index).Set(sv.value)
-		} else {
-			resultArray = reflect.Append(resultArray, sv.value)
-		}
-	}
-	return resultArray
-}
-
-func (ctx *Context) bindStruct(params *url.Values, key string, typ reflect.Type) reflect.Value {
-	result := reflect.New(typ).Elem()
-	fieldValues := make(map[string]reflect.Value)
-	for reqKey, val := range *params {
-		var fieldName string
-		if strings.HasPrefix(reqKey, key+".") {
-			fieldName = reqKey[len(key)+1:]
-		} else if strings.HasPrefix(reqKey, key+"[") && reqKey[len(reqKey)-1] == ']' {
-			fieldName = reqKey[len(key)+1 : len(reqKey)-1]
-		} else {
-			continue
-		}
-
-		if _, ok := fieldValues[fieldName]; !ok {
-			// Time to bind this field.  Get it and make sure we can set it.
-			fieldValue := result.FieldByName(fieldName)
-			if !fieldValue.IsValid() {
-				continue
-			}
-			if !fieldValue.CanSet() {
-				continue
-			}
-			boundVal := ctx.bindValue(val[0], fieldValue.Type())
-			fieldValue.Set(boundVal)
-			fieldValues[fieldName] = boundVal
-		}
-	}
-
-	return result
-}
-
-func (ctx *Context) bindPoint(key string, typ reflect.Type) reflect.Value {
-	return ctx.bind(key, typ.Elem()).Addr()
-}
-
-func (ctx *Context) bindMap(params *url.Values, key string, typ reflect.Type) reflect.Value {
-	var (
-		result    = reflect.MakeMap(typ)
-		keyType   = typ.Key()
-		valueType = typ.Elem()
-	)
-	for paramName, values := range *params {
-		if !strings.HasPrefix(paramName, key+"[") || paramName[len(paramName)-1] != ']' {
-			continue
-		}
-
-		key := paramName[len(key)+1 : len(paramName)-1]
-		result.SetMapIndex(ctx.bindValue(key, keyType), ctx.bindValue(values[0], valueType))
-	}
-	return result
+// Session returns current session item value by a given key.
+// if non-existed, return nil.
+func (ctx *Context) Session(key interface{}) interface{} {
+	return ctx.CruSession.Get(key)
 }

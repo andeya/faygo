@@ -10,7 +10,7 @@ type Render struct {
 }
 
 func (r *Render) Serve(ctx *thinkgo.Context) error {
-	return ctx.Render(200, thinkgo.JionStatic("render.html"), thinkgo.Map{
+	return ctx.Render(200, thinkgo.JoinStatic("render.html"), thinkgo.Map{
 		"title": r.Title,
 		"p":     r.Paragraph,
 	})

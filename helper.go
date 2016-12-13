@@ -19,6 +19,6 @@ import (
 )
 
 // The static directory prefix is automatically added for the file name
-func JionStatic(shortFilename string) string {
+func JoinStatic(shortFilename string) string {
 	return path.Join(Global.staticDir, shortFilename)
 }
