@@ -348,15 +348,15 @@ func (ctx *Context) BizParam(key string) string {
 	return ctx.R.FormValue(key)
 }
 
-// BizBind data from ctx.BizParam(key) to dest
+// BindBizParam data from ctx.BizParam(key) to dest
 // like /?id=123&isok=true&ft=1.2&ol[0]=1&ol[1]=2&ul[]=str&ul[]=array&user.Name=abc
-// var id int  ctx.BizBind(&id, "id")  id ==123
-// var isok bool  ctx.BizBind(&isok, "isok")  isok ==true
-// var ft float64  ctx.BizBind(&ft, "ft")  ft ==1.2
-// ol := make([]int, 0, 2)  ctx.BizBind(&ol, "ol")  ol ==[1 2]
-// ul := make([]string, 0, 2)  ctx.BizBind(&ul, "ul")  ul ==[str array]
-// user struct{Name}  ctx.BizBind(&user, "user")  user == {Name:"abc"}
-func (ctx *Context) BizBind(dest interface{}, key string) error {
+// var id int  ctx.BindBizParam(&id, "id")  id ==123
+// var isok bool  ctx.BindBizParam(&isok, "isok")  isok ==true
+// var ft float64  ctx.BindBizParam(&ft, "ft")  ft ==1.2
+// ol := make([]int, 0, 2)  ctx.BindBizParam(&ol, "ol")  ol ==[1 2]
+// ul := make([]string, 0, 2)  ctx.BindBizParam(&ul, "ul")  ul ==[str array]
+// user struct{Name}  ctx.BindBizParam(&user, "user")  user == {Name:"abc"}
+func (ctx *Context) BindBizParam(dest interface{}, key string) error {
 	return apiware.ConvertAssign(reflect.ValueOf(dest), ctx.BizParam(key))
 }
 
@@ -410,6 +410,38 @@ func (ctx *Context) FormParamAll() url.Values {
 		ctx.R.ParseMultipartForm(ctx.frame.config.multipartMaxMemory)
 	}
 	return ctx.R.PostForm
+}
+
+const (
+	TAG_PARAM = apiware.TAG_PARAM
+)
+
+// BindForm reads form data from request's body
+func (ctx *Context) BindForm(structObject interface{}) error {
+	value := reflect.ValueOf(structObject)
+	if value.Kind() != reflect.Ptr {
+		return errors.New("`*Context.BindForm` accepts only parameter of struct pointer type")
+	}
+	value = reflect.Indirect(value)
+	if value.Kind() != reflect.Struct {
+		return errors.New("`*Context.BindForm` accepts only parameter of struct pointer type")
+	}
+	t := value.Type()
+	for i, count := 0, t.NumField(); i < count; i++ {
+		fieldT := t.Field(i)
+		if fieldT.Anonymous {
+			continue
+		}
+		var key = fieldT.Tag.Get(TAG_PARAM)
+		if key == "" {
+			key = Global.ParamMapping(fieldT.Name)
+		}
+		err := apiware.ConvertAssign(value.Field(i), ctx.FormParams(key)...)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 // QueryParam gets the first query value associated with the given key.
@@ -556,69 +588,32 @@ func (ctx *Context) SaveFile(key string, cover bool, newfname ...string) (fileUr
 	return
 }
 
-const (
-	TAG_PARAM = apiware.TAG_PARAM
-)
-
-// FormBind reads form data from request's body
-func (ctx *Context) FormBind(structObject interface{}) {
-	value := reflect.ValueOf(structObject)
-	if value.Kind() != reflect.Ptr {
-		Global.BindError(ctx, errors.New("`*Context.FormBind` accepts only parameter of struct pointer type"))
-	}
-	value = reflect.Indirect(value)
-	if value.Kind() != reflect.Struct {
-		Global.BindError(ctx, errors.New("`*Context.FormBind` accepts only parameter of struct pointer type"))
-	}
-	t := value.Type()
-	for i, count := 0, t.NumField(); i < count; i++ {
-		fieldT := t.Field(i)
-		if fieldT.Anonymous {
-			continue
-		}
-		var key = fieldT.Tag.Get(TAG_PARAM)
-		if key == "" {
-			key = Global.ParamMapping(fieldT.Name)
-		}
-		err := apiware.ConvertAssign(value.Field(i), ctx.FormParams(key)...)
-		if err != nil {
-			Global.BindError(ctx, err)
-		}
-	}
-}
-
-// JSONBind reads JSON from request's body
-func (ctx *Context) JSONBind(jsonObject interface{}) {
+// BindJSON reads JSON from request's body
+func (ctx *Context) BindJSON(jsonObject interface{}) error {
 	rawData, _ := ioutil.ReadAll(ctx.R.Body)
 	// check if jsonObject is already a pointer, if yes then pass as it's
 	if reflect.TypeOf(jsonObject).Kind() == reflect.Ptr {
 		err := json.Unmarshal(rawData, jsonObject)
 		if err != nil {
-			Global.BindError(ctx, err)
+			return err
 		}
 	}
 	// finally, if the jsonObject is not a pointer
-	err := json.Unmarshal(rawData, &jsonObject)
-	if err != nil {
-		Global.BindError(ctx, err)
-	}
+	return json.Unmarshal(rawData, &jsonObject)
 }
 
-// XMLBind reads XML from request's body
-func (ctx *Context) XMLBind(xmlObject interface{}) {
+// BindXML reads XML from request's body
+func (ctx *Context) BindXML(xmlObject interface{}) error {
 	rawData, _ := ioutil.ReadAll(ctx.R.Body)
 	// check if xmlObject is already a pointer, if yes then pass as it's
 	if reflect.TypeOf(xmlObject).Kind() == reflect.Ptr {
 		err := xml.Unmarshal(rawData, xmlObject)
 		if err != nil {
-			Global.BindError(ctx, err)
+			return err
 		}
 	}
 	// finally, if the xmlObject is not a pointer
-	err := xml.Unmarshal(rawData, &xmlObject)
-	if err != nil {
-		Global.BindError(ctx, err)
-	}
+	return xml.Unmarshal(rawData, &xmlObject)
 }
 
 // BodyBytes returns the raw request body data as bytes.
