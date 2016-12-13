@@ -60,16 +60,19 @@ type FileServerManager struct {
 // to limit the memory consumption and GC pause time.
 // expireSeconds <= 0 means no expire.
 func newFileServerManager(cacheSize int64, fileExpireSeconds int, enableCache bool, enableGzip bool) *FileServerManager {
-	manager := new(FileServerManager)
-	manager.fileExpireSeconds = fileExpireSeconds
-	manager.cache = freecache.NewCache(int(cacheSize))
-	manager.files = map[string]CacheFile{}
-	manager.maxSizeOfSingle = cacheSize / 1024
-	if manager.maxSizeOfSingle < 512 {
-		manager.maxSizeOfSingle = 512
+	manager := &FileServerManager{
+		enableCache: enableCache,
+		enableGzip:  enableGzip,
 	}
-	manager.enableCache = enableCache
-	manager.enableGzip = enableGzip
+	if enableCache {
+		manager.fileExpireSeconds = fileExpireSeconds
+		manager.cache = freecache.NewCache(int(cacheSize))
+		manager.files = map[string]CacheFile{}
+		manager.maxSizeOfSingle = cacheSize / 1024
+		if manager.maxSizeOfSingle < 512 {
+			manager.maxSizeOfSingle = 512
+		}
+	}
 	return manager
 }
 
