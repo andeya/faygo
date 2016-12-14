@@ -5,6 +5,7 @@ import (
 	"errors"
 	"io/ioutil"
 	"net/http"
+	"os"
 	"sync"
 	"time"
 
@@ -16,8 +17,8 @@ type (
 		template *pongo2.Template
 		modTime  time.Time
 	}
-	// Pongo2Render is a custom thinkgo template renderer using Pongo2.
-	Pongo2Render struct {
+	// Render is a custom thinkgo template renderer using pongo2.
+	Render struct {
 		set           *pongo2.TemplateSet
 		tplCache      map[string]*Tpl
 		tplContext    pongo2.Context // Context hold globle func for tpl
@@ -27,9 +28,9 @@ type (
 	}
 )
 
-// New creates a new Pongo2Render instance with custom Options.
-func newPongo2Render(openCacheFile func(name string) (http.File, error)) *Pongo2Render {
-	return &Pongo2Render{
+// New creates a new Render instance with custom Options.
+func newRender(openCacheFile func(name string) (http.File, error)) *Render {
+	return &Render{
 		set:           pongo2.NewSet("thinkgo", pongo2.DefaultLoader),
 		tplCache:      make(map[string]*Tpl),
 		tplContext:    make(pongo2.Context),
@@ -39,78 +40,168 @@ func newPongo2Render(openCacheFile func(name string) (http.File, error)) *Pongo2
 }
 
 // Sets the global template variable or function
-func (p *Pongo2Render) TemplateVariable(name string, v interface{}) {
+func (render *Render) TemplateVariable(name string, v interface{}) {
 	switch d := v.(type) {
 	case func(in *pongo2.Value, param *pongo2.Value) (out *pongo2.Value, err *pongo2.Error):
 		pongo2.RegisterFilter(name, d)
 	case pongo2.FilterFunction:
 		pongo2.RegisterFilter(name, d)
 	default:
-		p.tplContext[name] = d
+		render.tplContext[name] = d
 	}
 }
 
 // Render should render the template to the io.Writer.
-func (p *Pongo2Render) Render(filename string, data Map) ([]byte, error) {
+func (render *Render) Render(filename string, data Map) ([]byte, error) {
+	if render.caching {
+		b, _, err := render.fromCache(filename, data, false)
+		return b, err
+	}
+	f, err := os.Open(filename)
+	if err != nil {
+		return nil, err
+	}
+
+	var fbytes []byte
+	fbytes, err = ioutil.ReadAll(f)
+	if err != nil {
+		return nil, err
+	}
+	fbytes, err = render.RenderFromBytes(fbytes, data)
+	return fbytes, err
+
+}
+
+// Render should render the template to the io.Writer.
+func (render *Render) RenderFromBytes(fbytes []byte, data Map) ([]byte, error) {
+	template, err := render.set.FromBytes(fbytes)
+	if err != nil {
+		return nil, err
+	}
+
 	var data2 pongo2.Context
 	if data == nil {
-		data2 = p.tplContext
+		data2 = render.tplContext
 
 	} else {
 		data2 = pongo2.Context(data)
-		for k, v := range p.tplContext {
+		for k, v := range render.tplContext {
 			if _, ok := data2[k]; !ok {
 				data2[k] = v
 			}
 		}
 	}
 
-	var template *pongo2.Template
-
-	if p.caching {
-		template = pongo2.Must(p.FromCache(filename))
-	} else {
-		template = pongo2.Must(p.set.FromFile(filename))
-	}
 	var b bytes.Buffer
-	err := template.ExecuteWriter(data2, &b)
+	err = template.ExecuteWriter(data2, &b)
 	return b.Bytes(), err
 }
 
-func (p *Pongo2Render) FromCache(fname string) (*pongo2.Template, error) {
+func (render *Render) fromCache(fname string, data Map, withInfo bool) ([]byte, os.FileInfo, error) {
 	// Get file content from the file system cache
-	f, err := p.openCacheFile(fname)
+	f, err := render.openCacheFile(fname)
 	if err != nil {
-		p.Lock()
-		_, has := p.tplCache[fname]
+		render.Lock()
+		_, has := render.tplCache[fname]
 		if has {
-			delete(p.tplCache, fname)
+			delete(render.tplCache, fname)
 		}
-		p.Unlock()
-		return nil, errors.New(fname + "is not found.")
+		render.Unlock()
+		return nil, nil, errors.New(fname + "is not find.")
+	}
+	defer f.Close()
+	fileInfo, err := f.Stat()
+	if err != nil {
+		return nil, nil, err
 	}
 
-	p.RLock()
-	tpl, has := p.tplCache[fname]
-	p.RUnlock()
-	stat, _ := f.Stat()
+	if fileInfo.IsDir() {
+		return nil, fileInfo, nil
+	}
+
+	render.RLock()
+	tplObj, has := render.tplCache[fname]
+	render.RUnlock()
+
+	var tpl *pongo2.Template
 
 	// When the template cache exists and the file is not updated
-	if has && p.tplCache[fname].modTime.Equal(stat.ModTime()) {
-		return tpl.template, nil
+	if has && tplObj.modTime.Equal(fileInfo.ModTime()) {
+		tpl = tplObj.template
+
+	} else {
+		// The cache template does not exist or the file is updated
+		render.Lock()
+		defer render.Unlock()
+
+		// Create a new template and cache it
+		fbytes, _ := ioutil.ReadAll(f)
+		tpl, err = render.set.FromBytesWithName(fname, fbytes)
+		if err != nil {
+			return nil, nil, err
+		}
+
+		render.tplCache[fname] = &Tpl{template: tpl, modTime: fileInfo.ModTime()}
 	}
 
-	// The cache template does not exist or the file is updated
-	p.Lock()
-	defer p.Unlock()
+	var data2 pongo2.Context
+	if data == nil {
+		data2 = render.tplContext
+	} else {
+		data2 = pongo2.Context(data)
+		for k, v := range render.tplContext {
+			if _, ok := data2[k]; !ok {
+				data2[k] = v
+			}
+		}
+	}
+	var b bytes.Buffer
+	err = tpl.ExecuteWriter(data2, &b)
+	if withInfo {
+		return b.Bytes(), newNowFileInfo(fileInfo), err
+	}
+	return b.Bytes(), nil, err
+}
 
-	// Create a new template and cache it
-	fbytes, _ := ioutil.ReadAll(f)
-	newtpl, err := p.set.FromBytesWithName(fname, fbytes)
+type nowFileInfo struct {
+	os.FileInfo
+	modTime time.Time
+}
+
+func (info *nowFileInfo) ModTime() time.Time {
+	return info.modTime
+}
+
+func newNowFileInfo(info os.FileInfo) os.FileInfo {
+	return &nowFileInfo{
+		FileInfo: info,
+		modTime:  time.Now(),
+	}
+}
+
+func (render *Render) renderForFS(filename string, data Map) ([]byte, os.FileInfo, error) {
+	if render.caching {
+		return render.fromCache(filename, data, true)
+	}
+	f, err := os.Open(filename)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
-	p.tplCache[fname] = &Tpl{template: newtpl, modTime: stat.ModTime()}
-	return newtpl, nil
+	fileInfo, err := f.Stat()
+	if err != nil {
+		return nil, nil, err
+	}
+
+	if fileInfo.IsDir() {
+		return nil, fileInfo, nil
+	}
+
+	var fbytes []byte
+	fbytes, err = ioutil.ReadAll(f)
+	if err != nil {
+		return nil, nil, err
+	}
+	fbytes, err = render.RenderFromBytes(fbytes, data)
+	return fbytes, newNowFileInfo(fileInfo), err
 }

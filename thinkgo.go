@@ -310,23 +310,27 @@ func (frame *Framework) NewNamedDELETE(name string, pattern string, handlers ...
 }
 
 // NewNamedStatic creates an isolated static muxAPI node.
-func (frame *Framework) NewStatic(pattern string, root string) *MuxAPI {
-	return frame.NewNamedStatic("", pattern, root)
+// If parameters `compressibleAndCacheable` are missing, read from global config.
+func (frame *Framework) NewStatic(pattern string, root string, compressibleAndCacheable ...bool) *MuxAPI {
+	return frame.NewNamedStatic("", pattern, root, compressibleAndCacheable...)
 }
 
 // NewNamedStatic creates an isolated static muxAPI node with the name.
-func (frame *Framework) NewNamedStatic(name, pattern string, root string) *MuxAPI {
-	return (&MuxAPI{frame: frame}).NamedStatic(name, pattern, root)
+// If parameters `compressibleAndCacheable` are missing, read from global config.
+func (frame *Framework) NewNamedStatic(name, pattern string, root string, compressibleAndCacheable ...bool) *MuxAPI {
+	return (&MuxAPI{frame: frame}).NamedStatic(name, pattern, root, compressibleAndCacheable...)
 }
 
 // NewNamedStatic creates an isolated static muxAPI node.
-func (frame *Framework) NewStaticFS(pattern string, fs http.FileSystem) *MuxAPI {
-	return frame.NewNamedStaticFS("", pattern, fs)
+// If parameters `compressibleAndCacheable` are missing, read from global config.
+func (frame *Framework) NewStaticFS(pattern string, fs http.FileSystem, compressibleAndCacheable ...bool) *MuxAPI {
+	return frame.NewNamedStaticFS("", pattern, fs, compressibleAndCacheable...)
 }
 
 // NewNamedStatic creates an isolated static muxAPI node with the name.
-func (frame *Framework) NewNamedStaticFS(name, pattern string, fs http.FileSystem) *MuxAPI {
-	return (&MuxAPI{frame: frame}).NamedStaticFS(name, pattern, fs)
+// If parameters `compressibleAndCacheable` are missing, read from global config.
+func (frame *Framework) NewNamedStaticFS(name, pattern string, fs http.FileSystem, compressibleAndCacheable ...bool) *MuxAPI {
+	return (&MuxAPI{frame: frame}).NamedStaticFS(name, pattern, fs, compressibleAndCacheable...)
 }
 
 // makeFilterHandle makes an FilterFunc.

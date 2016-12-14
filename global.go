@@ -46,8 +46,9 @@ type GlobalSetting struct {
 	// If the APIHander's parameter binding fails, the default handler is invoked
 	paramMapping apiware.ParamNameFunc
 	// global file cache system manager
-	fsManager    *FileServerManager
-	pongo2Render *Pongo2Render
+	fsManager *FileServerManager
+	// Render is a custom thinkgo template renderer using pongo2.
+	render *Render
 	// The path for the upload files
 	uploadDir string
 	// The path for the static files
@@ -78,9 +79,11 @@ var Global = func() *GlobalSetting {
 		logDir:    defaultLogDir,
 	}
 	if globalConfig.Cache.Enable {
-		global.pongo2Render = newPongo2Render(global.fsManager.OpenFile)
+		global.render = newRender(func(name string) (http.File, error) {
+			return global.fsManager.Open(name, "", true)
+		})
 	} else {
-		global.pongo2Render = newPongo2Render(nil)
+		global.render = newRender(nil)
 	}
 	global.initLogger()
 	return global
@@ -177,9 +180,14 @@ func (global *GlobalSetting) SetParamMapping(paramMapping apiware.ParamNameFunc)
 	global.paramMapping = paramMapping
 }
 
+// Render is a custom thinkgo template renderer using pongo2.
+func (global *GlobalSetting) Render() *Render {
+	return global.render
+}
+
 // Sets the global template variable or function for pongo2 render.
-func (global *GlobalSetting) TemplateVariable(name string, v interface{}) {
-	global.pongo2Render.TemplateVariable(name, v)
+func (global *GlobalSetting) RenderVariable(name string, v interface{}) {
+	global.render.TemplateVariable(name, v)
 }
 
 // UploadDir returns logs folder path with a slash at the end

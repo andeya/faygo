@@ -215,8 +215,10 @@ func (mux *MuxAPI) NamedDELETE(name string, pattern string, handlers ...Handler)
 // of the Router's NotFound handler.
 // To use the operating system's file system implementation,
 // use http.Dir:
-//     frame.StaticFS("/src/*filepath", http.Dir("/var/www"))
-func (mux *MuxAPI) NamedStaticFS(name, pattern string, fs http.FileSystem) *MuxAPI {
+//     frame.StaticFS("/src/*filepath", http.Dir("/var/www"), true, true)
+//
+// If parameters `compressibleAndCacheable` are missing, read from global config.
+func (mux *MuxAPI) NamedStaticFS(name, pattern string, fs http.FileSystem, compressibleAndCacheable ...bool) *MuxAPI {
 	if fs == nil {
 		errStr := "For file server, fs (http.FileSystem) cannot be nil"
 		mux.frame.Log().Panicf("%s\n", errStr)
@@ -229,24 +231,27 @@ func (mux *MuxAPI) NamedStaticFS(name, pattern string, fs http.FileSystem) *MuxA
 			ctx.R.URL.Path = ctx.pathParams.ByName("filepath")
 			return fileServer.Serve(ctx)
 		})
-	}(Global.fsManager.FileServer(fs))
+	}(Global.fsManager.FileServer(fs, compressibleAndCacheable...))
 	return mux.NamedAPI(name, "GET", pattern, handler)
 }
 
 // StaticFS is similar to NamedStaticFS, but no name.
-func (mux *MuxAPI) StaticFS(pattern string, fs http.FileSystem) *MuxAPI {
-	return mux.NamedStaticFS("fileserver", pattern, fs)
+// If parameters `compressibleAndCacheable` are missing, read from global config.
+func (mux *MuxAPI) StaticFS(pattern string, fs http.FileSystem, compressibleAndCacheable ...bool) *MuxAPI {
+	return mux.NamedStaticFS("fileserver", pattern, fs, compressibleAndCacheable...)
 }
 
 // NamedStatic is similar to NamedStaticFS, but the second parameter is the local file path.
-func (mux *MuxAPI) NamedStatic(name, pattern string, root string) *MuxAPI {
+// If parameters `compressibleAndCacheable` are missing, read from global config.
+func (mux *MuxAPI) NamedStatic(name, pattern string, root string, compressibleAndCacheable ...bool) *MuxAPI {
 	os.MkdirAll(root, 0777)
-	return mux.NamedStaticFS(name, pattern, http.Dir(root))
+	return mux.NamedStaticFS(name, pattern, http.Dir(root), compressibleAndCacheable...)
 }
 
 // Static is similar to NamedStatic, but no name.
-func (mux *MuxAPI) Static(pattern string, root string) *MuxAPI {
-	return mux.NamedStatic(root, pattern, root)
+// If parameters `compressibleAndCacheable` are missing, read from global config.
+func (mux *MuxAPI) Static(pattern string, root string, compressibleAndCacheable ...bool) *MuxAPI {
+	return mux.NamedStatic(root, pattern, root, compressibleAndCacheable...)
 }
 
 // Insert the middlewares at the left end of the node's handler chain.

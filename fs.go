@@ -49,7 +49,7 @@ type FileServerManager struct {
 	fileExpireSeconds int
 	maxSizeOfSingle   int64
 	enableCache       bool
-	enableGzip        bool
+	enableCompress    bool
 	errorFunc         ErrorFunc
 	filesLock         sync.RWMutex
 }
@@ -59,10 +59,10 @@ type FileServerManager struct {
 // `debug.SetGCPercent()`, set it to a much smaller value
 // to limit the memory consumption and GC pause time.
 // expireSeconds <= 0 means no expire.
-func newFileServerManager(cacheSize int64, fileExpireSeconds int, enableCache bool, enableGzip bool) *FileServerManager {
+func newFileServerManager(cacheSize int64, fileExpireSeconds int, enableCache bool, enableCompress bool) *FileServerManager {
 	manager := &FileServerManager{
-		enableCache: enableCache,
-		enableGzip:  enableGzip,
+		enableCache:    enableCache,
+		enableCompress: enableCompress,
 	}
 	if enableCache {
 		manager.fileExpireSeconds = fileExpireSeconds
@@ -76,40 +76,71 @@ func newFileServerManager(cacheSize int64, fileExpireSeconds int, enableCache bo
 	return manager
 }
 
-// Gets or stores the cache file without compression.
+// Gets or stores the file with compression and caching options.
 // If the name is larger than 65535 or body is larger than 1/1024 of the cache size,
 // the entry will not be written to the cache.
-func (c *FileServerManager) OpenFile(name string) (http.File, error) {
-	f, err := c.Get(name)
-	if err == nil {
-		return f, nil
+func (c *FileServerManager) Open(name string, encoding string, cacheable bool) (http.File, error) {
+	var f http.File
+	var err error
+	var compressible = encoding != "" && c.enableCompress
+	cacheable = cacheable && c.enableCache
+	if cacheable {
+		f, err = c.Get(name)
+		if err == nil {
+			return f, nil
+		}
 	}
 	f, err = os.Open(name)
 	if err != nil {
 		return nil, err
 	}
 	fileInfo, err := f.Stat()
-	if err != nil || fileInfo.IsDir() || fileInfo.Size() > c.maxSizeOfSingle {
+	if err != nil || fileInfo.IsDir() {
 		return f, err
 	}
-	content, err := ioutil.ReadAll(f)
-	f.Close()
-	if err != nil {
-		return nil, err
+	var content []byte
+	if compressible {
+		content, encoding, err = fileCompress2(f, encoding)
+		f.Close()
+		if err != nil {
+			return nil, err
+		}
+		if !cacheable || int64(len(content)) > c.maxSizeOfSingle {
+			return &CacheFile{
+				fileInfo: fileInfo,
+				encoding: encoding,
+				Reader:   bytes.NewReader(content),
+			}, nil
+		}
+	} else {
+		if !cacheable || fileInfo.Size() > c.maxSizeOfSingle {
+			return f, nil
+		}
+		content, err = ioutil.ReadAll(f)
+		f.Close()
+		if err != nil {
+			return nil, err
+		}
 	}
-	return c.Set(name, content, fileInfo, "")
+	return c.Set(name, content, fileInfo, encoding)
 }
 
 // Gets or stores the cache file.
 // If the name is larger than 65535 or body is larger than 1/1024 of the cache size,
 // the entry will not be written to the cache.
-func (c *FileServerManager) Open(ctx *Context, name string, fs http.FileSystem) (http.File, error) {
-	f, err := c.Get(name)
-	if err == nil {
-		if encoding := f.(*CacheFile).encoding; encoding != "" {
-			ctx.W.Header().Set("Content-Encoding", encoding)
+func (c *FileServerManager) OpenFS(ctx *Context, name string, fs FileSystem) (http.File, error) {
+	var f http.File
+	var err error
+	var compressible = fs.Compressible() && c.enableCompress
+	var cacheable = fs.Cacheable() && c.enableCache
+	if cacheable {
+		f, err = c.Get(name)
+		if err == nil {
+			if encoding := f.(*CacheFile).encoding; encoding != "" {
+				ctx.W.Header().Set("Content-Encoding", encoding)
+			}
+			return f, nil
 		}
-		return f, nil
 	}
 	f, err = fs.Open(name)
 	if err != nil {
@@ -121,13 +152,13 @@ func (c *FileServerManager) Open(ctx *Context, name string, fs http.FileSystem) 
 	}
 	var content []byte
 	var encoding string
-	if c.enableGzip {
-		content, encoding, err = readWithCompress(ctx, f)
+	if compressible {
+		content, encoding, err = fileCompress(f, ctx)
 		f.Close()
 		if err != nil {
 			return nil, err
 		}
-		if int64(len(content)) > c.maxSizeOfSingle {
+		if !cacheable || int64(len(content)) > c.maxSizeOfSingle {
 			return &CacheFile{
 				fileInfo: fileInfo,
 				encoding: encoding,
@@ -135,7 +166,7 @@ func (c *FileServerManager) Open(ctx *Context, name string, fs http.FileSystem) 
 			}, nil
 		}
 	} else {
-		if fileInfo.Size() > c.maxSizeOfSingle {
+		if !cacheable || fileInfo.Size() > c.maxSizeOfSingle {
 			return f, nil
 		}
 		content, err = ioutil.ReadAll(f)
@@ -186,7 +217,20 @@ type CacheFile struct {
 
 var _ http.File = new(CacheFile)
 
+func NewFile(b []byte, fileInfo os.FileInfo) *CacheFile {
+	return &CacheFile{
+		Reader:   bytes.NewReader(b),
+		fileInfo: fileInfo,
+	}
+}
+
 func (c *CacheFile) Stat() (os.FileInfo, error) {
+	if c.fileInfo == nil {
+		c.fileInfo = &FileInfo{
+			size:    int64(c.Len()),
+			modTime: time.Now(),
+		}
+	}
 	return c.fileInfo, nil
 }
 
@@ -199,44 +243,75 @@ func (c *CacheFile) Readdir(count int) ([]os.FileInfo, error) {
 	return []os.FileInfo{}, errors.New("Readdir " + c.fileInfo.Name() + ": The system cannot find the path specified.")
 }
 
-// type FileInfo struct {
-// 	name    string
-// 	size    int64
-// 	mode    os.FileMode
-// 	modTime time.Time
-// 	isDir   bool
-// 	sys     interface{}
-// }
+// A file system with compression and caching options
+type (
+	FileSystem interface {
+		http.FileSystem
+		Compressible() bool
+		Cacheable() bool
+	}
+	fileSystem struct {
+		http.FileSystem
+		compressible bool
+		cacheable    bool
+	}
+)
 
-// // base name of the file
-// func (info *FileInfo) Name() string {
-// 	return info.name
-// }
+// New a file system with compression and caching options
+func NewFileSystem(fs http.FileSystem, compressible bool, cacheable bool) FileSystem {
+	return &fileSystem{
+		FileSystem:   fs,
+		compressible: compressible,
+		cacheable:    cacheable,
+	}
+}
 
-// // length in bytes for regular files; system-dependent for others
-// func (info *FileInfo) Size() int64 {
-// 	return info.size
-// }
+func (fs *fileSystem) Compressible() bool {
+	return fs.compressible
+}
 
-// // file mode bits
-// func (info *FileInfo) Mode() os.FileMode {
-// 	return info.mode
-// }
+func (fs *fileSystem) Cacheable() bool {
+	return fs.cacheable
+}
 
-// // modification time
-// func (info *FileInfo) ModTime() time.Time {
-// 	return info.modTime
-// }
+type FileInfo struct {
+	name    string
+	size    int64
+	mode    os.FileMode
+	modTime time.Time
+	isDir   bool
+	sys     interface{}
+}
 
-// // abbreviation for Mode().IsDir()
-// func (info *FileInfo) IsDir() bool {
-// 	return info.isDir
-// }
+// base name of the file
+func (info *FileInfo) Name() string {
+	return info.name
+}
 
-// // underlying data source (can return nil)
-// func (info *FileInfo) Sys() interface{} {
-// 	return info.sys
-// }
+// length in bytes for regular files; system-dependent for others
+func (info *FileInfo) Size() int64 {
+	return info.size
+}
+
+// file mode bits
+func (info *FileInfo) Mode() os.FileMode {
+	return info.mode
+}
+
+// modification time
+func (info *FileInfo) ModTime() time.Time {
+	return info.modTime
+}
+
+// abbreviation for Mode().IsDir()
+func (info *FileInfo) IsDir() bool {
+	return info.isDir
+}
+
+// underlying data source (can return nil)
+func (info *FileInfo) Sys() interface{} {
+	return info.sys
+}
 
 func (c *FileServerManager) dirList(ctx *Context, f http.File) {
 	dirs, err := f.Readdir(-1)
@@ -344,6 +419,7 @@ func (c *FileServerManager) serveContent(ctx *Context, name string, modtime time
 	var ctype string
 	if !haveType {
 		ctype = mime.TypeByExtension(filepath.Ext(name))
+		println("ctypes:", haveType, name, filepath.Ext(name), ctype)
 		if ctype == "" {
 			// read a chunk to decide between utf-8 text and binary
 			var buf [sniffLen]byte
@@ -532,24 +608,16 @@ func checkETag(ctx *Context, modtime time.Time) (rangeReq string, done bool) {
 }
 
 // name is '/'-separated, not filepath.Separator.
-func (c *FileServerManager) serveFile(ctx *Context, fs http.FileSystem, name string, redirect bool) {
+func (c *FileServerManager) serveFile(ctx *Context, fs FileSystem, name string, redirect bool) {
 	// redirect .../index.html to .../
 	// can't use Redirect() because that would make the path absolute,
 	// which would be a problem running under StripPrefix
-	if strings.HasSuffix(ctx.R.URL.Path, indexPage) {
-		localRedirect(ctx, "./")
-		return
-	}
-	var f http.File
-	var err error
-	if c.enableCache {
-		f, err = c.Open(ctx, name, fs)
-	} else {
-		f, err = fs.Open(name)
-		if err == nil && c.enableGzip {
-			f, err = compressFile(ctx, f)
-		}
-	}
+	//
+	// if strings.HasSuffix(ctx.R.URL.Path, indexPage) {
+	// 	localRedirect(ctx, "./")
+	// 	return
+	// }
+	f, err := c.OpenFS(ctx, name, fs)
 	if err != nil {
 		msg, code := toHTTPError(err)
 		Global.errorFunc(ctx, msg, code)
@@ -564,22 +632,22 @@ func (c *FileServerManager) serveFile(ctx *Context, fs http.FileSystem, name str
 		return
 	}
 
-	if redirect {
-		// redirect to canonical path: / at end of directory url
-		// ctx.R.URL.Path always begins with /
-		url := ctx.R.URL.Path
-		if d.IsDir() {
-			if url[len(url)-1] != '/' {
-				localRedirect(ctx, path.Base(url)+"/")
-				return
-			}
-		} else {
-			if url[len(url)-1] == '/' {
-				localRedirect(ctx, "../"+path.Base(url))
-				return
-			}
-		}
-	}
+	// if redirect {
+	// 	// redirect to canonical path: / at end of directory url
+	// 	// ctx.R.URL.Path always begins with /
+	// 	url := ctx.R.URL.Path
+	// 	if d.IsDir() {
+	// 		if url[len(url)-1] != '/' {
+	// 			localRedirect(ctx, path.Base(url)+"/")
+	// 			return
+	// 		}
+	// 	} else {
+	// 		if url[len(url)-1] == '/' {
+	// 			localRedirect(ctx, "../"+path.Base(url))
+	// 			return
+	// 		}
+	// 	}
+	// }
 
 	// redirect if the directory name doesn't end in a slash
 	if d.IsDir() {
@@ -593,16 +661,7 @@ func (c *FileServerManager) serveFile(ctx *Context, fs http.FileSystem, name str
 	// use contents of index.html for directory, if present
 	if d.IsDir() {
 		index := strings.TrimSuffix(name, "/") + indexPage
-		var ff http.File
-		var err error
-		if c.enableCache {
-			ff, err = c.Open(ctx, index, fs)
-		} else {
-			ff, err = fs.Open(index)
-			if err == nil && c.enableGzip {
-				ff, err = compressFile(ctx, ff)
-			}
-		}
+		ff, err := c.OpenFS(ctx, index, fs)
 		if err == nil {
 			defer ff.Close()
 			dd, err := ff.Stat()
@@ -619,7 +678,8 @@ func (c *FileServerManager) serveFile(ctx *Context, fs http.FileSystem, name str
 		if checkLastModified(ctx, d.ModTime()) {
 			return
 		}
-		c.dirList(ctx, f)
+		Global.errorFunc(ctx, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+		// c.dirList(ctx, f)
 		return
 	}
 
@@ -628,7 +688,7 @@ func (c *FileServerManager) serveFile(ctx *Context, fs http.FileSystem, name str
 	c.serveContent(ctx, d.Name(), d.ModTime(), sizeFunc, f)
 }
 
-func readWithCompress(ctx *Context, file http.File) ([]byte, string, error) {
+func fileCompress(file http.File, ctx *Context) ([]byte, string, error) {
 	var buf = &bytes.Buffer{}
 	var encoding string
 	if b, n, _ := acceptencoder.WriteFile(acceptencoder.ParseEncoding(ctx.R), buf, file); b {
@@ -638,20 +698,13 @@ func readWithCompress(ctx *Context, file http.File) ([]byte, string, error) {
 	return buf.Bytes(), encoding, nil
 }
 
-func compressFile(ctx *Context, f http.File) (http.File, error) {
-	content, _, err := readWithCompress(ctx, f)
-	defer f.Close()
-	if err != nil {
-		return nil, err
+func fileCompress2(f http.File, encoding string) ([]byte, string, error) {
+	var buf = &bytes.Buffer{}
+	if b, n, _ := acceptencoder.WriteFile(encoding, buf, f); b {
+		encoding = n
 	}
-	fileInfo, err := f.Stat()
-	if err != nil {
-		return nil, err
-	}
-	return &CacheFile{
-		fileInfo: fileInfo,
-		Reader:   bytes.NewReader(content),
-	}, nil
+	f.Close()
+	return buf.Bytes(), encoding, nil
 }
 
 // toHTTPError returns a non-specific HTTP error message and status code
@@ -693,7 +746,7 @@ func localRedirect(ctx *Context, newPath string) {
 // ends in "/index.html" to the same path, without the final
 // "index.html". To avoid such redirects either modify the path or
 // use ServeContent.
-func (c *FileServerManager) ServeFile(ctx *Context, name string) {
+func (c *FileServerManager) ServeFile(ctx *Context, name string, compressibleAndCacheable ...bool) {
 	if containsDotDot(ctx.R.URL.Path) {
 		// Too many programs use ctx.R.URL.Path to construct the argument to
 		// serveFile. Reject the request under the assumption that happened
@@ -704,7 +757,19 @@ func (c *FileServerManager) ServeFile(ctx *Context, name string) {
 		return
 	}
 	dir, file := filepath.Split(name)
-	c.serveFile(ctx, http.Dir(dir), file, false)
+	var compressible, cacheable bool
+	switch len(compressibleAndCacheable) {
+	case 0:
+		compressible = c.enableCompress
+		cacheable = c.enableCache
+	case 1:
+		compressible = compressibleAndCacheable[0]
+		cacheable = c.enableCache
+	default:
+		compressible = compressibleAndCacheable[0]
+		cacheable = compressibleAndCacheable[1]
+	}
+	c.serveFile(ctx, NewFileSystem(http.Dir(dir), compressible, cacheable), file, false)
 }
 
 func containsDotDot(v string) bool {
@@ -722,7 +787,7 @@ func containsDotDot(v string) bool {
 func isSlashRune(r rune) bool { return r == '/' || r == '\\' }
 
 type fileHandler struct {
-	root              http.FileSystem
+	root              FileSystem
 	fileServerManager *FileServerManager
 }
 
@@ -737,8 +802,20 @@ type fileHandler struct {
 // As a special case, the returned file server redirects any request
 // ending in "/index.html" to the same path, without the final
 // "index.html".
-func (c *FileServerManager) FileServer(root http.FileSystem) Handler {
-	return &fileHandler{root, c}
+func (c *FileServerManager) FileServer(root http.FileSystem, compressibleAndCacheable ...bool) Handler {
+	var compressible, cacheable bool
+	switch len(compressibleAndCacheable) {
+	case 0:
+		compressible = c.enableCompress
+		cacheable = c.enableCache
+	case 1:
+		compressible = compressibleAndCacheable[0]
+		cacheable = c.enableCache
+	default:
+		compressible = compressibleAndCacheable[0]
+		cacheable = compressibleAndCacheable[1]
+	}
+	return &fileHandler{NewFileSystem(root, compressible, cacheable), c}
 }
 
 func (f *fileHandler) Serve(ctx *Context) error {

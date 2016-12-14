@@ -529,7 +529,7 @@ func (ctx *Context) File(file string, filename ...string) {
 
 // Render renders a template with data and sends a text/html response with status code.
 func (ctx *Context) Render(status int, name string, data Map) error {
-	b, err := Global.pongo2Render.Render(name, (data))
+	b, err := Global.render.Render(name, data)
 	if err != nil {
 		return err
 	}

@@ -171,6 +171,9 @@ func (set *TemplateSet) FromBytesWithName(filename string, buf []byte) (*Templat
 func (set *TemplateSet) FromFile(filename string) (*Template, error) {
 	set.firstTemplateCreated = true
 
+	// println(filename)
+	// println(set.resolveFilename(nil, filename))
+
 	fd, err := set.loader.Get(set.resolveFilename(nil, filename))
 	if err != nil {
 		return nil, &Error{
