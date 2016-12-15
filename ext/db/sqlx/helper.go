@@ -4,13 +4,21 @@ import (
 	"database/sql"
 	"errors"
 
+	"github.com/henrylee2cn/thinkgo"
 	"github.com/jmoiron/sqlx"
 )
 
 // Gets the specified database engine,
 // or the default DB if no name is specified.
 func MustDB(name ...string) *sqlx.DB {
-	db, _ := DB(name...)
+	db, ok := DB(name...)
+	if !ok {
+		_name := "default"
+		if len(name) == 0 {
+			_name = name[0]
+		}
+		thinkgo.Panicf("the database engine `%s` is not configured", _name)
+	}
 	return db
 }
 
@@ -31,7 +39,14 @@ func List() map[string]*sqlx.DB {
 // Gets the connection string for the specified database,
 // or returns the default if no name is specified.
 func MustConnstring(name ...string) string {
-	conn, _ := Connstring(name...)
+	conn, ok := Connstring(name...)
+	if !ok {
+		_name := "default"
+		if len(name) == 0 {
+			_name = name[0]
+		}
+		thinkgo.Panicf("the database engine `%s` is not configured", _name)
+	}
 	return conn
 }
 
@@ -87,7 +102,7 @@ func TransactCallbackByName(dbName string, fn func(*sqlx.Tx) error, tx ...*sqlx.
 	if _tx == nil {
 		engine, ok := DB(dbName)
 		if !ok {
-			return errors.New("the specified database engine " + dbName + " is not configured")
+			return errors.New("the database engine `" + dbName + "` is not configured")
 		}
 		_tx, err = engine.Beginx()
 		if err != nil {
@@ -126,7 +141,7 @@ func CallbackByName(dbName string, fn func(DBTX) error, tx ...*sqlx.Tx) error {
 	}
 	engine, ok := DB(dbName)
 	if !ok {
-		return errors.New("the specified database engine " + dbName + " is not configured")
+		return errors.New("the database engine `" + dbName + "` is not configured")
 	}
 	return fn(engine)
 }

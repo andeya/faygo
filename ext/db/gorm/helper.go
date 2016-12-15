@@ -1,13 +1,21 @@
 package gorm
 
 import (
+	"github.com/henrylee2cn/thinkgo"
 	"github.com/jinzhu/gorm"
 )
 
 // Gets the specified database engine,
 // or the default DB if no name is specified.
 func MustDB(name ...string) *gorm.DB {
-	db, _ := DB(name...)
+	db, ok := DB(name...)
+	if !ok {
+		_name := "default"
+		if len(name) == 0 {
+			_name = name[0]
+		}
+		thinkgo.Panicf("the database engine `%s` is not configured", _name)
+	}
 	return db
 }
 
@@ -28,7 +36,14 @@ func List() map[string]*gorm.DB {
 // Gets the connection string for the specified database,
 // or returns the default if no name is specified.
 func MustConnstring(name ...string) string {
-	conn, _ := Connstring(name...)
+	conn, ok := Connstring(name...)
+	if !ok {
+		_name := "default"
+		if len(name) == 0 {
+			_name = name[0]
+		}
+		thinkgo.Panicf("the database engine `%s` is not configured", _name)
+	}
 	return conn
 }
 
