@@ -6,8 +6,8 @@ import (
 )
 
 func main() {
-	thinkgo.Global.SetUpload("./upload/0")
-	// thinkgo.Global.SetStatic("./static")
+	thinkgo.Global.SetUpload("./upload/0", false, false)
+	// thinkgo.Global.SetStatic("./static", false, false)
 	app1 := thinkgo.New("myapp1", "1.0")
 	router.Route1(app1)
 	go app1.Run()

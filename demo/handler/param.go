@@ -39,7 +39,7 @@ func (p *Param) Serve(ctx *thinkgo.Context) error {
 func (p *Param) Notes() thinkgo.Notes {
 	return thinkgo.Notes{
 		Note: "param desc",
-		Return: thinkgo.JsonMsg{
+		Return: thinkgo.JSONMsg{
 			Code: 1,
 			Info: "success",
 		},

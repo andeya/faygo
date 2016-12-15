@@ -49,15 +49,27 @@ type GlobalSetting struct {
 	fsManager *FileServerManager
 	// Render is a custom thinkgo template renderer using pongo2.
 	render *Render
-	// The path for the upload files
-	uploadDir string
-	// The path for the static files
-	staticDir string
+
+	// The path for the upload files.
+	// When does not have a custom route, the route is automatically created.
+	upload PresetStatic
+
+	// The path for the static files.
+	// When does not have a custom route, the route is automatically created.
+	static PresetStatic
+
 	// The path for the log files
 	logDir string
 
 	syslog *logging.Logger
 	bizlog *logging.Logger
+}
+
+type PresetStatic struct {
+	root       string
+	nocompress bool
+	nocache    bool
+	handlers   []HandlerWithoutPath
 }
 
 // global configuration and functions...
@@ -74,13 +86,13 @@ var Global = func() *GlobalSetting {
 			globalConfig.Cache.Enable,
 			globalConfig.Gzip.Enable,
 		),
-		uploadDir: defaultUploadDir,
-		staticDir: defaultStaticDir,
-		logDir:    defaultLogDir,
+		upload: defaultUpload,
+		static: defaultStatic,
+		logDir: defaultLogDir,
 	}
 	if globalConfig.Cache.Enable {
 		global.render = newRender(func(name string) (http.File, error) {
-			return global.fsManager.Open(name, "", true)
+			return global.fsManager.Open(name, "", false)
 		})
 	} else {
 		global.render = newRender(nil)
@@ -120,9 +132,13 @@ var (
 	}
 	defaultParamMapping = utils.SnakeString
 	// The default path for the upload files
-	defaultUploadDir = "./upload/"
+	defaultUpload = PresetStatic{
+		root: "./upload/",
+	}
 	// The default path for the static files
-	defaultStaticDir = "./static/"
+	defaultStatic = PresetStatic{
+		root: "./static/",
+	}
 	// The default path for the log files
 	defaultLogDir = "./log/"
 )
@@ -196,31 +212,41 @@ func (global *GlobalSetting) LogDir() string {
 }
 
 // SetUpload sets upload folder path such as `./upload/`
+// with a slash `/` at the end.
 // note: it should be called before Run()
-// with a slash at the end
-func (global *GlobalSetting) SetUpload(dir string) {
+func (global *GlobalSetting) SetUpload(dir string, nocompress bool, nocache bool, handlers ...HandlerWithoutPath) {
 	if !strings.HasSuffix(dir, "/") {
 		dir += "/"
 	}
-	global.uploadDir = dir
+	global.upload = PresetStatic{
+		root:       dir,
+		nocompress: nocompress,
+		nocache:    nocache,
+		handlers:   handlers,
+	}
 }
 
 // UploadDir returns upload folder path with a slash at the end
 func (global *GlobalSetting) UploadDir() string {
-	return global.uploadDir
+	return global.upload.root
 }
 
 // SetStatic sets static folder path, such as `./staic/`
+// with a slash `/` at the end.
 // note: it should be called before Run()
-// with a slash `/` at the end
-func (global *GlobalSetting) SetStatic(dir string) {
+func (global *GlobalSetting) SetStatic(dir string, nocompress bool, nocache bool, handlers ...HandlerWithoutPath) {
 	if !strings.HasSuffix(dir, "/") {
 		dir += "/"
 	}
-	global.staticDir = dir
+	global.static = PresetStatic{
+		root:       dir,
+		nocompress: nocompress,
+		nocache:    nocache,
+		handlers:   handlers,
+	}
 }
 
 // StaticDir returns static folder path with a slash at the end
 func (global *GlobalSetting) StaticDir() string {
-	return global.staticDir
+	return global.static.root
 }

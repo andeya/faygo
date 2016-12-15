@@ -240,7 +240,7 @@ type (
 		Note   string
 		Return interface{}
 	}
-	JsonMsg struct {
+	JSONMsg struct {
 		Code int         `json:"code"`           // the status code of the business process (required)
 		Info interface{} `json:"info,omitempty"` // response's schema and example value (optional)
 	}

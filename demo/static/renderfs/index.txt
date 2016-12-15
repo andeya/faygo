@@ -1,0 +1,11 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{title}}</title>
+</head>
+<body>
+   <p>title: {{title}}</p>
+   <p>__PUBLIC__:{{__PUBLIC__}}</p>
+</body>
+</html>

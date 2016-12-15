@@ -477,6 +477,27 @@ func (ctx *Context) JSONP(status int, callback string, data interface{}, isInden
 	return ctx.Bytes(status, callbackContent.Bytes())
 }
 
+// JSON with default format.
+func (ctx *Context) JSONMsg(status int, msgcode int, info interface{}, isIndent ...bool) error {
+	var (
+		b    []byte
+		err  error
+		data = JSONMsg{
+			Code: msgcode,
+			Info: info,
+		}
+	)
+	if len(isIndent) > 0 && isIndent[0] {
+		b, err = json.MarshalIndent(data, "", "  ")
+	} else {
+		b, err = json.Marshal(data)
+	}
+	if err != nil {
+		return err
+	}
+	return ctx.JSONBlob(status, b)
+}
+
 // XML sends an XML response with status code.
 func (ctx *Context) XML(status int, data interface{}, isIndent ...bool) error {
 	var (

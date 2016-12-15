@@ -19,6 +19,7 @@ import (
 	"fmt"
 	"net/http"
 	"runtime"
+	"strings"
 	"sync"
 	"time"
 
@@ -310,27 +311,23 @@ func (frame *Framework) NewNamedDELETE(name string, pattern string, handlers ...
 }
 
 // NewNamedStatic creates an isolated static muxAPI node.
-// If parameters `compressibleAndCacheable` are missing, read from global config.
-func (frame *Framework) NewStatic(pattern string, root string, compressibleAndCacheable ...bool) *MuxAPI {
-	return frame.NewNamedStatic("", pattern, root, compressibleAndCacheable...)
+func (frame *Framework) NewStatic(pattern string, root string, nocompressAndNocache ...bool) *MuxAPI {
+	return frame.NewNamedStatic("", pattern, root, nocompressAndNocache...)
 }
 
 // NewNamedStatic creates an isolated static muxAPI node with the name.
-// If parameters `compressibleAndCacheable` are missing, read from global config.
-func (frame *Framework) NewNamedStatic(name, pattern string, root string, compressibleAndCacheable ...bool) *MuxAPI {
-	return (&MuxAPI{frame: frame}).NamedStatic(name, pattern, root, compressibleAndCacheable...)
+func (frame *Framework) NewNamedStatic(name, pattern string, root string, nocompressAndNocache ...bool) *MuxAPI {
+	return (&MuxAPI{frame: frame}).NamedStatic(name, pattern, root, nocompressAndNocache...)
 }
 
 // NewNamedStatic creates an isolated static muxAPI node.
-// If parameters `compressibleAndCacheable` are missing, read from global config.
-func (frame *Framework) NewStaticFS(pattern string, fs http.FileSystem, compressibleAndCacheable ...bool) *MuxAPI {
-	return frame.NewNamedStaticFS("", pattern, fs, compressibleAndCacheable...)
+func (frame *Framework) NewStaticFS(pattern string, fs FileSystem) *MuxAPI {
+	return frame.NewNamedStaticFS("", pattern, fs)
 }
 
 // NewNamedStatic creates an isolated static muxAPI node with the name.
-// If parameters `compressibleAndCacheable` are missing, read from global config.
-func (frame *Framework) NewNamedStaticFS(name, pattern string, fs http.FileSystem, compressibleAndCacheable ...bool) *MuxAPI {
-	return (&MuxAPI{frame: frame}).NamedStaticFS(name, pattern, fs, compressibleAndCacheable...)
+func (frame *Framework) NewNamedStaticFS(name, pattern string, fs FileSystem) *MuxAPI {
+	return (&MuxAPI{frame: frame}).NamedStaticFS(name, pattern, fs)
 }
 
 // makeFilterHandle makes an FilterFunc.
@@ -433,8 +430,34 @@ func (frame *Framework) makePanicHandler() func(http.ResponseWriter, *http.Reque
 
 func (frame *Framework) presetSystemMuxes() {
 	frame.Use(accessLogWare())
-	frame.MuxAPI.NamedStatic("Directory for uploading files", "/upload/", Global.uploadDir)
-	frame.MuxAPI.NamedStatic("Directory for public static files", "/static/", Global.staticDir)
+	var hadUpload, hadStatic bool
+	for _, child := range frame.MuxAPI.children {
+		if strings.Contains(child.pattern, "/upload/") {
+			hadUpload = true
+		}
+		if strings.Contains(child.pattern, "/static/") {
+			hadUpload = true
+		}
+	}
+	// When does not have a custom route, the route is automatically created.
+	if !hadUpload {
+		frame.MuxAPI.NamedStatic(
+			"Directory for uploading files",
+			"/upload/",
+			Global.upload.root,
+			Global.upload.nocompress,
+			Global.upload.nocache,
+		).Use(Global.upload.handlers...)
+	}
+	if !hadStatic {
+		frame.MuxAPI.NamedStatic(
+			"Directory for public static files",
+			"/static/",
+			Global.static.root,
+			Global.static.nocompress,
+			Global.static.nocache,
+		).Use(Global.static.handlers...)
+	}
 }
 
 func (frame *Framework) registerSession() {

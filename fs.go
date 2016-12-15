@@ -79,11 +79,11 @@ func newFileServerManager(cacheSize int64, fileExpireSeconds int, enableCache bo
 // Gets or stores the file with compression and caching options.
 // If the name is larger than 65535 or body is larger than 1/1024 of the cache size,
 // the entry will not be written to the cache.
-func (c *FileServerManager) Open(name string, encoding string, cacheable bool) (http.File, error) {
+func (c *FileServerManager) Open(name string, encoding string, nocache bool) (http.File, error) {
 	var f http.File
 	var err error
 	var compressible = encoding != "" && c.enableCompress
-	cacheable = cacheable && c.enableCache
+	var cacheable = !nocache && c.enableCache
 	if cacheable {
 		f, err = c.Get(name)
 		if err == nil {
@@ -131,8 +131,8 @@ func (c *FileServerManager) Open(name string, encoding string, cacheable bool) (
 func (c *FileServerManager) OpenFS(ctx *Context, name string, fs FileSystem) (http.File, error) {
 	var f http.File
 	var err error
-	var compressible = fs.Compressible() && c.enableCompress
-	var cacheable = fs.Cacheable() && c.enableCache
+	var compressible = !fs.Nocompress() && c.enableCompress
+	var cacheable = !fs.Nocache() && c.enableCache
 	if cacheable {
 		f, err = c.Get(name)
 		if err == nil {
@@ -209,6 +209,97 @@ func (c *FileServerManager) Set(name string, body []byte, fileInfo os.FileInfo, 
 	return &f, nil
 }
 
+// A file system with compression and caching options
+type (
+	FileSystem interface {
+		http.FileSystem
+		Nocompress() bool // not allowed compress
+		Nocache() bool    // not allowed cache
+	}
+	fileSystem struct {
+		http.FileSystem
+		nocompress bool
+		nocache    bool
+	}
+)
+
+func (fs *fileSystem) Nocompress() bool {
+	return fs.nocompress
+}
+
+func (fs *fileSystem) Nocache() bool {
+	return fs.nocache
+}
+
+// New a file system with compression and caching options
+func FS(fs http.FileSystem, nocompressAndNocache ...bool) FileSystem {
+	var nocompress, nocache bool
+	var count = len(nocompressAndNocache)
+	if count == 1 {
+		nocompress = nocompressAndNocache[0]
+	} else if count >= 2 {
+		nocompress = nocompressAndNocache[0]
+		nocache = nocompressAndNocache[1]
+	}
+	return &fileSystem{
+		FileSystem: fs,
+		nocompress: nocompress,
+		nocache:    nocache,
+	}
+}
+
+// New a file system with compression and caching options, similar to http.Dir
+func DirFS(root string, nocompressAndNocache ...bool) FileSystem {
+	return FS(http.Dir(root), nocompressAndNocache...)
+}
+
+// New a file system with auto-rendering.
+// param `ext` is used to specify the extension to be rendered, `*` for all extensions.
+func RenderFS(root string, ext string, tplVar Map) FileSystem {
+	return FS(&renderFS{
+		dir:    root,
+		ext:    ext,
+		tplVar: tplVar,
+		render: Global.Render(),
+	}, false, true)
+}
+
+type renderFS struct {
+	dir    string
+	ext    string
+	tplVar Map
+	render *Render
+}
+
+func (fs *renderFS) Open(name string) (http.File, error) {
+	if filepath.Separator != '/' && strings.ContainsRune(name, filepath.Separator) ||
+		strings.Contains(name, "\x00") {
+		return nil, errors.New("RenderFS: invalid character in file path")
+	}
+	dir := fs.dir
+	if dir == "" {
+		dir = "."
+	}
+	fname := filepath.Join(dir, filepath.FromSlash(path.Clean("/"+name)))
+	if fs.ext != "*" && !strings.HasSuffix(fname, fs.ext) {
+		f, err := Global.fsManager.Open(fname, "", false)
+		if err != nil {
+			// Error("RenderFS:", fname, err)
+			return nil, err
+		}
+		return f, nil
+	}
+	b, fileInfo, err := fs.render.renderForFS(fname, fs.tplVar)
+	if err != nil {
+		if strings.Contains(err.Error(), "not find") {
+			return nil, os.ErrNotExist
+		}
+		// Error("RenderFS:", fname, err)
+		return NewFile(b, fileInfo), err
+	}
+	return NewFile(b, fileInfo), nil
+}
+
 type CacheFile struct {
 	fileInfo os.FileInfo
 	encoding string
@@ -241,37 +332,6 @@ func (c *CacheFile) Close() error {
 
 func (c *CacheFile) Readdir(count int) ([]os.FileInfo, error) {
 	return []os.FileInfo{}, errors.New("Readdir " + c.fileInfo.Name() + ": The system cannot find the path specified.")
-}
-
-// A file system with compression and caching options
-type (
-	FileSystem interface {
-		http.FileSystem
-		Compressible() bool
-		Cacheable() bool
-	}
-	fileSystem struct {
-		http.FileSystem
-		compressible bool
-		cacheable    bool
-	}
-)
-
-// New a file system with compression and caching options
-func NewFileSystem(fs http.FileSystem, compressible bool, cacheable bool) FileSystem {
-	return &fileSystem{
-		FileSystem:   fs,
-		compressible: compressible,
-		cacheable:    cacheable,
-	}
-}
-
-func (fs *fileSystem) Compressible() bool {
-	return fs.compressible
-}
-
-func (fs *fileSystem) Cacheable() bool {
-	return fs.cacheable
 }
 
 type FileInfo struct {
@@ -746,7 +806,7 @@ func localRedirect(ctx *Context, newPath string) {
 // ends in "/index.html" to the same path, without the final
 // "index.html". To avoid such redirects either modify the path or
 // use ServeContent.
-func (c *FileServerManager) ServeFile(ctx *Context, name string, compressibleAndCacheable ...bool) {
+func (c *FileServerManager) ServeFile(ctx *Context, name string, nocompressAndNocache ...bool) {
 	if containsDotDot(ctx.R.URL.Path) {
 		// Too many programs use ctx.R.URL.Path to construct the argument to
 		// serveFile. Reject the request under the assumption that happened
@@ -757,19 +817,7 @@ func (c *FileServerManager) ServeFile(ctx *Context, name string, compressibleAnd
 		return
 	}
 	dir, file := filepath.Split(name)
-	var compressible, cacheable bool
-	switch len(compressibleAndCacheable) {
-	case 0:
-		compressible = c.enableCompress
-		cacheable = c.enableCache
-	case 1:
-		compressible = compressibleAndCacheable[0]
-		cacheable = c.enableCache
-	default:
-		compressible = compressibleAndCacheable[0]
-		cacheable = compressibleAndCacheable[1]
-	}
-	c.serveFile(ctx, NewFileSystem(http.Dir(dir), compressible, cacheable), file, false)
+	c.serveFile(ctx, DirFS(dir, nocompressAndNocache...), file, false)
 }
 
 func containsDotDot(v string) bool {
@@ -792,7 +840,7 @@ type fileHandler struct {
 }
 
 // http.FileServer returns a handler that serves HTTP requests
-// with the contents of the file system rooted at root.
+// with the contents of the file system rooted at fs.
 //
 // To use the operating system's file system implementation,
 // use http.Dir:
@@ -802,20 +850,8 @@ type fileHandler struct {
 // As a special case, the returned file server redirects any request
 // ending in "/index.html" to the same path, without the final
 // "index.html".
-func (c *FileServerManager) FileServer(root http.FileSystem, compressibleAndCacheable ...bool) Handler {
-	var compressible, cacheable bool
-	switch len(compressibleAndCacheable) {
-	case 0:
-		compressible = c.enableCompress
-		cacheable = c.enableCache
-	case 1:
-		compressible = compressibleAndCacheable[0]
-		cacheable = c.enableCache
-	default:
-		compressible = compressibleAndCacheable[0]
-		cacheable = compressibleAndCacheable[1]
-	}
-	return &fileHandler{NewFileSystem(root, compressible, cacheable), c}
+func (c *FileServerManager) FileServer(fs FileSystem) Handler {
+	return &fileHandler{fs, c}
 }
 
 func (f *fileHandler) Serve(ctx *Context) error {
