@@ -15,10 +15,85 @@
 package thinkgo
 
 import (
+	"errors"
+	"os"
 	"path"
+	"path/filepath"
+	"reflect"
+	"strings"
+
+	"github.com/henrylee2cn/thinkgo/ini"
+	"github.com/henrylee2cn/thinkgo/utils"
 )
 
 // The static directory prefix is automatically added for the file name
 func JoinStatic(shortFilename string) string {
 	return path.Join(Global.StaticDir(), shortFilename)
+}
+
+// Quickly create your own configuration files.
+// Struct tags reference `https://github.com/go-ini/ini`
+func SyncINI(structPointer interface{}, callback func() error, filename ...string) (err error) {
+	t := reflect.TypeOf(structPointer)
+	if t.Kind() != reflect.Ptr {
+		return errors.New("SyncINI's param must be struct pointer type.")
+	}
+	t = t.Elem()
+	if t.Kind() != reflect.Struct {
+		return errors.New("SyncINI's param must be struct pointer type.")
+	}
+
+	var fname string
+	if len(filename) > 0 {
+		fname = filename[0]
+	} else {
+		fname = strings.TrimSuffix(t.Name(), "Config")
+		fname = strings.TrimSuffix(fname, "INI")
+		fname = utils.SnakeString(fname) + ".ini"
+		fname = filepath.Join(CONFIG_DIR, fname)
+	}
+
+	os.MkdirAll(filepath.Dir(fname), 0777)
+
+	cfg, err := ini.LooseLoad(fname)
+	if err != nil {
+		return err
+	}
+
+	err = cfg.MapTo(structPointer)
+	if err != nil {
+		return err
+	}
+
+	if callback != nil {
+		if err := callback(); err != nil {
+			return err
+		}
+	}
+
+	err = cfg.ReflectFrom(structPointer)
+	if err != nil {
+		return err
+	}
+
+	return cfg.SaveTo(fname)
+}
+
+/**
+ * WrapDoc add a document notes to handler
+ */
+type docWrap struct {
+	Handler
+	notes Notes
+}
+
+func (w *docWrap) Notes() Notes {
+	return w.notes
+}
+
+func DocWrap(handler Handler, notes Notes) Handler {
+	return &docWrap{
+		Handler: handler,
+		notes:   notes,
+	}
 }

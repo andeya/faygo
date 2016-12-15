@@ -263,15 +263,6 @@ func (h *handlerStruct) paramInfos() []ParamInfo {
 	// return distinctAndSortedParamInfos(infos)
 }
 
-// Only the original instance is invoked.
-func (h *handlerStruct) getNotes() *Notes {
-	if doc, ok := h.handler.(Doc); ok {
-		n := doc.Notes()
-		return &n
-	}
-	return nil
-}
-
 // Get distinct and sorted parameters information.
 func distinctAndSortedParamInfos(infos []ParamInfo) []ParamInfo {
 	infoMap := make(map[string]ParamInfo, len(infos))

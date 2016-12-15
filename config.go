@@ -17,12 +17,9 @@ package thinkgo
 import (
 	"fmt"
 	"os"
-	"path/filepath"
 	"sort"
 	"sync/atomic"
 	"time"
-
-	"github.com/henrylee2cn/thinkgo/ini"
 )
 
 type (
@@ -193,32 +190,23 @@ var globalConfig = func() GlobalConfig {
 		},
 	}
 	filename := CONFIG_DIR + GLOBAL_CONFIG_FILE
-	os.MkdirAll(filepath.Dir(filename), 0777)
 
-	cfg, err := ini.LooseLoad(filename)
-	if err != nil {
-		panic(err)
-	}
-	err = cfg.MapTo(&background)
+	err := SyncINI(
+		&background,
+		func() error {
+			if !(background.Log.ConsoleEnable || background.Log.FileEnable) {
+				background.Log.ConsoleEnable = true
+				background.warnMsg = "config: log::enable_console and log::enable_file can not be disabled at the same time, so automatically open console log."
+			}
+			return nil
+		},
+		filename,
+	)
+
 	if err != nil {
 		panic(err)
 	}
 
-	{
-		if !(background.Log.ConsoleEnable || background.Log.FileEnable) {
-			background.Log.ConsoleEnable = true
-			background.warnMsg = "config: log::enable_console and log::enable_file can not be disabled at the same time, so automatically open console log."
-		}
-	}
-
-	err = cfg.ReflectFrom(&background)
-	if err != nil {
-		panic(err)
-	}
-	err = cfg.SaveTo(filename)
-	if err != nil {
-		panic(err)
-	}
 	return background
 }()
 
@@ -269,61 +257,38 @@ func newConfig(filename string) Config {
 		},
 	}
 
-	os.MkdirAll(filepath.Dir(filename), 0777)
-
-	cfg, err := ini.LooseLoad(filename)
-	if err != nil {
-		panic(err)
-	}
-	err = cfg.MapTo(&background)
-	if err != nil {
-		panic(err)
-	}
-
-	{
-		// switch background.RunMode {
-		// case RUNMODE_DEV, RUNMODE_PROD:
-		// default:
-		// 	panic("Please set a valid config item run_mode, refer to the following:\ndev | prod")
-		// }
-		if len(background.NetTypes) != len(background.Addrs) {
-			panic("The number of configuration items `net_types` and `addrs` must be equal")
-		}
-		if len(background.NetTypes) == 0 {
-			panic("The number of configuration items `net_types` and `addrs` must be greater than zero")
-		}
-		for _, t := range background.NetTypes {
-			switch t {
-			case NETTYPE_NORMAL, NETTYPE_TLS, NETTYPE_LETSENCRYPT, NETTYPE_UNIX:
-			default:
-				panic("Please set a valid config item `net_types`, refer to the following:\nnormal | tls | letsencrypt | unix")
+	err := SyncINI(
+		&background,
+		func() error {
+			// switch background.RunMode {
+			// case RUNMODE_DEV, RUNMODE_PROD:
+			// default:
+			// 	panic("Please set a valid config item run_mode, refer to the following:\ndev | prod")
+			// }
+			if len(background.NetTypes) != len(background.Addrs) {
+				panic("The number of configuration items `net_types` and `addrs` must be equal")
 			}
-		}
-		background.multipartMaxMemory = background.MultipartMaxMemoryMB * MB
-		background.APIdoc.Comb()
+			if len(background.NetTypes) == 0 {
+				panic("The number of configuration items `net_types` and `addrs` must be greater than zero")
+			}
+			for _, t := range background.NetTypes {
+				switch t {
+				case NETTYPE_NORMAL, NETTYPE_TLS, NETTYPE_LETSENCRYPT, NETTYPE_UNIX:
+				default:
+					panic("Please set a valid config item `net_types`, refer to the following:\nnormal | tls | letsencrypt | unix")
+				}
+			}
+			background.multipartMaxMemory = background.MultipartMaxMemoryMB * MB
+			background.APIdoc.Comb()
+			return nil
+		},
+		filename,
+	)
+	if err != nil {
+		panic(err)
 	}
 
-	err = cfg.ReflectFrom(&background)
-	if err != nil {
-		panic(err)
-	}
-	err = cfg.SaveTo(filename)
-	if err != nil {
-		panic(err)
-	}
 	return background
-}
-
-func syncConfigToFile(filename string, config *Config) error {
-	cfg, err := ini.LooseLoad(filename)
-	if err != nil {
-		return err
-	}
-	err = cfg.ReflectFrom(&config)
-	if err != nil {
-		return err
-	}
-	return cfg.SaveTo(filename)
 }
 
 func (conf *APIdocConfig) Comb() {

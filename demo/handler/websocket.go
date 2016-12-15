@@ -13,25 +13,30 @@ func WebsocketPage() thinkgo.HandlerFunc {
 	}
 }
 
-var Websocket thinkgo.HandlerFunc = func(ctx *thinkgo.Context) error {
-	var upgrader = websocket.Upgrader{}
-	conn, err := upgrader.ThinkUpgrade(ctx, nil)
-	if err != nil {
-		return err
-	}
-	defer conn.Close()
+var Websocket = thinkgo.DocWrap(
+	thinkgo.HandlerFunc(func(ctx *thinkgo.Context) error {
+		var upgrader = websocket.Upgrader{}
+		conn, err := upgrader.ThinkUpgrade(ctx, nil)
+		if err != nil {
+			return err
+		}
+		defer conn.Close()
 
-	for {
-		var req interface{}
-		if err := conn.ReadJSON(&req); err != nil {
-			ctx.Log().Warning("read:", err)
-			return nil
+		for {
+			var req interface{}
+			if err := conn.ReadJSON(&req); err != nil {
+				ctx.Log().Warning("read:", err)
+				return nil
+			}
+			ctx.Log().Info("req:", req)
+			if err := conn.WriteJSON(map[string]string{"server_time": time.Now().String()}); err != nil {
+				ctx.Log().Warning("write:", err)
+				return nil
+			}
 		}
-		ctx.Log().Info("req:", req)
-		if err := conn.WriteJSON(map[string]string{"server_time": time.Now().String()}); err != nil {
-			ctx.Log().Warning("write:", err)
-			return nil
-		}
-	}
-	return nil
-}
+		return nil
+	}),
+	thinkgo.Notes{
+		Note: "websocket example",
+	},
+)

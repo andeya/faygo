@@ -271,20 +271,26 @@ func (ctx *Context) UserAgent() string {
 	return ctx.HeaderParam(HeaderUserAgent)
 }
 
-// Data return the implicit data in the context
-func (ctx *Context) Data() map[interface{}]interface{} {
-	if ctx.data == nil {
-		ctx.data = make(map[interface{}]interface{})
-	}
-	return ctx.data
-}
-
-// GetData returns the stored data in this context.
-func (ctx *Context) GetData(key interface{}) interface{} {
+// Data returns the stored data in this context.
+func (ctx *Context) Data(key interface{}) interface{} {
 	if v, ok := ctx.data[key]; ok {
 		return v
 	}
 	return nil
+}
+
+// HasData checks if the key exists in the context.
+func (ctx *Context) HasData(key interface{}) bool {
+	_, ok := ctx.data[key]
+	return ok
+}
+
+// DataAll return the implicit data in the context
+func (ctx *Context) DataAll() map[interface{}]interface{} {
+	if ctx.data == nil {
+		ctx.data = make(map[interface{}]interface{})
+	}
+	return ctx.data
 }
 
 // SetData stores data with given key in this context.
@@ -294,12 +300,6 @@ func (ctx *Context) SetData(key, val interface{}) {
 		ctx.data = make(map[interface{}]interface{})
 	}
 	ctx.data[key] = val
-}
-
-// Contains checks if the key exists in the context.
-func (ctx *Context) Contains(key interface{}) bool {
-	_, ok := ctx.data[key]
-	return ok
 }
 
 // Param returns the first value for the kinds of parameters.

@@ -29,6 +29,16 @@ func NewLog() *logging.Logger {
 	return &newlog
 }
 
+// Sys logs a system message using CRITICAL as log level.
+func Sys(args ...interface{}) {
+	Global.syslog.Critical(args...)
+}
+
+// Sys logs a system message using CRITICAL as log level.
+func Sysf(format string, args ...interface{}) {
+	Global.syslog.Criticalf(format, args...)
+}
+
 // Fatal is equivalent to l.Critical(fmt.Sprint()) followed by a call to os.Exit(1).
 func Fatal(args ...interface{}) {
 	Global.bizlog.Fatal(args...)

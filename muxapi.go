@@ -275,28 +275,33 @@ func (mux *MuxAPI) comb() {
 	mux.paramInfos = mux.paramInfos[:0]
 	mux.notes = mux.notes[:0]
 	for i, handler := range mux.handlers {
+		// Get the notes for apidoc
+		if doc, ok := handler.(Doc); ok {
+			mux.notes = append(mux.notes, doc.Notes())
+		}
+
 		apiHandler := ToAPIHandler(handler)
 		if apiHandler == nil {
 			continue
 		}
+
 		h, err := newHandlerStruct(apiHandler, Global.paramMapping)
 		if err != nil {
 			errStr := "[Thinkgo-newHandlerStruct] " + err.Error()
 			mux.frame.Log().Panicf("%s\n", errStr)
 		}
+
 		if h.paramsAPI.Number() == 0 {
 			continue
 		}
+
 		if h.paramsAPI.MaxMemory() == defaultMultipartMaxMemory {
 			h.paramsAPI.SetMaxMemory(mux.frame.config.multipartMaxMemory)
 		}
-		mux.handlers[i] = h
-
 		// Get the information for apidoc
 		mux.paramInfos = append(mux.paramInfos, h.paramInfos()...)
-		if r := h.getNotes(); r != nil {
-			mux.notes = append(mux.notes, *r)
-		}
+
+		mux.handlers[i] = h
 	}
 
 	// check path params defined, and panic if there is any error.
