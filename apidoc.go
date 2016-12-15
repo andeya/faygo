@@ -280,9 +280,11 @@ func apiDesc(notes []Notes) string {
 		if n.Note != "" {
 			desc += fmt.Sprintf("\nNote: %s", strings.TrimSpace(n.Note))
 		}
-		if n.Return != "" {
+		if n.Return != nil {
 			b, _ := json.MarshalIndent(n.Return, "", "  ")
 			desc += fmt.Sprintf("\nReturn: %s", string(b))
+		} else {
+			desc += "\nReturn:"
 		}
 	}
 	if desc != "" {

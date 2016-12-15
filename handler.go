@@ -237,12 +237,12 @@ type (
 
 	// implementation notes of a response
 	Notes struct {
-		Note   string
-		Return interface{}
+		Note   string      `json:"note" xml:"note"`
+		Return interface{} `json:"return,omitempty" xml:"return,omitempty"`
 	}
 	JSONMsg struct {
-		Code int         `json:"code"`           // the status code of the business process (required)
-		Info interface{} `json:"info,omitempty"` // response's schema and example value (optional)
+		Code int         `json:"code" xml:"code"`                     // the status code of the business process (required)
+		Info interface{} `json:"info,omitempty" xml:"info,omitempty"` // response's schema and example value (optional)
 	}
 )
 
