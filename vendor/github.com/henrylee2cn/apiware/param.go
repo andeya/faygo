@@ -35,16 +35,31 @@ const (
 	defaultMaxMemoryMB = 32
 )
 
+// func ParseTags(s string) map[string]string {
+// 	c := strings.Split(s, ",")
+// 	m := make(map[string]string)
+// 	for _, v := range c {
+// 		c2 := strings.Split(v, "(")
+// 		if len(c2) == 2 && len(c2[1]) > 1 {
+// 			m[c2[0]] = c2[1][:len(c2[1])-1]
+// 		} else {
+// 			m[v] = ""
+// 		}
+// 	}
+// 	return m
+// }
+
 func ParseTags(s string) map[string]string {
 	c := strings.Split(s, ",")
 	m := make(map[string]string)
 	for _, v := range c {
-		c2 := strings.Split(v, "(")
-		if len(c2) == 2 && len(c2[1]) > 1 {
-			m[c2[0]] = c2[1][:len(c2[1])-1]
-		} else {
-			m[v] = ""
+		a := strings.IndexByte(v, '(')
+		b := strings.LastIndexByte(v, ')')
+		if a != -1 && b != -1 {
+			m[v[:a]] = v[a+1 : b]
+			continue
 		}
+		m[v] = ""
 	}
 	return m
 }
