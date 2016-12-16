@@ -354,7 +354,7 @@ func (frame *Framework) makeFilterHandle() FilterFunc {
 		ctx.Next()
 		if ctx.IsBreak() {
 			if !ctx.W.Committed() {
-				ctx.Error(http.StatusNotFound, http.StatusText(http.StatusNotFound))
+				ctx.Error(http.StatusForbidden, http.StatusText(http.StatusForbidden))
 			}
 			stop := time.Now()
 			method := ctx.Method()

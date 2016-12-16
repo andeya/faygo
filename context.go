@@ -107,7 +107,7 @@ const (
 const (
 	// stopExecutionposition used inside the Context,
 	// is the number which shows us that the context's handlerChain manualy stop the execution
-	stopExecutionposition int16 = math.MaxInt16
+	stopExecutionposition int16 = math.MaxInt16 - 1
 )
 
 type (
@@ -358,10 +358,11 @@ func newContext(
 ) *Context {
 	count := len(handlerChain)
 	chain := make(HandlerChain, count)
-	copy(chain, handlerChain)
-	for i, h := range chain {
+	for i, h := range handlerChain {
 		if h2, ok := h.(*handlerStruct); ok {
 			chain[i] = h2.new()
+		} else {
+			chain[i] = h
 		}
 	}
 	ctx := &Context{
@@ -412,6 +413,7 @@ func (ctx *Context) do() {
 }
 
 // Next calls all the next handler from the middleware stack, it used inside a middleware.
+// Notes: Non-concurrent security.
 func (ctx *Context) Next() {
 	//set position to the next
 	ctx.pos++
@@ -459,7 +461,7 @@ func (ctx *Context) beforeWriteHeader() {
 	}
 }
 
-// Stop just sets the .pos to 32767 in order to  not move to the next handlers(if any)
+// Stop just sets the .pos to 32766 in order to  not move to the next handlers(if any)
 func (ctx *Context) Stop() {
 	ctx.pos = stopExecutionposition
 }
