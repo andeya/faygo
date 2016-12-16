@@ -479,7 +479,7 @@ func (c *FileServerManager) serveContent(ctx *Context, name string, modtime time
 	var ctype string
 	if !haveType {
 		ctype = mime.TypeByExtension(filepath.Ext(name))
-		println("ctypes:", haveType, name, filepath.Ext(name), ctype)
+		// Warning("ctypes:", haveType, name, filepath.Ext(name), ctype)
 		if ctype == "" {
 			// read a chunk to decide between utf-8 text and binary
 			var buf [sniffLen]byte
