@@ -103,7 +103,7 @@ func (frame *Framework) initAPIdoc(host string) {
 
 	for _, child := range rootMuxAPI.Children() {
 		// filter useless API
-		if child.pattern == "/swagger.json" || strings.HasPrefix(child.pattern, "/apidoc/") {
+		if (child.pattern == "/swagger.json" || strings.HasPrefix(child.pattern, "/apidoc/")) && child.HasMethod("GET") {
 			continue
 		}
 		if !child.IsGroup() {

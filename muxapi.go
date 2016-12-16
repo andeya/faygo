@@ -98,6 +98,17 @@ func (m *Methodset) Methods() []string {
 	return methods
 }
 
+// Check if the specified method exists
+func (mux *MuxAPI) HasMethod(method string) bool {
+	method = strings.ToUpper(method)
+	for _, m := range mux.methods {
+		if method == m {
+			return true
+		}
+	}
+	return false
+}
+
 // Group adds a subordinate subgroup node to the current muxAPI grouping node.
 // notes: handler cannot be nil.
 func (mux *MuxAPI) Group(pattern string, handlers ...Handler) *MuxAPI {
