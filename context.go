@@ -416,7 +416,7 @@ func (ctx *Context) Next() {
 	//set position to the next
 	ctx.pos++
 	//run the next
-	if ctx.pos <= ctx.handlerChainLen {
+	if ctx.pos < ctx.handlerChainLen {
 		switch h := ctx.handlerChain[ctx.pos].(type) {
 		case *handlerStruct:
 			err := h.bind(ctx.R, ctx.pathParams)
