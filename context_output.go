@@ -85,7 +85,7 @@ func (resp *Response) Header() http.Header {
 // send error codes.
 func (resp *Response) WriteHeader(status int) {
 	if resp.committed {
-		multiCommitted(resp.context.Log())
+		multiCommitted(resp.status, resp.context.Log())
 		return
 	}
 	resp.status = status
@@ -192,36 +192,29 @@ func (resp *Response) CloseNotify() <-chan bool {
 	return nil
 }
 
-// Status returns the HTTP status code of the response.
-func (resp *Response) Status() int {
-	return resp.status
-}
-
 // Size returns the current size, in bytes, of the response.
 func (resp *Response) Size() int64 {
 	return resp.size
 }
 
-// Committed asserts whether or not the response has been committed to.
+// Whether the response has been submitted.
 func (resp *Response) Committed() bool {
 	return resp.committed
 }
 
-// SetHeader sets response header item string via given key.
-func (ctx *Context) SetHeader(key, val string) {
-	ctx.W.Header().Set(key, val)
+// Status returns the HTTP status code of the response.
+func (resp *Response) Status() int {
+	return resp.status
 }
 
-// SetContentType sets the content type from ext string.
-// MIME type is given in mime package.
-func (ctx *Context) SetContentType(ext string) {
-	if !strings.HasPrefix(ext, ".") {
-		ext = "." + ext
-	}
-	ctype := mime.TypeByExtension(ext)
-	if ctype != "" {
-		ctx.W.Header().Set(HeaderContentType, ctype)
-	}
+// Whether the response has been submitted.
+func (ctx *Context) Committed() bool {
+	return ctx.W.committed
+}
+
+// Status returns the HTTP status code of the response.
+func (ctx *Context) Status() int {
+	return ctx.W.status
 }
 
 // IsCachable returns boolean of this request is cached.
@@ -276,6 +269,23 @@ func (ctx *Context) IsClientError() bool {
 // HTTP 5xx means server internal error.
 func (ctx *Context) IsServerError() bool {
 	return ctx.W.status >= 500 && ctx.W.status < 600
+}
+
+// SetHeader sets response header item string via given key.
+func (ctx *Context) SetHeader(key, val string) {
+	ctx.W.Header().Set(key, val)
+}
+
+// SetContentType sets the content type from ext string.
+// MIME type is given in mime package.
+func (ctx *Context) SetContentType(ext string) {
+	if !strings.HasPrefix(ext, ".") {
+		ext = "." + ext
+	}
+	ctype := mime.TypeByExtension(ext)
+	if ctype != "" {
+		ctx.W.Header().Set(HeaderContentType, ctype)
+	}
 }
 
 // SetCookie sets cookie value via given key.
@@ -390,7 +400,7 @@ func (ctx *Context) Error(status int, errStr string) {
 // Bytes writes the data bytes to the connection as part of an HTTP reply.
 func (ctx *Context) Bytes(status int, content []byte) error {
 	if ctx.W.committed {
-		multiCommitted(ctx.Log())
+		multiCommitted(ctx.W.status, ctx.Log())
 		return nil
 	}
 	if ctx.W.Header().Get(HeaderContentEncoding) == "" {
@@ -558,21 +568,23 @@ func (ctx *Context) Render(status int, name string, data Map) error {
 	return ctx.Bytes(status, b)
 }
 
-func multiCommitted(log *logging.Logger) {
-	line := []byte("\n")
-	e := []byte("\ngoroutine ")
-	stack := make([]byte, 2<<10) //2KB
-	runtime.Stack(stack, true)
-	start := bytes.Index(stack, line) + 1
-	stack = stack[start:]
-	end := bytes.LastIndex(stack, line)
-	if end != -1 {
-		stack = stack[:end]
+func multiCommitted(status int, log *logging.Logger) {
+	if status == 200 {
+		line := []byte("\n")
+		e := []byte("\ngoroutine ")
+		stack := make([]byte, 2<<10) //2KB
+		runtime.Stack(stack, true)
+		start := bytes.Index(stack, line) + 1
+		stack = stack[start:]
+		end := bytes.LastIndex(stack, line)
+		if end != -1 {
+			stack = stack[:end]
+		}
+		end = bytes.Index(stack, e)
+		if end != -1 {
+			stack = stack[:end]
+		}
+		stack = bytes.TrimRight(stack, "\n")
+		log.Warningf("multiple response.WriteHeader calls\n[TRACE]\n%s\n", stack)
 	}
-	end = bytes.Index(stack, e)
-	if end != -1 {
-		stack = stack[:end]
-	}
-	stack = bytes.TrimRight(stack, "\n")
-	log.Warningf("multiple response.WriteHeader calls\n[TRACE]\n%s\n", stack)
 }

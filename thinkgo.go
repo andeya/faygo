@@ -352,7 +352,7 @@ func (frame *Framework) makeFilterHandle() FilterFunc {
 		start := time.Now()
 
 		ctx.Next()
-		if ctx.isActiveStop() {
+		if ctx.IsBreak() {
 			if !ctx.W.Committed() {
 				ctx.Error(http.StatusNotFound, http.StatusText(http.StatusNotFound))
 			}

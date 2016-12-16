@@ -17,6 +17,7 @@ package thinkgo
 import (
 	"errors"
 	"fmt"
+	"math"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
@@ -106,7 +107,7 @@ const (
 const (
 	// stopExecutionposition used inside the Context,
 	// is the number which shows us that the context's handlerChain manualy stop the execution
-	stopExecutionposition = 125
+	stopExecutionposition int16 = math.MaxInt16
 )
 
 type (
@@ -126,11 +127,11 @@ type (
 		pathParams         Params                      // The parameter values on the URL path
 		queryParams        url.Values                  // URL query string values
 		data               map[interface{}]interface{} // Used to transfer variables between Handler-chains
-		handlerChainLen    int8
-		pos                int8 // pos is the position number of the Context, look .Next to understand
-		enableGzip         bool // Note: Never reset!
-		enableSession      bool // Note: Never reset!
-		enableXSRF         bool // Note: Never reset!
+		handlerChainLen    int16
+		pos                int16 // pos is the position number of the Context, look .Next to understand
+		enableGzip         bool  // Note: Never reset!
+		enableSession      bool  // Note: Never reset!
+		enableXSRF         bool  // Note: Never reset!
 		xsrfExpire         int
 		_xsrfToken         string
 		_xsrfTokenReset    bool
@@ -342,7 +343,7 @@ func newFilterContext(
 	ctx := &Context{
 		frame:           frame,
 		handlerChain:    frame.filter,
-		handlerChainLen: int8(len(frame.filter)),
+		handlerChainLen: int16(len(frame.filter)),
 		pos:             0,
 		data:            make(map[interface{}]interface{}),
 	}
@@ -366,7 +367,7 @@ func newContext(
 	ctx := &Context{
 		frame:           frame,
 		handlerChain:    chain,
-		handlerChainLen: int8(count),
+		handlerChainLen: int16(count),
 		pos:             0,
 		enableGzip:      Global.config.Gzip.Enable,
 		enableSession:   frame.config.Session.Enable,
@@ -410,12 +411,12 @@ func (ctx *Context) do() {
 	ctx.Next()
 }
 
-// Next calls all the next handler from the middleware stack, it used inside a middleware
+// Next calls all the next handler from the middleware stack, it used inside a middleware.
 func (ctx *Context) Next() {
 	//set position to the next
 	ctx.pos++
 	//run the next
-	if ctx.pos < ctx.handlerChainLen {
+	if ctx.pos <= ctx.handlerChainLen {
 		switch h := ctx.handlerChain[ctx.pos].(type) {
 		case *handlerStruct:
 			err := h.bind(ctx.R, ctx.pathParams)
@@ -458,16 +459,18 @@ func (ctx *Context) beforeWriteHeader() {
 	}
 }
 
-// Stop just sets the .pos to 125 in order to  not move to the next handlers(if any)
+// Stop just sets the .pos to 32767 in order to  not move to the next handlers(if any)
 func (ctx *Context) Stop() {
 	ctx.pos = stopExecutionposition
 }
 
-func (ctx *Context) isStop() bool {
+// Whether the operation has stopped.
+func (ctx *Context) Stopped() bool {
 	return ctx.pos >= ctx.handlerChainLen
 }
 
-func (ctx *Context) isActiveStop() bool {
+// Whether the operation is stopped halfway.
+func (ctx *Context) IsBreak() bool {
 	return ctx.pos == stopExecutionposition
 }
 
