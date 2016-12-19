@@ -34,7 +34,6 @@ var Websocket = thinkgo.DocWrap(
 				return nil
 			}
 		}
-		return nil
 	}),
 	thinkgo.Notes{
 		Note: "websocket example",
