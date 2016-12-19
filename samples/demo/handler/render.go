@@ -22,7 +22,7 @@ func init() {
 
 func Index() thinkgo.HandlerFunc {
 	return func(ctx *thinkgo.Context) error {
-		return ctx.Render(200, "../_syso/index.html", thinkgo.Map{
+		return ctx.Render(200, "../../_syso/index.html", thinkgo.Map{
 			"TITLE":   "thinkgo",
 			"VERSION": thinkgo.VERSION,
 			"CONTENT": "Welcome To Thinkgo",
