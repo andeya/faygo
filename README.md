@@ -4,7 +4,7 @@
 
 Thinkgo is a Golang Web framework that handler is middleware, supports intelligent parameter mapping and validation, and automates API documentation.
 
-[简体中文](https://github.com/henrylee2cn/thinkgo/raw/master/README_ZH.md)
+[简体中文](https://github.com/henrylee2cn/thinkgo/blob/master/README_ZH.md)
 
 ![thinkgo server](https://github.com/henrylee2cn/thinkgo/raw/master/doc/server.png)
 
