@@ -94,7 +94,7 @@ response:
     }
 */
 ```
-[完整demo示例](https://github.com/henrylee2cn/thinkgo/raw/master/demo)
+[All samples](https://github.com/henrylee2cn/thinkgo/raw/master/samples)
 
 # 配置文件说明
 
