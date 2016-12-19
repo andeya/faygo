@@ -14,7 +14,7 @@ Thinkgo is a Golang Web framework that handler is middleware, supports intellige
 
 ## Quick Start
 
-# Golang version requirements
+### Version requirements
 
 Go Version ≥1.6
 
