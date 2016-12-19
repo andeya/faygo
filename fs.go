@@ -38,6 +38,7 @@ import (
 
 	"github.com/henrylee2cn/thinkgo/acceptencoder"
 	"github.com/henrylee2cn/thinkgo/freecache"
+	"github.com/henrylee2cn/thinkgo/markdown"
 )
 
 const indexPage = "/index.html"
@@ -254,11 +255,11 @@ func DirFS(root string, nocompressAndNocache ...bool) FileSystem {
 }
 
 // New a file system with auto-rendering.
-// param `ext` is used to specify the extension to be rendered, `*` for all extensions.
-func RenderFS(root string, ext string, tplVar Map) FileSystem {
+// param `suffix` is used to specify the extension to be rendered, `*` for all extensions.
+func RenderFS(root string, suffix string, tplVar Map) FileSystem {
 	return FS(&renderFS{
 		dir:    root,
-		ext:    ext,
+		suffix: suffix,
 		tplVar: tplVar,
 		render: Global.Render(),
 	}, false, true)
@@ -266,7 +267,7 @@ func RenderFS(root string, ext string, tplVar Map) FileSystem {
 
 type renderFS struct {
 	dir    string
-	ext    string
+	suffix string
 	tplVar Map
 	render *Render
 }
@@ -281,7 +282,7 @@ func (fs *renderFS) Open(name string) (http.File, error) {
 		dir = "."
 	}
 	fname := filepath.Join(dir, filepath.FromSlash(path.Clean("/"+name)))
-	if fs.ext != "*" && !strings.HasSuffix(fname, fs.ext) {
+	if fs.suffix != "*" && !strings.HasSuffix(fname, fs.suffix) {
 		f, err := Global.fsManager.Open(fname, "", false)
 		if err != nil {
 			// Error("RenderFS:", fname, err)
@@ -296,6 +297,54 @@ func (fs *renderFS) Open(name string) (http.File, error) {
 		}
 		// Error("RenderFS:", fname, err)
 		return NewFile(b, fileInfo), err
+	}
+	return NewFile(b, fileInfo), nil
+}
+
+func MarkdownFS(root string, nocompressAndNocache ...bool) FileSystem {
+	return FS(&markdownFS{
+		dir: root,
+	}, nocompressAndNocache...)
+}
+
+type markdownFS struct {
+	dir string
+}
+
+func (fs *markdownFS) Open(name string) (http.File, error) {
+	if filepath.Separator != '/' && strings.ContainsRune(name, filepath.Separator) ||
+		strings.Contains(name, "\x00") {
+		return nil, errors.New("MarkdownFS: invalid character in file path")
+	}
+	dir := fs.dir
+	if dir == "" {
+		dir = "."
+	}
+	fname := filepath.Join(dir, filepath.FromSlash(path.Clean("/"+name)))
+	f, err := Global.fsManager.Open(fname, "", false)
+	if err != nil {
+		// Error("MarkdownFS:", fname, err)
+		return nil, err
+	}
+	if !strings.HasSuffix(fname, ".md") {
+		return f, nil
+	}
+	fileInfo, err := f.Stat()
+	if err != nil {
+		f.Close()
+		// Error("MarkdownFS:", fname, err)
+		return nil, err
+	}
+	b, err := ioutil.ReadAll(f)
+	f.Close()
+	if err != nil {
+		// Error("MarkdownFS:", fname, err)
+		return nil, err
+	}
+	b, err = markdown.GithubMarkdown(b, false)
+	if err != nil {
+		// Error("MarkdownFS:", fname, err)
+		return nil, err
 	}
 	return NewFile(b, fileInfo), nil
 }

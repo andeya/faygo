@@ -24,10 +24,13 @@ func Route1(frame *thinkgo.Framework) {
 			frame.NewNamedPOST("binds the body in JSON format", "/body", &handler.Body{}),
 			frame.NewStaticFS("/public", thinkgo.DirFS("./static/public")),
 			frame.NewStatic("/syso", "../_syso"),
-			frame.NewNamedStaticFS("renderfs test", "/renderfs", thinkgo.RenderFS(
+			frame.NewNamedStaticFS("render fs test", "/renderfs", thinkgo.RenderFS(
 				"./static/renderfs",
 				".html", // "*"
 				thinkgo.Map{"title": "RenderFS page"},
+			)),
+			frame.NewNamedStaticFS("markdown fs test", "/md", thinkgo.MarkdownFS(
+				"./static/markdown",
 			)),
 		)
 }
@@ -48,9 +51,13 @@ func Route2(frame *thinkgo.Framework) {
 	frame.StaticFS("/public", thinkgo.DirFS("./static/public"))
 	frame.Static("/syso", "../_syso")
 
-	frame.NamedStaticFS("renderfs test", "/renderfs", thinkgo.RenderFS(
+	frame.NamedStaticFS("render fs test", "/renderfs", thinkgo.RenderFS(
 		"./static/renderfs",
 		".html", // "*"
 		thinkgo.Map{"title": "RenderFS page"},
+	))
+
+	frame.NamedStaticFS("markdown fs test", "/md", thinkgo.MarkdownFS(
+		"./static/markdown",
 	))
 }
