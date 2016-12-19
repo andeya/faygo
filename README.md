@@ -97,7 +97,7 @@ response:
 - Supports near-LRU memory caching (mainly used for static file cache)
 - Nice and easy to use configuration file, automatically write default values
 
-# Configuration
+## Configuration
 
 - Each instance of the application has a single configuration (file name format `config/{appname}[_{version}].ini`). Refer to the following:
 
@@ -170,7 +170,7 @@ file_enable    = true                            # Whether enabled or not file l
 file_level     = debug                           # File logger level
 ```
 
-# Handler struct tags
+## Handler struct tags
 
 tag   |   key    | required |     value     |   desc
 ------|----------|----------|---------------|----------------------------------
@@ -200,7 +200,7 @@ err   |          |    no    |(e.g. "incorrect password format")| customize the p
 * param tags `in(formData)` and `in(body)` can not exist at the same time
 * there should not be more than one `in(body)` param tag
 
-# Handler struct fields type
+## Handler struct fields type
 
 base    |   slice    | special
 --------|------------|-------------------------------------------------------
@@ -220,7 +220,7 @@ uint64  |  []uint64  |
 float32 |  []float32 |
 float64 |  []float64 |
 
-# Expansion package
+## Expansion package
 - [barcode](https://github.com/henrylee2cn/thinkgo/raw/master/ext/barcode):       `github.com/henrylee2cn/thinkgo/ext/barcode`
 - [Bit unit conversion](https://github.com/henrylee2cn/thinkgo/raw/master/ext/bitconv):       `github.com/henrylee2cn/thinkgo/ext/bitconv`
 - [timer](https://github.com/henrylee2cn/thinkgo/raw/master/ext/cron):            `github.com/henrylee2cn/thinkgo/ext/cron`
@@ -233,5 +233,5 @@ float64 |  []float64 |
 - [ini](https://github.com/henrylee2cn/thinkgo/raw/master/ini):                `github.com/henrylee2cn/thinkgo/ini`
 
 
-# License
+## License
 Thinkgo is under Apache v2 License. See the [LICENSE](https://github.com/henrylee2cn/thinkgo/raw/master/LICENSE) file for the full license text.

@@ -2,7 +2,7 @@
 
 ![Lessgo Favicon](https://github.com/henrylee2cn/thinkgo/raw/master/doc/thinkgo_96x96.png)
 
-# 概述
+## 概述
 Thinkgo以全新的架构实现，它面向Handler接口开发，支持智能参数映射与校验、支持自动化API文档的Go语言web框架。
 
 官方QQ群：Go-Web 编程 42730308    [![Go-Web 编程群](http://pub.idqqimg.com/wpa/images/group.png)](http://jq.qq.com/?_wv=1027&k=fzi4p1)
@@ -13,17 +13,17 @@ Thinkgo以全新的架构实现，它面向Handler接口开发，支持智能参
 
 ![thinkgo index](https://github.com/henrylee2cn/thinkgo/raw/master/doc/index.png)
 
-# 框架下载
+## 框架下载
 
 ```sh
 go get -u -v github.com/henrylee2cn/thinkgo
 ```
 
-# 安装要求
+## 安装要求
 
 Go Version ≥1.6
 
-# 最新功能特性
+## 最新功能特性
 
 - 面向Handler接口开发（func or struct），中间件与操作完全等同可任意拼接路由操作链
 - 支持用struct Handler在Tag标签定义请求参数信息及其校验信息
@@ -40,7 +40,7 @@ Go Version ≥1.6
 - 排版漂亮的配置文件，且自动补填默认值方便设置
 
 
-# 代码示例
+## 代码示例
 ```
 package main
 
@@ -96,7 +96,7 @@ response:
 ```
 [All samples](https://github.com/henrylee2cn/thinkgo/raw/master/samples)
 
-# 配置文件说明
+## 配置文件说明
 
 - 应用的各实例均有单独一份配置，其文件名格式 `config/{appname}[_{version}].ini`，配置详情：
 
@@ -169,7 +169,7 @@ file_enable    = true                            # 是否启用文件日志
 file_level     = debug                           # 文件日志打印水平
 ```
 
-# Handler结构体字段标签说明
+## Handler结构体字段标签说明
 
 tag   |   key    | required |     value     |   desc
 ------|----------|----------|---------------|----------------------------------
@@ -199,7 +199,7 @@ err   |          |    no    |(e.g. "incorrect password format")| customize the p
 * param tags `in(formData)` and `in(body)` can not exist at the same time
 * there should not be more than one `in(body)` param tag
 
-# Handler结构体字段类型说明
+## Handler结构体字段类型说明
 
 base    |   slice    | special
 --------|------------|-------------------------------------------------------
@@ -219,7 +219,7 @@ uint64  |  []uint64  |
 float32 |  []float32 |
 float64 |  []float64 |
 
-# 扩展包
+## 扩展包
 - [各种条码](https://github.com/henrylee2cn/thinkgo/raw/master/ext/barcode):       `github.com/henrylee2cn/thinkgo/ext/barcode`
 - [比特单位](https://github.com/henrylee2cn/thinkgo/raw/master/ext/bitconv):       `github.com/henrylee2cn/thinkgo/ext/bitconv`
 - [定时器](https://github.com/henrylee2cn/thinkgo/raw/master/ext/cron):            `github.com/henrylee2cn/thinkgo/ext/cron`
@@ -232,5 +232,5 @@ float64 |  []float64 |
 - [ini配置](https://github.com/henrylee2cn/thinkgo/raw/master/ini):                `github.com/henrylee2cn/thinkgo/ini`
 
 
-# 开源协议
+## 开源协议
 Thinkgo 项目采用商业应用友好的 [Apache2.0](https://github.com/henrylee2cn/thinkgo/raw/master/LICENSE) 协议发布。
