@@ -31,12 +31,12 @@ type (
 	}
 	Config struct {
 		// RunMode         string      `ini:"run_mode"`         // run mode: dev | prod
-		NetTypes        []string    `ini:"net_types" delim:"|"` // network type: normal | tls | letsencrypt | unix
-		Addrs           []string    `ini:"addrs" delim:"|"`     // service monitoring address
-		TLSCertFile     string      `ini:"tls_certfile"`        // for TLS
-		TLSKeyFile      string      `ini:"tls_keyfile"`         // for TLS
-		LetsencryptFile string      `ini:"letsencrypt_file"`    // for Let's Encrypt (free SSL)
-		UNIXFileMode    os.FileMode `ini:"unix_filemode"`       // for UNIX listener file mode
+		NetTypes        []string    `ini:"net_types" delim:"|"` // List of network type: normal | tls | letsencrypt | unix
+		Addrs           []string    `ini:"addrs" delim:"|"`     // List of multiple listening addresses
+		TLSCertFile     string      `ini:"tls_certfile"`        // TLS certificate file path
+		TLSKeyFile      string      `ini:"tls_keyfile"`         // TLS key file path
+		LetsencryptFile string      `ini:"letsencrypt_file"`    // SSL free certificate path
+		UNIXFileMode    os.FileMode `ini:"unix_filemode"`       // File permissions for UNIX Server (438 equivalent to 0666)
 		// Maximum duration for reading the full request (including body).
 		//
 		// This also limits the maximum duration for idle keep-alive
@@ -47,7 +47,8 @@ type (
 		// Maximum duration for writing the full response (including body).
 		//
 		// By default response write timeout is unlimited.
-		WriteTimeout         time.Duration `ini:"write_timeout"`
+		WriteTimeout time.Duration `ini:"write_timeout"`
+		// Maximum size of memory that can be used when receiving uploaded files.
 		MultipartMaxMemoryMB int64         `ini:"multipart_maxmemory_mb"`
 		multipartMaxMemory   int64         `ini:"-"`
 		Router               RouterConfig  `ini:"router"`
@@ -90,6 +91,7 @@ type (
 		//Default size==20B same as nginx
 		MinLength int `ini:"min_length"`
 		//The compression level used for deflate compression. (0-9).
+		//Non-file response Body's compression level is 0-9, but the files' always 9
 		CompressLevel int `ini:"compress_level"`
 		//List of HTTP methods to compress. If not set, only GET requests are compressed.
 		Methods []string `ini:"methods" delim:"|"`
@@ -114,17 +116,17 @@ type (
 		Expire int    `ini:"expire"`
 	}
 	SessionConfig struct {
-		Enable                bool   `ini:"enable"`
-		Provider              string `ini:"provider"`
-		Name                  string `ini:"name"`
-		GCMaxLifetime         int64  `ini:"gc_max_lifetime"`
-		ProviderConfig        string `ini:"provider_config"`
-		CookieLifetime        int    `ini:"cookie_lifetime"`
-		AutoSetCookie         bool   `ini:"auto_setcookie"`
-		Domain                string `ini:"domain"`
-		EnableSidInHttpHeader bool   `ini:"enable_sid_in_header"` // enable store/get the sessionId into/from http headers
-		NameInHttpHeader      string `ini:"name_in_header"`
-		EnableSidInUrlQuery   bool   `ini:"enable_sid_in_urlquery"` // enable get the sessionId from Url Query params
+		Enable                bool   `ini:"enable"`                 // Whether enabled or not
+		Provider              string `ini:"provider"`               // Data storage
+		Name                  string `ini:"name"`                   // The client stores the name of the cookie
+		GCMaxLifetime         int64  `ini:"gc_max_lifetime"`        // The interval between triggering the GC
+		ProviderConfig        string `ini:"provider_config"`        // According to the different engine settings different configuration information
+		CookieLifetime        int    `ini:"cookie_lifetime"`        // The default value is 0, which is the lifetime of the browser
+		AutoSetCookie         bool   `ini:"auto_setcookie"`         // Automatically set on the session cookie value, the general default true
+		Domain                string `ini:"domain"`                 // The domain name that is allowed to access this cookie
+		EnableSidInHttpHeader bool   `ini:"enable_sid_in_header"`   // Whether to write a session ID to the header
+		NameInHttpHeader      string `ini:"name_in_header"`         // The name of the header when the session ID is written to the header
+		EnableSidInUrlQuery   bool   `ini:"enable_sid_in_urlquery"` // Whether to write the session ID to the URL Query params
 	}
 	LogConfig struct {
 		ConsoleEnable bool   `ini:"console_enable"`
@@ -133,8 +135,8 @@ type (
 		FileLevel     string `ini:"file_level"` // critical | error | warning | notice | info | debug
 	}
 	APIdocConfig struct {
-		Enable     bool     `ini:"enable"`              // Whether to enable API doc
-		Path       string   `ini:"path"`                // API doc url
+		Enable     bool     `ini:"enable"`              // whether to enable API doc
+		Path       string   `ini:"path"`                // API doc url path
 		NoLimit    bool     `ini:"nolimit"`             // if true, access is not restricted
 		RealIP     bool     `ini:"real_ip"`             // if true, means verifying the real IP of the visitor
 		Whitelist  []string `ini:"whitelist" delim:"|"` // `whitelist=192.*|202.122.246.170` means: only IP addresses that are prefixed with `192 'or equal to` 202.122.246.170' are allowed
@@ -142,7 +144,7 @@ type (
 		Email      string   `ini:"email"`               // technician's Email
 		TermsURL   string   `ini:"terms_url"`           // terms of service
 		License    string   `ini:"license"`             // the license used by the API
-		LicenseURL string   `ini:"license_url"`
+		LicenseURL string   `ini:"license_url"`         // the URL of the protocol content page
 	}
 )
 

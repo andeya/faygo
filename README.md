@@ -2,10 +2,9 @@
 
 ![Lessgo Favicon](https://github.com/henrylee2cn/thinkgo/raw/master/doc/thinkgo_96x96.png)
 
-# 概述
-Thinkgo以全新的架构实现，它面向Handler接口开发，支持智能参数映射与校验、支持自动化API文档的Go语言web框架。
+Thinkgo is a Golang Web framework that handler is middleware, supports intelligent parameter mapping and validation, and automates API documentation.
 
-官方QQ群：Go-Web 编程 42730308    [![Go-Web 编程群](http://pub.idqqimg.com/wpa/images/group.png)](http://jq.qq.com/?_wv=1027&k=fzi4p1)
+[简体中文](https://github.com/henrylee2cn/thinkgo/raw/master/README_ZH.md)
 
 ![thinkgo server](https://github.com/henrylee2cn/thinkgo/raw/master/doc/server.png)
 
@@ -13,34 +12,19 @@ Thinkgo以全新的架构实现，它面向Handler接口开发，支持智能参
 
 ![thinkgo index](https://github.com/henrylee2cn/thinkgo/raw/master/doc/index.png)
 
-# 框架下载
+## Quick Start
+
+# Golang version requirements
+
+Go Version ≥1.6
+
+### Download and install
 
 ```sh
 go get -u -v github.com/henrylee2cn/thinkgo
 ```
 
-# 安装要求
-
-Go Version ≥1.6
-
-# 最新功能特性
-
-- 面向Handler接口开发（func or struct），中间件与操作完全等同可任意拼接路由操作链
-- 支持用struct Handler在Tag标签定义请求参数信息及其校验信息
-- 由struct Handler自动构建API文档（swagger2.0）
-- 支持HTTP/HTTP2、HTTPS(tls/letsencrypt)、UNIX多种Server类型
-- 支持多实例运行，且配置信息相互独立
-- 支持同一实例监听多Server类型、多端口
-- 基于著名的httprouter构建路由器，且支持链式与树形两种路由注册风格
-- 跨平台的彩色日志系统，且同时支持console和file两种输出形式（可以同时使用）
-- 提供Session管理功能
-- 支持Gzip全局配置
-- 提供XSRF跨站请求伪造安全过滤
-- 提供静态文件缓存功能
-- 排版漂亮的配置文件，且自动补填默认值方便设置
-
-
-# 代码示例
+### Simple example
 ```
 package main
 
@@ -94,82 +78,99 @@ response:
     }
 */
 ```
-[完整demo示例](https://github.com/henrylee2cn/thinkgo/raw/master/demo)
+[demo](https://github.com/henrylee2cn/thinkgo/raw/master/demo)
 
-# 配置文件说明
+## Features
 
-- 应用的各实例均有单独一份配置，其文件名格式 `config/{appname}[_{version}].ini`，配置详情：
+- Handler interface oriented development (func or struct)
+- Middleware and handler exactly the same, they together constitute the handler chain
+- Supports the use of struct (implemented handler) tag tags to define request parameter information and its validation information
+- The API documentation (swagger2.0) is automatically built by the handler
+- Supports HTTP/HTTP2, HTTPS (tls/letsencrypt), UNIX and other Server types
+- Multi-instance is supported, and these configurations information are independent of each other
+- Supports the same instance to monitor multi-server and multi-port
+- Based on the popular httprouter build router, and supports chain or tree style to register router
+- Supports cross-platform color log system, and has two output interface (console and file)
+- Supports session management
+- Supports global gzip compression configuration
+- Supports XSRF security filtering
+- Supports near-LRU memory caching (mainly used for static file cache)
+- Nice and easy to use configuration file, automatically write default values
 
-```
-net_types              = normal|tls              # 多种Server类型列表，支持 normal | tls | letsencrypt | unix
-addrs                  = 0.0.0.0:80|0.0.0.0:443  # 多个监听地址列表
-tls_certfile           =                         # TLS证书文件路径
-tls_keyfile            =                         # TLS密钥文件路径
-letsencrypt_file       =                         # SSL免费证书路径
-unix_filemode          = 438                     # UNIX Server的文件权限（438即0666）
-read_timeout           = 0                       # 读取请求数据超时
-write_timeout          = 0                       # 写入响应数据超时
-multipart_maxmemory_mb = 32                      # 接收上传文件时允许使用的最大内存
+# Configuration
 
-[router]                                         # 路由配置区
-redirect_trailing_slash   = true                 # 当前请求含`/`后缀的URL如`/foo/`时，若路由不存在但`/foo`，则自动跳转至`/foo`
-redirect_fixed_path       = true                 # 自动修复URL，如`/FOO` `/..//Foo`均被跳转至`/foo`（依赖redirect_trailing_slash=true）
-handle_method_not_allowed = true                 # 若开启，当前请求方法不存在时返回405，否则返回404
-handle_options            = true                 # 若开启，自动应答OPTIONS类请求，可在Thinkgo中设置默认Handler
-
-[xsrf]                                           # XSRF跨站请求伪造过滤配置区
-enable = false                                   # 是否开启
-key    = thinkgoxsrf                             # 加密key
-expire = 3600                                    # xsrf防伪token有效时长
-
-[session]                                        # Session配置区（详情参考beego session模块）
-enable                 = false                   # 是否开启
-provider               = memory                  # 数据存储方式
-name                   = thinkgosessionID        # 客户端存储cookie的名字
-gc_max_lifetime        = 3600                    # 触发GC的时间
-provider_config        =                         # 配置信息，根据不同的引擎设置不同的配置信息
-cookie_lifetime        = 0                       # 客户端存储的cookie的时间，默认值是0，即浏览器生命周期
-auto_setcookie         = true                    # 是否自动设置关于session的cookie值，一般默认true
-domain                 =                         # 可以访问此cookie的域名
-enable_sid_in_header   = false                   # 是否将session ID写入Header
-name_in_header         = Thinkgosessionid        # 将session ID写入Header时的头名称
-enable_sid_in_urlquery = false                   # 是否将session ID写入url的query部分
-
-[apidoc]                                         # API文档
-enable      = true                               # 是否启用
-path        = /apidoc                            # 访问的URL路径
-nolimit     = false                              # 是否不限访问IP
-real_ip     = false                              # 使用真实客户端的IP进行过滤
-whitelist   = 192.*|202.122.246.170              # 表示允许带有`192.`前缀或等于`202.122.246.170`的IP访问
-desc        =                                    # 项目描述
-email       =                                    # 联系人邮箱
-terms_url   =                                    # 服务条款URL
-license     =                                    # 协议类型
-license_url =                                    # 协议内容URL
-```
-
-- 应用只有一份全局配置，文件名为 `config/__global__.ini`，配置详情：
+- Each instance of the application has a single configuration (file name format `config/{appname}[_{version}].ini`). Refer to the following:
 
 ```
-[cache]                                          # 文件内存缓存配置区
-enable  = false                                  # 是否开启
-size_mb = 32                                     # 允许缓存使用的最大内存（单位MB），为0时系统自动设置为512KB
-expire  = 60                                     # 缓存最大时长
+net_types              = normal|tls              # List of network type: normal | tls | letsencrypt | unix
+addrs                  = 0.0.0.0:80|0.0.0.0:443  # List of multiple listening addresses
+tls_certfile           =                         # TLS certificate file path
+tls_keyfile            =                         # TLS key file path
+letsencrypt_file       =                         # SSL free certificate path
+unix_filemode          = 438                     # File permissions for UNIX Server (438 equivalent to 0666)
+read_timeout           = 0                       # Maximum duration for reading the full request (including body)
+write_timeout          = 0                       # Maximum duration for writing the full response (including body)
+multipart_maxmemory_mb = 32                      # Maximum size of memory that can be used when receiving uploaded files
 
-[gzip]                                           # gzip压缩配置区
-enable         = false                           # 是否开启
-min_length     = 20                              # 进行压缩的最小内容长度
-compress_level = 1                               # 非文件类响应Body的压缩水平（0-9），注意文件压缩始终为最优压缩比（9）
-methods        = GET                             # 允许压缩的请求方法，为空时默认为GET
+[router]                                         # Routing configuration section
+redirect_trailing_slash   = true                 # Automatic redirection (for example, `/foo/` -> `/foo`)
+redirect_fixed_path       = true                 # Tries to fix the current request path, if no handle is registered for it
+handle_method_not_allowed = true                 # Returns 405 if the requested method does not exist, otherwise returns 404
+handle_options            = true                 # Automatic response OPTIONS request, you can set the default Handler in Thinkgo
 
-[log]                                            # 日志配置区
-console_enable = true                            # 是否启用控制台日志
-console_level  = debug                           # 控制台日志打印水平
-file_enable    = true                            # 是否启用文件日志
-file_level     = debug                           # 文件日志打印水平
+[xsrf]                                           # XSRF security section
+enable = false                                   # Whether enabled or not
+key    = thinkgoxsrf                             # Encryption key
+expire = 3600                                    # Expire of XSRF token
+
+[session]                                        # Session section
+enable                 = false                   # Whether enabled or not
+provider               = memory                  # Data storage
+name                   = thinkgosessionID        # The client stores the name of the cookie
+gc_max_lifetime        = 3600                    # The interval between triggering the GC
+provider_config        =                         # According to the different engine settings different configuration information
+cookie_lifetime        = 0                       # The default value is 0, which is the lifetime of the browser
+auto_setcookie         = true                    # Automatically set on the session cookie value, the general default true
+domain                 =                         # The domain name that is allowed to access this cookie
+enable_sid_in_header   = false                   # Whether to write a session ID to the header
+name_in_header         = Thinkgosessionid        # The name of the header when the session ID is written to the header
+enable_sid_in_urlquery = false                   # Whether to write the session ID to the URL Query params
+
+[apidoc]                                         # API documentation section
+enable      = true                               # Whether enabled or not
+path        = /apidoc                            # The URL path
+nolimit     = false                              # If true, access is not restricted
+real_ip     = false                              # If true, means verifying the real IP of the visitor
+whitelist   = 192.*|202.122.246.170              # `whitelist=192.*|202.122.246.170` means: only IP addresses that are prefixed with `192 'or equal to` 202.122.246.170' are allowed
+desc        =                                    # Description of the application
+email       =                                    # Technician's Email
+terms_url   =                                    # Terms of service
+license     =                                    # The license used by the API
+license_url =                                    # The URL of the protocol content page
 ```
 
-# Handler结构体字段标签说明
+- Only one global configuration is applied (`config/__global__.ini`). Refer to the following:
+
+```
+[cache]                                          # Cache section
+enable  = false                                  # Whether enabled or not
+size_mb = 32                                     # Max size by MB for file cache, the cache size will be set to 512KB at minimum.
+expire  = 60                                     # Maximum duration for caching
+
+[gzip]                                           # compression section
+enable         = false                           # Whether enabled or not
+min_length     = 20                              # The minimum length of content to be compressed
+compress_level = 1                               # Non-file response Body's compression level is 0-9, but the files' always 9
+methods        = GET                             # List of HTTP methods to compress. If not set, only GET requests are compressed.
+
+[log]                                            # Log section
+console_enable = true                            # Whether enabled or not console logger
+console_level  = debug                           # Console logger level
+file_enable    = true                            # Whether enabled or not file logger
+file_level     = debug                           # File logger level
+```
+
+# Handler struct tags
 
 tag   |   key    | required |     value     |   desc
 ------|----------|----------|---------------|----------------------------------
@@ -199,7 +200,7 @@ err   |          |    no    |(e.g. "incorrect password format")| customize the p
 * param tags `in(formData)` and `in(body)` can not exist at the same time
 * there should not be more than one `in(body)` param tag
 
-# Handler结构体字段类型说明
+# Handler struct fields type
 
 base    |   slice    | special
 --------|------------|-------------------------------------------------------
@@ -219,18 +220,18 @@ uint64  |  []uint64  |
 float32 |  []float32 |
 float64 |  []float64 |
 
-# 扩展包
-- [各种条码](https://github.com/henrylee2cn/thinkgo/raw/master/ext/barcode):       `github.com/henrylee2cn/thinkgo/ext/barcode`
-- [比特单位](https://github.com/henrylee2cn/thinkgo/raw/master/ext/bitconv):       `github.com/henrylee2cn/thinkgo/ext/bitconv`
-- [定时器](https://github.com/henrylee2cn/thinkgo/raw/master/ext/cron):            `github.com/henrylee2cn/thinkgo/ext/cron`
-- [gorm数据库引擎](https://github.com/henrylee2cn/thinkgo/raw/master/ext/db/gorm): `github.com/henrylee2cn/thinkgo/ext/db/gorm`
-- [sqlx数据库引擎](https://github.com/henrylee2cn/thinkgo/raw/master/ext/db/sqlx): `github.com/henrylee2cn/thinkgo/ext/db/sqlx`
-- [xorm数据库引擎](https://github.com/henrylee2cn/thinkgo/raw/master/ext/db/xorm): `github.com/henrylee2cn/thinkgo/ext/db/xorm`
-- [口令算法](https://github.com/henrylee2cn/thinkgo/raw/master/ext/otp):           `github.com/henrylee2cn/thinkgo/ext/otp`
+# Expansion package
+- [barcode](https://github.com/henrylee2cn/thinkgo/raw/master/ext/barcode):       `github.com/henrylee2cn/thinkgo/ext/barcode`
+- [Bit unit conversion](https://github.com/henrylee2cn/thinkgo/raw/master/ext/bitconv):       `github.com/henrylee2cn/thinkgo/ext/bitconv`
+- [timer](https://github.com/henrylee2cn/thinkgo/raw/master/ext/cron):            `github.com/henrylee2cn/thinkgo/ext/cron`
+- [gorm(DB ORM)](https://github.com/henrylee2cn/thinkgo/raw/master/ext/db/gorm): `github.com/henrylee2cn/thinkgo/ext/db/gorm`
+- [sqlx(DB ext)](https://github.com/henrylee2cn/thinkgo/raw/master/ext/db/sqlx): `github.com/henrylee2cn/thinkgo/ext/db/sqlx`
+- [xorm(DB ORM)](https://github.com/henrylee2cn/thinkgo/raw/master/ext/db/xorm): `github.com/henrylee2cn/thinkgo/ext/db/xorm`
+- [One-time Password](https://github.com/henrylee2cn/thinkgo/raw/master/ext/otp):           `github.com/henrylee2cn/thinkgo/ext/otp`
 - [UUID](https://github.com/henrylee2cn/thinkgo/raw/master/ext/uuid):              `github.com/henrylee2cn/thinkgo/ext/uuid`
 - [Websocket](https://github.com/henrylee2cn/thinkgo/raw/master/ext/websocket):    `github.com/henrylee2cn/thinkgo/ext/websocket`
-- [ini配置](https://github.com/henrylee2cn/thinkgo/raw/master/ini):                `github.com/henrylee2cn/thinkgo/ini`
+- [ini](https://github.com/henrylee2cn/thinkgo/raw/master/ini):                `github.com/henrylee2cn/thinkgo/ini`
 
 
-# 开源协议
-Thinkgo 项目采用商业应用友好的 [Apache2.0](https://github.com/henrylee2cn/thinkgo/raw/master/LICENSE) 协议发布。
+# License
+Thinkgo is under Apache v2 License. See the [LICENSE](https://github.com/henrylee2cn/thinkgo/raw/master/LICENSE) file for the full license text.
