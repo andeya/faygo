@@ -78,7 +78,7 @@ response:
     }
 */
 ```
-[demo](https://github.com/henrylee2cn/thinkgo/raw/master/demo)
+[Full example](https://github.com/henrylee2cn/thinkgo/raw/master/demo)
 
 ## Features
 
