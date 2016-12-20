@@ -182,31 +182,31 @@ file_level     = debug                           # 文件日志打印水平
 
 tag   |   key    | required |     value     |   desc
 ------|----------|----------|---------------|----------------------------------
-param |    in    | only one |     path      | (position of param) if `required` is unsetted, auto set it. e.g. url: "http://www.abc.com/a/{path}"
-param |    in    | only one |     query     | (position of param) e.g. url: "http://www.abc.com/a?b={query}"
-param |    in    | only one |     formData  | (position of param) e.g. "request body: a=123&b={formData}"
-param |    in    | only one |     body      | (position of param) request body can be any content
-param |    in    | only one |     header    | (position of param) request header info
-param |    in    | only one |     cookie    | (position of param) request cookie info, support: `http.Cookie`, `fasthttp.Cookie`, `string`, `[]byte` and so on
-param |   name   |    no    |  (e.g. "id")  | specify request param`s name
-param | required |    no    |   required    | request param is required
-param |   desc   |    no    |  (e.g. "id")  | request param description
-param |   len    |    no    | (e.g. 3:6, 3) | length range of param's value
-param |   range  |    no    |  (e.g. 0:10)  | numerical range of param's value
-param |  nonzero |    no    |    nonzero    | param`s value can not be zero
-param |   maxmb  |    no    |   (e.g. 32)   | when request Content-Type is multipart/form-data, the max memory for body.(multi-param, whichever is greater)
-regexp|          |    no    |(e.g. "^\\w+$")| param value can not be null
-err   |          |    no    |(e.g. "incorrect password format")| customize the prompt for validation error
+param |    in    | 有且只有一个 |     path      | （参数位置）为空时自动补全，如URL `http://www.abc.com/a/{path}`
+param |    in    | 有且只有一个 |     query     | （参数位置）如URL `http://www.abc.com/a?b={query}`
+param |    in    | 有且只有一个 |     formData  | （参数位置）请求表单，如 `a=123&b={formData}`
+param |    in    | 有且只有一个 |     body      | （参数位置）请求Body
+param |    in    | 有且只有一个 |     header    | （参数位置）请求头
+param |    in    | 有且只有一个 |     cookie    | （参数位置）请求cookie，支持：`http.Cookie`、`fasthttp.Cookie`、`string`、`[]byte`等
+param |   name   |      否      |     (如`id`)   | 自定义参数名
+param | required |      否      |   required    | 参数是否必须
+param |   desc   |      否      |   (e.g. `id`)  | 参数描述
+param |   len    |      否      | (e.g. `3:6``3`) | 字符串类型参数的长度范围
+param |   range  |      否      | (e.g. `0:10`)  | 数字类型参数的数值范围
+param |  nonzero |      否      |    nonzero    | 是否能为零值
+param |   maxmb  |      否      |  (e.g. `32`)   | 当前`Content-Type`为`multipart/form-data`时，允许使用的最大内存，当设置了多个时使用较大值
+regexp|          |      否      | (e.g. `^\w+$`) | 使用正则验证参数值
+err   |          |      否      |(e.g. `密码格式错误`)| 自定义参数绑定或验证的错误信息
 
 **NOTES**:
-* the binding object must be a struct pointer
-* the binding struct's field can not be a pointer
-* `regexp` or `param` tag is only usable when `param:"type(xxx)"` is exist
-* if the `param` tag is not exist, anonymous field will be parsed
-* when the param's position(`in`) is `formData` and the field's type is `multipart.FileHeader`, the param receives file uploaded
-* if param's position(`in`) is `cookie`, field's type must be `http.Cookie`
-* param tags `in(formData)` and `in(body)` can not exist at the same time
-* there should not be more than one `in(body)` param tag
+* 绑定的对象必须为结构体指针类型
+* 绑定的结构体字段类型不能为指针类型
+* 只有在`param:"type(xxx)"`存在时，`regexp` 和 `param` 标签才有效
+* 若`param`标签不存在，将尝试解析匿名字段
+* 当结构体标签`in`为`formData`且字段类型为`multipart.FileHeader`时，该参数接收文件类型
+* 当结构体标签`in`为`cookie`，字段类型必须为`http.Cookie`
+* 标签`in(formData)`和`in(body)`不能同时出现在同一结构体
+* 不能存在多个`in(body)`标签
 
 ## Handler结构体字段类型说明
 
@@ -214,10 +214,10 @@ base    |   slice    | special
 --------|------------|-------------------------------------------------------
 string  |  []string  | [][]byte
 byte    |  []byte    | [][]uint8
-uint8   |  []uint8   | multipart.FileHeader (only for `formData` param)
-bool    |  []bool    | http.Cookie (only for `net/http`'s `cookie` param)
-int     |  []int     | fasthttp.Cookie (only for `fasthttp`'s `cookie` param)
-int8    |  []int8    | struct (struct type only for `body` param or as an anonymous field to extend params)
+uint8   |  []uint8   | multipart.FileHeader (仅`formData`参数使用)
+bool    |  []bool    | http.Cookie (仅`net/http`下的`cookie`参数使用)
+int     |  []int     | fasthttp.Cookie (仅`fasthttp`下的`cookie`参数使用)
+int8    |  []int8    | struct (`body`参数使用或用于匿名字段扩展参数)
 int16   |  []int16   |
 int32   |  []int32   |
 int64   |  []int64   |
