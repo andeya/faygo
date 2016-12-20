@@ -63,7 +63,7 @@ var (
 	}
 )
 
-// Parse and store the struct object, requires a struct pointer,
+// NewParamsAPI parses and store the struct object, requires a struct pointer,
 // if `paramNameFunc` is nil, `paramNameFunc=toSnake`,
 // if `bodyDecodeFunc` is nil, `bodyDecodeFunc=bodyJONS`,
 func NewParamsAPI(
@@ -107,7 +107,7 @@ func NewParamsAPI(
 	return m, nil
 }
 
-// `Register` is similar to a `NewParamsAPI`, but only return error.
+// Register is similar to a `NewParamsAPI`, but only return error.
 // Parse and store the struct object, requires a struct pointer,
 // if `paramNameFunc` is nil, `paramNameFunc=toSnake`,
 // if `bodyDecodeFunc` is nil, `bodyDecodeFunc=bodyJONS`,
@@ -158,7 +158,7 @@ func (m *ParamsAPI) addFields(parentIndexPath []int, t reflect.Type, v reflect.V
 			if paramPosition != "formData" {
 				return NewError(t.String(), field.Name, "when field type is `"+paramTypeString+"`, tag `in` value must be `formData`")
 			}
-		case cookieTypeString, fasthttpCookieTypeString:
+		case cookieTypeString /*, fasthttpCookieTypeString*/ :
 			if paramPosition != "cookie" {
 				return NewError(t.String(), field.Name, "when field type is `"+paramTypeString+"`, tag `in` value must be `cookie`")
 			}
@@ -218,18 +218,20 @@ func (m *ParamsAPI) addFields(parentIndexPath []int, t reflect.Type, v reflect.V
 			}
 		}
 
-		if errStr, ok := field.Tag.Lookup(TAG_ERR); ok {
-			parsedTags[TAG_ERR] = errStr
-		}
-
-		// fmt.Printf("%#v\n", parsedTags)
-
 		fd := &Param{
+			apiName:   m.name,
 			indexPath: indexPath,
 			tags:      parsedTags,
 			rawTag:    field.Tag,
 			rawValue:  v.Field(i),
 		}
+
+		if errStr, ok := field.Tag.Lookup(TAG_ERR); ok {
+			fd.tags[TAG_ERR] = errStr
+			fd.err = errors.New(errStr)
+		}
+
+		// fmt.Printf("%#v\n", fd.tags)
 
 		if fd.name, ok = parsedTags["name"]; !ok {
 			fd.name = m.paramNameFunc(field.Name)
@@ -253,7 +255,7 @@ func (m *ParamsAPI) addFields(parentIndexPath []int, t reflect.Type, v reflect.V
 	return nil
 }
 
-// get the `*ParamsAPI` object according to the type name
+// GetParamsAPI gets the `*ParamsAPI` object according to the type name
 func GetParamsAPI(paramsAPIName string) (*ParamsAPI, error) {
 	m, ok := defaultSchema.get(paramsAPIName)
 	if !ok {
@@ -262,7 +264,7 @@ func GetParamsAPI(paramsAPIName string) (*ParamsAPI, error) {
 	return m, nil
 }
 
-// cache `*ParamsAPI`
+// SetParamsAPI caches `*ParamsAPI`
 func SetParamsAPI(m *ParamsAPI) {
 	defaultSchema.set(m)
 }
@@ -280,38 +282,38 @@ func (schema *Schema) set(m *ParamsAPI) {
 	defer schema.Unlock()
 }
 
-// Get the name
+// Name gets the name
 func (paramsAPI *ParamsAPI) Name() string {
 	return paramsAPI.name
 }
 
-// Get the parameter information
+// Params gets the parameter information
 func (paramsAPI *ParamsAPI) Params() []*Param {
 	return paramsAPI.params
 }
 
-// The number of parameters to be bound
+// Number returns the number of parameters to be bound
 func (paramsAPI *ParamsAPI) Number() int {
 	return len(paramsAPI.params)
 }
 
-// return the ParamsAPI's original value
+// Raw returns the ParamsAPI's original value
 func (paramsAPI *ParamsAPI) Raw() interface{} {
 	return paramsAPI.rawStructPointer
 }
 
-// get maxMemory
+// MaxMemory gets maxMemory
 // when request Content-Type is multipart/form-data, the max memory for body.
 func (paramsAPI *ParamsAPI) MaxMemory() int64 {
 	return paramsAPI.maxMemory
 }
 
-// set maxMemory for the request which Content-Type is multipart/form-data.
+// SetMaxMemory sets maxMemory for the request which Content-Type is multipart/form-data.
 func (paramsAPI *ParamsAPI) SetMaxMemory(maxMemory int64) {
 	paramsAPI.maxMemory = maxMemory
 }
 
-// Creates a new struct pointer and the field's values  for its receive parameterste it.
+// NewReceiver creates a new struct pointer and the field's values  for its receive parameterste it.
 func (paramsAPI *ParamsAPI) NewReceiver() (interface{}, []reflect.Value) {
 	object := reflect.New(paramsAPI.structType)
 	return object.Interface(), paramsAPI.fieldsForBinding(object.Elem())
@@ -331,7 +333,7 @@ func (paramsAPI *ParamsAPI) fieldsForBinding(structElem reflect.Value) []reflect
 	return fields
 }
 
-// Bind the net/http request params to a new struct and validate it.
+// BindByName binds the net/http request params to a new struct and validate it.
 func BindByName(
 	paramsAPIName string,
 	req *http.Request,
@@ -347,7 +349,7 @@ func BindByName(
 	return paramsAPI.BindNew(req, pathParams)
 }
 
-// Bind the net/http request params to the `structPointer` param and validate it.
+// Bind binds the net/http request params to the `structPointer` param and validate it.
 // note: structPointer must be struct pointer.
 func Bind(
 	structPointer interface{},
@@ -361,7 +363,7 @@ func Bind(
 	return paramsAPI.BindAt(structPointer, req, pathParams)
 }
 
-// Bind the net/http request params to a struct pointer and validate it.
+// BindAt binds the net/http request params to a struct pointer and validate it.
 // note: structPointer must be struct pointer.
 func (paramsAPI *ParamsAPI) BindAt(
 	structPointer interface{},
@@ -379,7 +381,7 @@ func (paramsAPI *ParamsAPI) BindAt(
 	)
 }
 
-// Bind the net/http request params to a struct pointer and validate it.
+// BindNew binds the net/http request params to a struct pointer and validate it.
 func (paramsAPI *ParamsAPI) BindNew(
 	req *http.Request,
 	pathParams KV,
@@ -392,7 +394,7 @@ func (paramsAPI *ParamsAPI) BindNew(
 	return structPrinter, err
 }
 
-// Bind the net/http request params to the original struct pointer and validate it.
+// RawBind binds the net/http request params to the original struct pointer and validate it.
 func (paramsAPI *ParamsAPI) RawBind(
 	req *http.Request,
 	pathParams KV,
@@ -408,7 +410,7 @@ func (paramsAPI *ParamsAPI) RawBind(
 	return paramsAPI.rawStructPointer, err
 }
 
-// Bind the net/http request params to a struct and validate it.
+// BindFields binds the net/http request params to a struct and validate it.
 // Must ensure that the param `fields` matches `paramsAPI.params`.
 func (paramsAPI *ParamsAPI) BindFields(
 	fields []reflect.Value,
@@ -436,11 +438,11 @@ func (paramsAPI *ParamsAPI) BindFields(
 		case "path":
 			paramValue, ok := pathParams.Get(param.name)
 			if !ok {
-				return NewError(paramsAPI.name, param.name, "missing path param")
+				return param.myError("missing path param")
 			}
 			// fmt.Printf("paramName:%s\nvalue:%#v\n\n", param.name, paramValue)
 			if err = convertAssign(value, []string{paramValue}); err != nil {
-				return NewError(paramsAPI.name, param.name, err.Error())
+				return param.myError(err.Error())
 			}
 
 		case "query":
@@ -453,10 +455,10 @@ func (paramsAPI *ParamsAPI) BindFields(
 			paramValues, ok := queryValues[param.name]
 			if ok {
 				if err = convertAssign(value, paramValues); err != nil {
-					return NewError(paramsAPI.name, param.name, err.Error())
+					return param.myError(err.Error())
 				}
 			} else if param.IsRequired() {
-				return NewError(paramsAPI.name, param.name, "missing query param")
+				return param.myError("missing query param")
 			}
 
 		case "formData":
@@ -466,13 +468,13 @@ func (paramsAPI *ParamsAPI) BindFields(
 					fhs := req.MultipartForm.File[param.name]
 					if len(fhs) == 0 {
 						if param.IsRequired() {
-							return NewError(paramsAPI.name, param.name, "missing formData param")
+							return param.myError("missing formData param")
 						}
 						continue
 					}
 					value.Set(reflect.ValueOf(fhs[0]).Elem())
 				} else if param.IsRequired() {
-					return NewError(paramsAPI.name, param.name, "missing formData param")
+					return param.myError("missing formData param")
 				}
 				continue
 			}
@@ -480,10 +482,10 @@ func (paramsAPI *ParamsAPI) BindFields(
 			paramValues, ok := req.PostForm[param.name]
 			if ok {
 				if err = convertAssign(value, paramValues); err != nil {
-					return NewError(paramsAPI.name, param.name, err.Error())
+					return param.myError(err.Error())
 				}
 			} else if param.IsRequired() {
-				return NewError(paramsAPI.name, param.name, "missing formData param")
+				return param.myError("missing formData param")
 			}
 
 		case "body":
@@ -493,20 +495,20 @@ func (paramsAPI *ParamsAPI) BindFields(
 			req.Body.Close()
 			if err == nil {
 				if err = paramsAPI.bodyDecodeFunc(value, body); err != nil {
-					return NewError(paramsAPI.name, param.name, err.Error())
+					return param.myError(err.Error())
 				}
 			} else if param.IsRequired() {
-				return NewError(paramsAPI.name, param.name, "missing body param")
+				return param.myError("missing body param")
 			}
 
 		case "header":
 			paramValues, ok := req.Header[param.name]
 			if ok {
 				if err = convertAssign(value, paramValues); err != nil {
-					return NewError(paramsAPI.name, param.name, err.Error())
+					return param.myError(err.Error())
 				}
 			} else if param.IsRequired() {
-				return NewError(paramsAPI.name, param.name, "missing header param")
+				return param.myError("missing header param")
 			}
 
 		case "cookie":
@@ -517,11 +519,11 @@ func (paramsAPI *ParamsAPI) BindFields(
 					value.Set(reflect.ValueOf(c).Elem())
 				default:
 					if err = convertAssign(value, []string{c.Value}); err != nil {
-						return NewError(paramsAPI.name, param.name, err.Error())
+						return param.myError(err.Error())
 					}
 				}
 			} else if param.IsRequired() {
-				return NewError(paramsAPI.name, param.name, "missing cookie param")
+				return param.myError("missing cookie param")
 			}
 		}
 		if err = param.validate(value); err != nil {

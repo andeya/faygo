@@ -15,7 +15,6 @@
 package apiware
 
 import (
-	"errors"
 	"fmt"
 	"math"
 	"reflect"
@@ -27,7 +26,7 @@ import (
 const (
 	TAG_PARAM        = "param"  //request param tag name
 	TAG_REGEXP       = "regexp" //regexp validate tag name(optio)
-	TAG_ERR          = "err"    //customize the prompt for validation error(optio)
+	TAG_ERR          = "err"    //the custom error for binding or validating
 	TAG_IGNORE_PARAM = "-"      //ignore request param tag value
 
 	MB                 = 1 << 20 // 1MB
@@ -66,22 +65,24 @@ func ParseTags(s string) map[string]string {
 
 // use the struct field to define a request parameter model
 type Param struct {
+	apiName    string // ParamsAPI name
+	name       string // param name
 	indexPath  []int
-	name       string            // param name
 	isRequired bool              // file is required or not
 	isFile     bool              // is file param or not
 	tags       map[string]string // struct tags for this param
 	rawTag     reflect.StructTag // the raw tag
 	rawValue   reflect.Value     // the raw tag value
+	err        error             // the custom error for binding or validating
 }
 
 const (
-	fileTypeString           = "multipart.FileHeader"
-	cookieTypeString         = "http.Cookie"
-	fasthttpCookieTypeString = "fasthttp.Cookie"
-	stringTypeString         = "string"
-	bytesTypeString          = "[]byte"
-	bytes2TypeString         = "[]uint8"
+	fileTypeString   = "multipart.FileHeader"
+	cookieTypeString = "http.Cookie"
+	// fasthttpCookieTypeString = "fasthttp.Cookie"
+	stringTypeString = "string"
+	bytesTypeString  = "[]byte"
+	bytes2TypeString = "[]uint8"
 )
 
 var (
@@ -96,17 +97,22 @@ var (
 	}
 )
 
-// Get the param's original value
+// Raw gets the param's original value
 func (param *Param) Raw() interface{} {
 	return param.rawValue.Interface()
 }
 
-// Get parameter field name
+// APIName gets ParamsAPI name
+func (param *Param) APIName() string {
+	return param.apiName
+}
+
+// Name gets parameter field name
 func (param *Param) Name() string {
 	return param.name
 }
 
-// Get the type value for the param
+// In get the type value for the param
 func (param *Param) In() string {
 	return param.tags["in"]
 }
@@ -116,7 +122,7 @@ func (param *Param) IsRequired() bool {
 	return param.isRequired
 }
 
-// Get the description value for the param
+// Description gets the description value for the param
 func (param *Param) Description() string {
 	return param.tags["desc"]
 }
@@ -144,9 +150,9 @@ func (param *Param) validate(value reflect.Value) error {
 func (param *Param) validateElem(value reflect.Value) (err error) {
 	defer func() {
 		p := recover()
-		if errStr, ok := param.tags[TAG_ERR]; ok {
+		if param.err != nil {
 			if err != nil {
-				err = errors.New(errStr)
+				err = param.err
 			}
 		} else if p != nil {
 			err = fmt.Errorf("%v", p)
@@ -188,6 +194,13 @@ func (param *Param) validateElem(value reflect.Value) (err error) {
 		}
 	}
 	return
+}
+
+func (param *Param) myError(reason string) error {
+	if param.err != nil {
+		return param.err
+	}
+	return NewError(param.apiName, param.name, reason)
 }
 
 func parseTuple(tuple string) (string, string) {
