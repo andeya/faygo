@@ -13,35 +13,23 @@ Thinkgo以全新的架构实现，它面向Handler接口开发，支持智能参
 
 ![thinkgo index](https://github.com/henrylee2cn/thinkgo/raw/master/doc/index.png)
 
-## 框架下载
+## 最新版本
+
+### 版本号
+v1.0
+
+### 安装要求
+Go Version ≥1.6
+
+## 快速使用
+
+### 框架下载
 
 ```sh
 go get -u -v github.com/henrylee2cn/thinkgo
 ```
 
-## 安装要求
-
-Go Version ≥1.6
-
-## 最新功能特性
-
-- 面向Handler接口开发（func or struct），中间件与操作完全等同可任意拼接路由操作链
-- 支持用struct Handler在Tag标签定义请求参数信息及其校验信息
-- 由struct Handler自动构建API文档（swagger2.0）
-- 支持HTTP/HTTP2、HTTPS(tls/letsencrypt)、UNIX多种Server类型
-- 支持多实例运行，且配置信息相互独立
-- 支持同一实例监听多Server类型、多端口
-- 基于著名的httprouter构建路由器，且支持链式与树形两种路由注册风格
-- 强大的文件路由功能，支持自定义文件系统，框架提供快捷的DirFS、RenderFS、MarkdownFS等
-- 提供近似LRU的文件缓存功能
-- 跨平台的彩色日志系统，且同时支持console和file两种输出形式（可以同时使用）
-- 提供Session管理功能
-- 支持Gzip全局配置
-- 提供XSRF跨站请求伪造安全过滤
-- 简单整洁的配置文件，且自动补填默认值方便设置
-
-
-## 代码示例
+### 简单示例
 ```
 package main
 
@@ -95,7 +83,27 @@ response:
     }
 */
 ```
-[All samples](https://github.com/henrylee2cn/thinkgo/raw/master/samples)
+[示例库](https://github.com/henrylee2cn/thinkgo/raw/master/samples)
+
+## 框架特性
+
+- 面向Handler接口开发（func or struct），中间件与操作完全等同可任意拼接路由操作链
+- 支持用struct Handler在Tag标签定义请求参数信息及其校验信息
+- 由struct Handler自动构建API文档（swagger2.0）
+- 支持HTTP/HTTP2、HTTPS(tls/letsencrypt)、UNIX多种Server类型
+- 支持多实例运行，且配置信息相互独立
+- 支持同一实例监听多Server类型、多端口
+- 基于著名的httprouter构建路由器，且支持链式与树形两种路由注册风格
+- 强大的文件路由功能，支持自定义文件系统，框架提供快捷的DirFS、RenderFS、MarkdownFS等
+- 提供近似LRU的文件缓存功能
+- 跨平台的彩色日志系统，且同时支持console和file两种输出形式（可以同时使用）
+- 提供Session管理功能
+- 支持Gzip全局配置
+- 提供XSRF跨站请求伪造安全过滤
+- 简单整洁的配置文件，且自动补填默认值方便设置
+
+
+
 
 ## 配置文件说明
 
@@ -223,7 +231,6 @@ float64 |  []float64 |
 ## 扩展包
 - [各种条码](https://github.com/henrylee2cn/thinkgo/raw/master/ext/barcode):       `github.com/henrylee2cn/thinkgo/ext/barcode`
 - [比特单位](https://github.com/henrylee2cn/thinkgo/raw/master/ext/bitconv):       `github.com/henrylee2cn/thinkgo/ext/bitconv`
-- [定时器](https://github.com/henrylee2cn/thinkgo/raw/master/ext/cron):            `github.com/henrylee2cn/thinkgo/ext/cron`
 - [gorm数据库引擎](https://github.com/henrylee2cn/thinkgo/raw/master/ext/db/gorm): `github.com/henrylee2cn/thinkgo/ext/db/gorm`
 - [sqlx数据库引擎](https://github.com/henrylee2cn/thinkgo/raw/master/ext/db/sqlx): `github.com/henrylee2cn/thinkgo/ext/db/sqlx`
 - [xorm数据库引擎](https://github.com/henrylee2cn/thinkgo/raw/master/ext/db/xorm): `github.com/henrylee2cn/thinkgo/ext/db/xorm`
@@ -231,6 +238,8 @@ float64 |  []float64 |
 - [UUID](https://github.com/henrylee2cn/thinkgo/raw/master/ext/uuid):              `github.com/henrylee2cn/thinkgo/ext/uuid`
 - [Websocket](https://github.com/henrylee2cn/thinkgo/raw/master/ext/websocket):    `github.com/henrylee2cn/thinkgo/ext/websocket`
 - [ini配置](https://github.com/henrylee2cn/thinkgo/raw/master/ini):                `github.com/henrylee2cn/thinkgo/ini`
+- [定时器](https://github.com/henrylee2cn/thinkgo/raw/master/ext/cron):            `github.com/henrylee2cn/thinkgo/ext/cron`
+- [任务工具](https://github.com/henrylee2cn/thinkgo/raw/master/ext/task):            `github.com/henrylee2cn/thinkgo/ext/task`
 
 
 ## 开源协议

@@ -12,11 +12,16 @@ Thinkgo is a Golang Web framework that handler is middleware, supports intellige
 
 ![thinkgo index](https://github.com/henrylee2cn/thinkgo/raw/master/doc/index.png)
 
-## Quick Start
+## Latest version
 
-### Version requirements
+### Version
+v1.0
+
+### Requirements
 
 Go Version ≥1.6
+
+## Quick Start
 
 ### Download and install
 
@@ -224,7 +229,6 @@ float64 |  []float64 |
 ## Expansion package
 - [barcode](https://github.com/henrylee2cn/thinkgo/raw/master/ext/barcode):       `github.com/henrylee2cn/thinkgo/ext/barcode`
 - [Bit unit conversion](https://github.com/henrylee2cn/thinkgo/raw/master/ext/bitconv):       `github.com/henrylee2cn/thinkgo/ext/bitconv`
-- [timer](https://github.com/henrylee2cn/thinkgo/raw/master/ext/cron):            `github.com/henrylee2cn/thinkgo/ext/cron`
 - [gorm(DB ORM)](https://github.com/henrylee2cn/thinkgo/raw/master/ext/db/gorm): `github.com/henrylee2cn/thinkgo/ext/db/gorm`
 - [sqlx(DB ext)](https://github.com/henrylee2cn/thinkgo/raw/master/ext/db/sqlx): `github.com/henrylee2cn/thinkgo/ext/db/sqlx`
 - [xorm(DB ORM)](https://github.com/henrylee2cn/thinkgo/raw/master/ext/db/xorm): `github.com/henrylee2cn/thinkgo/ext/db/xorm`
@@ -232,6 +236,8 @@ float64 |  []float64 |
 - [UUID](https://github.com/henrylee2cn/thinkgo/raw/master/ext/uuid):              `github.com/henrylee2cn/thinkgo/ext/uuid`
 - [Websocket](https://github.com/henrylee2cn/thinkgo/raw/master/ext/websocket):    `github.com/henrylee2cn/thinkgo/ext/websocket`
 - [ini](https://github.com/henrylee2cn/thinkgo/raw/master/ini):                `github.com/henrylee2cn/thinkgo/ini`
+- [cron](https://github.com/henrylee2cn/thinkgo/raw/master/ext/cron):            `github.com/henrylee2cn/thinkgo/ext/cron`
+- [task](https://github.com/henrylee2cn/thinkgo/raw/master/ext/task):            `github.com/henrylee2cn/thinkgo/ext/task`
 
 
 ## License

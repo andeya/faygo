@@ -31,7 +31,7 @@ import (
 
 const (
 	// VERSION is thinkgo web framework's version
-	VERSION = "0.5"
+	VERSION = "1.0"
 	banner  = `
    _______  _                _                    
   |__   __|| |    [ ]       | |                   
