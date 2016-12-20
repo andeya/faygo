@@ -113,8 +113,7 @@
        - 缓存的key值用 执行请求的路径(/sys/home/select)， 参数名与参数值对作为suffix，进行确定换成值，对于同一个sql只缓存一次，就是第一次执行的参数的结果，其他的参数查询部缓存；对于没有参数的结果缓存suffix=nil  
 
 ## 完整示例
- ` <?xml version="1.0" encoding="utf-8"?>
-       <!-- id为本model的标识一般同文件名，database为xorm.config中配置的数据库名称，为执行该配置文件sql的连接，空为默认数据库 -->
+    ```<!-- id为本model的标识一般同文件名，database为xorm.config中配置的数据库名称，为执行该配置文件sql的连接，空为默认数据库 -->
        <model id="demo" database="">
         <comment>
             <desc>DirectSQL功能测试SQL定义</desc>
@@ -256,8 +255,7 @@
         </sql>
         <!-- 下面可继续添加新的方法 -->
       </model>
-
-`
+   ```
 
 ## 存在问题
     - nestedselect-返回嵌套JSON的未实现，放到客户端用js实现
