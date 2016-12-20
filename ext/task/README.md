@@ -1,6 +1,6 @@
 # Task
 
-[![GoDoc](http://godoc.org/github.com/github.com/henrylee2cn/thinkgo/ext/task?status.svg)](http://godoc.org/github.com/github.com/henrylee2cn/thinkgo/ext/task)
+[![GoDoc](http://godoc.org/github.com/henrylee2cn/thinkgo/ext/task?status.svg)](http://godoc.org/github.com/henrylee2cn/thinkgo/ext/task)
 
 Task是一个非常易用的定时任务管理工具（移植自beego框架）。
 
