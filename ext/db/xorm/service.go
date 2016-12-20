@@ -17,6 +17,7 @@ import (
 	// _ "github.com/mattn/go-oci8"    //oracle(need to install the pkg-config utility)
 )
 
+// DBService is a database engine object.
 type DBService struct {
 	Default *xorm.Engine            // the default database engine
 	List    map[string]*xorm.Engine // database engine list

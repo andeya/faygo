@@ -27,7 +27,7 @@ type Error struct {
 }
 
 // New creates and returns an Error with a pre-defined user output message
-// all methods below that doesn't accept a pointer receiver because actualy they are not changing the original message
+// all methods below that doesn't accept a pointer receiver because actually they are not changing the original message
 func New(errMsg string) *Error {
 	if NewLine {
 		errMsg += "\n"

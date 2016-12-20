@@ -43,7 +43,7 @@ import (
 
 const indexPage = "/index.html"
 
-// File cache system manager
+// FileServerManager is file cache system manager
 type FileServerManager struct {
 	files             map[string]CacheFile
 	cache             *freecache.Cache
@@ -77,7 +77,7 @@ func newFileServerManager(cacheSize int64, fileExpireSeconds int, enableCache bo
 	return manager
 }
 
-// Gets or stores the file with compression and caching options.
+// Open gets or stores the file with compression and caching options.
 // If the name is larger than 65535 or body is larger than 1/1024 of the cache size,
 // the entry will not be written to the cache.
 func (c *FileServerManager) Open(name string, encoding string, nocache bool) (http.File, error) {
@@ -126,7 +126,7 @@ func (c *FileServerManager) Open(name string, encoding string, nocache bool) (ht
 	return c.Set(name, content, fileInfo, encoding)
 }
 
-// Gets or stores the cache file.
+// OpenFS gets or stores the cache file.
 // If the name is larger than 65535 or body is larger than 1/1024 of the cache size,
 // the entry will not be written to the cache.
 func (c *FileServerManager) OpenFS(ctx *Context, name string, fs FileSystem) (http.File, error) {
@@ -179,6 +179,7 @@ func (c *FileServerManager) OpenFS(ctx *Context, name string, fs FileSystem) (ht
 	return c.Set(name, content, fileInfo, encoding)
 }
 
+// Get gets file from cache.
 func (c *FileServerManager) Get(name string) (http.File, error) {
 	b, err := c.cache.Get([]byte(name))
 	if err != nil {
@@ -194,6 +195,7 @@ func (c *FileServerManager) Get(name string) (http.File, error) {
 	return &f, nil
 }
 
+// Set sets file to cache.
 func (c *FileServerManager) Set(name string, body []byte, fileInfo os.FileInfo, encoding string) (http.File, error) {
 	err := c.cache.Set([]byte(name), body, c.fileExpireSeconds)
 	if err != nil {
@@ -210,8 +212,8 @@ func (c *FileServerManager) Set(name string, body []byte, fileInfo os.FileInfo, 
 	return &f, nil
 }
 
-// A file system with compression and caching options
 type (
+	// FileSystem is a file system with compression and caching options
 	FileSystem interface {
 		http.FileSystem
 		Nocompress() bool // not allowed compress
@@ -232,7 +234,7 @@ func (fs *fileSystem) Nocache() bool {
 	return fs.nocache
 }
 
-// New a file system with compression and caching options
+// FS creates a file system with compression and caching options
 func FS(fs http.FileSystem, nocompressAndNocache ...bool) FileSystem {
 	var nocompress, nocache bool
 	var count = len(nocompressAndNocache)
@@ -249,12 +251,12 @@ func FS(fs http.FileSystem, nocompressAndNocache ...bool) FileSystem {
 	}
 }
 
-// New a file system with compression and caching options, similar to http.Dir
+// DirFS creates a file system with compression and caching options, similar to http.Dir
 func DirFS(root string, nocompressAndNocache ...bool) FileSystem {
 	return FS(http.Dir(root), nocompressAndNocache...)
 }
 
-// New a file system with auto-rendering.
+// RenderFS creates a file system with auto-rendering.
 // param `suffix` is used to specify the extension to be rendered, `*` for all extensions.
 func RenderFS(root string, suffix string, tplVar Map) FileSystem {
 	return FS(&renderFS{
@@ -301,6 +303,7 @@ func (fs *renderFS) Open(name string) (http.File, error) {
 	return NewFile(b, fileInfo), nil
 }
 
+// MarkdownFS creates a markdown file system.
 func MarkdownFS(root string, nocompressAndNocache ...bool) FileSystem {
 	return FS(&markdownFS{
 		dir: root,
@@ -349,6 +352,7 @@ func (fs *markdownFS) Open(name string) (http.File, error) {
 	return NewFile(b, fileInfo), nil
 }
 
+// CacheFile implements os.File
 type CacheFile struct {
 	fileInfo os.FileInfo
 	encoding string
@@ -357,6 +361,7 @@ type CacheFile struct {
 
 var _ http.File = new(CacheFile)
 
+// NewFile creates a cacheFile
 func NewFile(b []byte, fileInfo os.FileInfo) *CacheFile {
 	return &CacheFile{
 		Reader:   bytes.NewReader(b),
@@ -364,6 +369,7 @@ func NewFile(b []byte, fileInfo os.FileInfo) *CacheFile {
 	}
 }
 
+// Stat returns file info
 func (c *CacheFile) Stat() (os.FileInfo, error) {
 	if c.fileInfo == nil {
 		c.fileInfo = &FileInfo{
@@ -374,15 +380,18 @@ func (c *CacheFile) Stat() (os.FileInfo, error) {
 	return c.fileInfo, nil
 }
 
+// Close closes file
 func (c *CacheFile) Close() error {
 	c.Reader = nil
 	return nil
 }
 
+// Readdir gets path info
 func (c *CacheFile) Readdir(count int) ([]os.FileInfo, error) {
 	return []os.FileInfo{}, errors.New("Readdir " + c.fileInfo.Name() + ": The system cannot find the path specified.")
 }
 
+// FileInfo implements os.FileInfo
 type FileInfo struct {
 	name    string
 	size    int64
@@ -392,32 +401,32 @@ type FileInfo struct {
 	sys     interface{}
 }
 
-// base name of the file
+// Name returns base name of the file
 func (info *FileInfo) Name() string {
 	return info.name
 }
 
-// length in bytes for regular files; system-dependent for others
+// Size returns the size in bytes for regular files; system-dependent for others
 func (info *FileInfo) Size() int64 {
 	return info.size
 }
 
-// file mode bits
+// Mode returns file mode bits
 func (info *FileInfo) Mode() os.FileMode {
 	return info.mode
 }
 
-// modification time
+// ModTime returns modification time
 func (info *FileInfo) ModTime() time.Time {
 	return info.modTime
 }
 
-// abbreviation for Mode().IsDir()
+// IsDir is the abbreviation for Mode().IsDir()
 func (info *FileInfo) IsDir() bool {
 	return info.isDir
 }
 
-// underlying data source (can return nil)
+// Sys returns underlying data source (can return nil)
 func (info *FileInfo) Sys() interface{} {
 	return info.sys
 }
@@ -775,7 +784,7 @@ func (c *FileServerManager) serveFile(ctx *Context, fs FileSystem, name string, 
 			defer ff.Close()
 			dd, err := ff.Stat()
 			if err == nil {
-				name = index
+				// name = index
 				d = dd
 				f = ff
 			}
@@ -888,7 +897,7 @@ type fileHandler struct {
 	fileServerManager *FileServerManager
 }
 
-// http.FileServer returns a handler that serves HTTP requests
+// FileServer returns a handler that serves HTTP requests
 // with the contents of the file system rooted at fs.
 //
 // To use the operating system's file system implementation,

@@ -111,18 +111,18 @@ func (resp *Response) Write(b []byte) (int, error) {
 // AddCookie adds a Set-Cookie header.
 // The provided cookie must have a valid Name. Invalid cookies may be
 // silently dropped.
-func (r *Response) AddCookie(cookie *http.Cookie) {
-	r.Header().Add(HeaderSetCookie, cookie.String())
+func (resp *Response) AddCookie(cookie *http.Cookie) {
+	resp.Header().Add(HeaderSetCookie, cookie.String())
 }
 
 // SetCookie sets a Set-Cookie header.
-func (r *Response) SetCookie(cookie *http.Cookie) {
-	r.Header().Set(HeaderSetCookie, cookie.String())
+func (resp *Response) SetCookie(cookie *http.Cookie) {
+	resp.Header().Set(HeaderSetCookie, cookie.String())
 }
 
 // DelCookie sets Set-Cookie header.
-func (r *Response) DelCookie() {
-	r.Header().Del(HeaderSetCookie)
+func (resp *Response) DelCookie() {
+	resp.Header().Del(HeaderSetCookie)
 }
 
 // ReadFrom is here to optimize copying from an *os.File regular file
@@ -197,7 +197,7 @@ func (resp *Response) Size() int64 {
 	return resp.size
 }
 
-// Whether the response has been submitted.
+// Committed returns whether the response has been submitted or not.
 func (resp *Response) Committed() bool {
 	return resp.committed
 }
@@ -207,7 +207,7 @@ func (resp *Response) Status() int {
 	return resp.status
 }
 
-// Whether the response has been submitted.
+// Committed returns whether the response has been submitted or not.
 func (ctx *Context) Committed() bool {
 	return ctx.W.committed
 }
@@ -487,7 +487,7 @@ func (ctx *Context) JSONP(status int, callback string, data interface{}, isInden
 	return ctx.Bytes(status, callbackContent.Bytes())
 }
 
-// JSON with default format.
+// JSONMsg sends a JSON with JSONMsg format.
 func (ctx *Context) JSONMsg(status int, msgcode int, info interface{}, isIndent ...bool) error {
 	var (
 		b    []byte

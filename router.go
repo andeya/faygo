@@ -94,6 +94,7 @@ func (ps Params) Get(name string) (string, bool) {
 	return "", false
 }
 
+// FilterFunc is called before routing.
 type FilterFunc func(w http.ResponseWriter, req *http.Request) (map[interface{}]interface{}, bool)
 
 // Router is a http.Handler which can be used to dispatch requests to different

@@ -26,12 +26,12 @@ import (
 	"github.com/henrylee2cn/thinkgo/utils"
 )
 
-// The static directory prefix is automatically added for the file name
+// JoinStatic adds the static directory prefix to the file name.
 func JoinStatic(shortFilename string) string {
 	return path.Join(Global.StaticDir(), shortFilename)
 }
 
-// Quickly create your own configuration files.
+// SyncINI quickly create your own configuration files.
 // Struct tags reference `https://github.com/go-ini/ini`
 func SyncINI(structPointer interface{}, callback func() error, filename ...string) (err error) {
 	t := reflect.TypeOf(structPointer)
@@ -91,6 +91,7 @@ func (w *docWrap) Notes() Notes {
 	return w.notes
 }
 
+// DocWrap adds a note to the handler
 func DocWrap(handler Handler, notes Notes) Handler {
 	return &docWrap{
 		Handler: handler,

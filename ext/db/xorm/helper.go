@@ -7,7 +7,7 @@ import (
 	"github.com/henrylee2cn/thinkgo"
 )
 
-// Gets the specified database engine,
+// MustDB gets the specified database engine,
 // or the default DB if no name is specified.
 func MustDB(name ...string) *xorm.Engine {
 	db, ok := DB(name...)
@@ -35,7 +35,7 @@ func List() map[string]*xorm.Engine {
 	return dbService.List
 }
 
-// Gets the connection string for the specified database,
+// MustConnstring gets the connection string for the specified database,
 // or returns the default if no name is specified.
 func MustConnstring(name ...string) string {
 	conn, ok := Connstring(name...)
@@ -61,11 +61,12 @@ func Connstring(name ...string) (string, bool) {
 	return config.Connstring, true
 }
 
+// Table returns table name
 type Table interface {
 	TableName() string
 }
 
-// A callback function that uses the `default` database for non-transactional operations.
+// Callback uses the `default` database for non-transactional operations.
 func Callback(fn func(*xorm.Session) error, session ...*xorm.Session) error {
 	if fn == nil {
 		return nil
@@ -81,7 +82,7 @@ func Callback(fn func(*xorm.Session) error, session ...*xorm.Session) error {
 	return fn(sess)
 }
 
-// A callback function that uses the specified database for non-transactional operations.
+// CallbackByName uses the specified database for non-transactional operations.
 func CallbackByName(dbName string, fn func(*xorm.Session) error, session ...*xorm.Session) error {
 	if fn == nil {
 		return nil
@@ -101,7 +102,7 @@ func CallbackByName(dbName string, fn func(*xorm.Session) error, session ...*xor
 	return fn(sess)
 }
 
-// A callback function that uses the default database for transactional operations.
+// TransactCallback uses the default database for transactional operations.
 // note: if an error is returned, the rollback method should be invoked outside the function.
 func TransactCallback(fn func(*xorm.Session) error, session ...*xorm.Session) (err error) {
 	if fn == nil {
@@ -130,7 +131,7 @@ func TransactCallback(fn func(*xorm.Session) error, session ...*xorm.Session) (e
 	return
 }
 
-// A callback function that uses the `specified` database for transactional operations.
+// TransactCallbackByName uses the `specified` database for transactional operations.
 // note: if an error is returned, the rollback method should be invoked outside the function.
 func TransactCallbackByName(dbName string, fn func(*xorm.Session) error, session ...*xorm.Session) (err error) {
 	if fn == nil {

@@ -23,12 +23,14 @@ import (
 )
 
 type (
+	// GlobalConfig is global configuration
 	GlobalConfig struct {
 		Cache   CacheConfig `ini:"cache"`
 		Gzip    GzipConfig  `ini:"gzip"`
 		Log     LogConfig   `ini:"log"`
 		warnMsg string      `int:"-"`
 	}
+	// Config is the configuration information for each web instance
 	Config struct {
 		// RunMode         string      `ini:"run_mode"`         // run mode: dev | prod
 		NetTypes        []string    `ini:"net_types" delim:"|"` // List of network type: normal | tls | letsencrypt | unix
@@ -56,6 +58,7 @@ type (
 		Session              SessionConfig `ini:"session"`
 		APIdoc               APIdocConfig  `ini:"apidoc"`
 	}
+	// RouterConfig is the configuration about router
 	RouterConfig struct {
 		// Enables automatic redirection if the current route can't be matched but a
 		// handler for the path with (without) the trailing slash exists.
@@ -84,6 +87,7 @@ type (
 		// Custom OPTIONS handlers take priority over automatic replies.
 		HandleOPTIONS bool `ini:"handle_options"`
 	}
+	// GzipConfig is the configuration about gzip
 	GzipConfig struct {
 		// if EnableGzip, compress response content.
 		Enable bool `ini:"enable"`
@@ -97,6 +101,7 @@ type (
 		Methods []string `ini:"methods" delim:"|"`
 		// StaticExtensionsToGzip []string
 	}
+	// CacheConfig is the configuration about cache
 	CacheConfig struct {
 		// Whether to enable caching static files
 		Enable bool `ini:"enable"`
@@ -110,11 +115,13 @@ type (
 		// Expire <= 0 (second) means no expire, but it can be evicted when cache is full.
 		Expire int `ini:"expire"`
 	}
+	// XSRFConfig is the configuration about XSRF filter
 	XSRFConfig struct {
 		Enable bool   `ini:"enable"`
 		Key    string `ini:"key"`
 		Expire int    `ini:"expire"`
 	}
+	// SessionConfig is the configuration about session
 	SessionConfig struct {
 		Enable                bool   `ini:"enable"`                 // Whether enabled or not
 		Provider              string `ini:"provider"`               // Data storage
@@ -128,12 +135,14 @@ type (
 		NameInHttpHeader      string `ini:"name_in_header"`         // The name of the header when the session ID is written to the header
 		EnableSidInUrlQuery   bool   `ini:"enable_sid_in_urlquery"` // Whether to write the session ID to the URL Query params
 	}
+	// LogConfig is the configuration about log
 	LogConfig struct {
 		ConsoleEnable bool   `ini:"console_enable"`
 		ConsoleLevel  string `ini:"console_level"` // critical | error | warning | notice | info | debug
 		FileEnable    bool   `ini:"file_enable"`
 		FileLevel     string `ini:"file_level"` // critical | error | warning | notice | info | debug
 	}
+	// APIdocConfig is the configuration about API doc
 	APIdocConfig struct {
 		Enable     bool     `ini:"enable"`              // whether to enable API doc
 		Path       string   `ini:"path"`                // API doc url path

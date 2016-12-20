@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-// snake string, XxYy to xx_yy
+// SnakeString converts the accepted string to a snake string (XxYy to xx_yy)
 func SnakeString(s string) string {
 	data := make([]byte, 0, len(s)*2)
 	j := false
@@ -24,7 +24,7 @@ func SnakeString(s string) string {
 	return strings.ToLower(string(data[:]))
 }
 
-// camel string, xx_yy to XxYy
+// CamelString converts the accepted string to a camel string (xx_yy to XxYy)
 func CamelString(s string) string {
 	data := make([]byte, 0, len(s))
 	j := false
@@ -49,7 +49,7 @@ func CamelString(s string) string {
 	return string(data[:])
 }
 
-// 获取对象的类型名称
+// ObjectName gets the type name of the object
 func ObjectName(i interface{}) string {
 	v := reflect.ValueOf(i)
 	t := v.Type()

@@ -8,7 +8,7 @@ import (
 	"github.com/henrylee2cn/thinkgo/ini"
 )
 
-// DataBase connection Config
+// DBConfig is database connection config
 type DBConfig struct {
 	Name         string `ini:"-"`
 	Driver       string `ini:"driver"` // driver: mssql | odbc(mssql) | mysql | mymysql | postgres | sqlite3 | oci8 | goracle

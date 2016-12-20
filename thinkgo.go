@@ -30,6 +30,7 @@ import (
 )
 
 const (
+	// VERSION is thinkgo web framework's version
 	VERSION = "0.5"
 	banner  = `
    _______  _                _                    
@@ -42,7 +43,7 @@ const (
                                     \_\_/         ` + VERSION + "\n"
 )
 
-// Thinkgo web framework.
+// Framework is the thinkgo web framework.
 type Framework struct {
 	name           string // name of the application
 	version        string // version of the application
@@ -58,7 +59,7 @@ type Framework struct {
 	apidoc         *swagger.Swagger
 }
 
-// Use the thinkgo web framework to create a new application.
+// New uses the thinkgo web framework to create a new application.
 func New(name string, version ...string) *Framework {
 	mutexNewApp.Lock()
 	defer mutexNewApp.Unlock()
@@ -84,22 +85,23 @@ func New(name string, version ...string) *Framework {
 }
 
 var (
-	// The list of applications that have been created.
+	// Apps is the list of applications that have been created.
 	Apps          = make(map[string]*Framework)
 	mutexNewApp   sync.Mutex
 	mutexForBuild sync.Mutex
 )
 
-// name of the application
+// Name returns the name of the application
 func (frame *Framework) Name() string {
 	return frame.name
 }
 
-// version of the application
+// Version returns the version of the application
 func (frame *Framework) Version() string {
 	return frame.version
 }
 
+// NameWithVersion returns the name with version
 func (frame *Framework) NameWithVersion() string {
 	if len(frame.version) == 0 {
 		return frame.name
@@ -107,7 +109,7 @@ func (frame *Framework) NameWithVersion() string {
 	return frame.name + "_" + frame.version
 }
 
-// Start web services.
+// Run starts web services.
 func (frame *Framework) Run() {
 	frame.once.Do(func() {
 		frame.build()
@@ -179,12 +181,12 @@ func (frame *Framework) build() {
 	frame.registerSession()
 }
 
-// The log used by the user bissness
+// Log returns the log used by the user bissness
 func (frame *Framework) Log() *logging.Logger {
 	return frame.bizlog
 }
 
-// Get an ordered list of nodes used to register router.
+// MuxAPIsForRouter get an ordered list of nodes used to register router.
 func (frame *Framework) MuxAPIsForRouter() []*MuxAPI {
 	if frame.muxesForRouter == nil {
 		// comb mux.handlers, mux.paramInfos, mux.returns and mux.path,.
@@ -205,7 +207,7 @@ func (frame *Framework) Filter(fn ...HandlerFunc) *Framework {
 	return frame
 }
 
-// Append middlewares of function type to root muxAPI.
+// Route append middlewares of function type to root muxAPI.
 // Used to register router in tree style.
 func (frame *Framework) Route(children ...*MuxAPI) *MuxAPI {
 	frame.MuxAPI.children = append(frame.MuxAPI.children, children...)
@@ -310,7 +312,7 @@ func (frame *Framework) NewNamedDELETE(name string, pattern string, handlers ...
 	return frame.NewNamedAPI(name, "DELETE", pattern, handlers...)
 }
 
-// NewNamedStatic creates an isolated static muxAPI node.
+// NewStatic creates an isolated static muxAPI node.
 func (frame *Framework) NewStatic(pattern string, root string, nocompressAndNocache ...bool) *MuxAPI {
 	return frame.NewNamedStatic("", pattern, root, nocompressAndNocache...)
 }
@@ -320,12 +322,12 @@ func (frame *Framework) NewNamedStatic(name, pattern string, root string, nocomp
 	return (&MuxAPI{frame: frame}).NamedStatic(name, pattern, root, nocompressAndNocache...)
 }
 
-// NewNamedStatic creates an isolated static muxAPI node.
+// NewStaticFS creates an isolated static muxAPI node.
 func (frame *Framework) NewStaticFS(pattern string, fs FileSystem) *MuxAPI {
 	return frame.NewNamedStaticFS("", pattern, fs)
 }
 
-// NewNamedStatic creates an isolated static muxAPI node with the name.
+// NewNamedStaticFS creates an isolated static muxAPI node with the name.
 func (frame *Framework) NewNamedStaticFS(name, pattern string, fs FileSystem) *MuxAPI {
 	return (&MuxAPI{frame: frame}).NamedStaticFS(name, pattern, fs)
 }

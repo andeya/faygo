@@ -46,7 +46,7 @@ type (
 		Decode(dest reflect.Value, body []byte) error
 	}
 
-	// Handler without binding path parameter for middleware, when Handler is implemented by a APIHandler.
+	// HandlerWithoutPath is handler without binding path parameter for middleware.
 	HandlerWithoutPath interface {
 		Handler
 	}
@@ -66,14 +66,15 @@ type (
 	// Handler that calls f.
 	HandlerFunc func(ctx *Context) error
 
-	// The chain of handlers for a request
+	// HandlerChain is the chain of handlers for a request.
 	HandlerChain []Handler
 
 	// ErrorFunc replies to the request with the specified error message and HTTP code.
 	// It does not otherwise end the request; the caller should ensure no further
 	// writes are done to ctx.
 	// The error message should be plain text.
-	ErrorFunc     func(ctx *Context, errStr string, status int)
+	ErrorFunc func(ctx *Context, errStr string, status int)
+	// BindErrorFunc is called when binding or validation handlerStruct parameters are wrong.
 	BindErrorFunc func(ctx *Context, err error)
 )
 
@@ -82,7 +83,7 @@ func (h HandlerFunc) Serve(ctx *Context) error {
 	return h(ctx)
 }
 
-// Verify that the Handler is an APIHandler and convert it.
+// ToAPIHandler verifies that the Handler is an APIHandler and converts it.
 // If fails, returns nil.
 func ToAPIHandler(handler Handler) APIHandler {
 	v := reflect.Indirect(reflect.ValueOf(handler))
@@ -92,7 +93,7 @@ func ToAPIHandler(handler Handler) APIHandler {
 	return v.Addr().Interface().(APIHandler)
 }
 
-// Verify that the Handler is an HandlerWithoutPath.
+// IsHandlerWithoutPath verifies that the Handler is an HandlerWithoutPath.
 func IsHandlerWithoutPath(handler Handler) bool {
 	apiHandler := ToAPIHandler(handler)
 	if apiHandler == nil {
@@ -214,7 +215,7 @@ List of supported param value types:
     float64 |  []float64 |
 */
 type (
-	// request parameter information
+	// ParamInfo is the request parameter information
 	ParamInfo struct {
 		Name string
 		// the position of the parameter
@@ -224,6 +225,7 @@ type (
 		// a parameter value that is used to infer a value type and as a default value
 		Model interface{}
 	}
+	// Doc provides notes info to the API doc.
 	Doc interface {
 		Notes() Notes
 	}
@@ -240,6 +242,7 @@ type (
 		Note   string      `json:"note" xml:"note"`
 		Return interface{} `json:"return,omitempty" xml:"return,omitempty"`
 	}
+	// JSONMsg is commonly used to return JSON format response.
 	JSONMsg struct {
 		Code int         `json:"code" xml:"code"`                     // the status code of the business process (required)
 		Info interface{} `json:"info,omitempty" xml:"info,omitempty"` // response's schema and example value (optional)

@@ -36,10 +36,11 @@ type (
 		children   []*MuxAPI
 		frame      *Framework
 	}
-	// method set for request
+	// Methodset is the methods string of request
 	Methodset string
 )
 
+// RESTfulMethodList is the list of all RESTful methods
 var RESTfulMethodList = []string{
 	"CONNECT",
 	"DELETE",
@@ -67,7 +68,7 @@ func newMuxAPI(frame *Framework, name string, methodset Methodset, pattern strin
 }
 
 /*
- * Parse out the list of methods.
+ * Methods parses out the list of methods.
  *
  * List of common methods:
  * CONNECT
@@ -98,7 +99,7 @@ func (m *Methodset) Methods() []string {
 	return methods
 }
 
-// Check if the specified method exists
+// HasMethod checks whether the specified method exists or not.
 func (mux *MuxAPI) HasMethod(method string) bool {
 	method = strings.ToUpper(method)
 	for _, m := range mux.methods {
@@ -121,6 +122,7 @@ func (mux *MuxAPI) NamedGroup(name string, pattern string, handlers ...Handler) 
 	return mux.NamedAPI(name, "", pattern, handlers...)
 }
 
+// IsGroup returns whether the muxapi node is group or not.
 func (mux *MuxAPI) IsGroup() bool {
 	return len(mux.methods) == 0
 }
@@ -260,7 +262,7 @@ func (mux *MuxAPI) Static(pattern string, root string, nocompressAndNocache ...b
 	return mux.NamedStatic(root, pattern, root, nocompressAndNocache...)
 }
 
-// Insert the middlewares at the left end of the node's handler chain.
+// Use inserts the middlewares at the left end of the node's handler chain.
 // notes: handler cannot be nil.
 func (mux *MuxAPI) Use(handlers ...HandlerWithoutPath) *MuxAPI {
 	_handlers := make([]Handler, len(handlers))
@@ -381,35 +383,42 @@ func (mux *MuxAPI) checkBodyParamConflicts() {
 	}
 }
 
+// Methods returns the methods of muxAPI node.
 func (mux *MuxAPI) Methods() []string {
 	return mux.methods
 }
 
+// Path returns the path of muxAPI node.
 func (mux *MuxAPI) Path() string {
 	return mux.path
 }
 
+// Name returns the name of muxAPI node.
 func (mux *MuxAPI) Name() string {
 	return mux.name
 }
 
+// ParamInfos returns the paramInfos of muxAPI node.
 func (mux *MuxAPI) ParamInfos() []ParamInfo {
 	return mux.paramInfos
 }
 
+// Notes returns the notes of muxAPI node.
 func (mux *MuxAPI) Notes() []Notes {
 	return mux.notes
 }
 
+// Parent returns the parent of muxAPI node.
 func (mux *MuxAPI) Parent() *MuxAPI {
 	return mux.parent
 }
 
+// Children returns the children of muxAPI node.
 func (mux *MuxAPI) Children() []*MuxAPI {
 	return mux.children
 }
 
-// Get an ordered list of all subordinate nodes.
+// Progeny returns an ordered list of all subordinate nodes.
 func (mux *MuxAPI) Progeny() []*MuxAPI {
 	nodes := []*MuxAPI{}
 	for _, child := range mux.children {
@@ -418,7 +427,7 @@ func (mux *MuxAPI) Progeny() []*MuxAPI {
 	return nodes
 }
 
-// Get an ordered list of subordinate nodes used to register router.
+// HandlerProgeny returns an ordered list of subordinate nodes used to register router.
 func (mux *MuxAPI) HandlerProgeny() []*MuxAPI {
 	if !mux.IsGroup() {
 		return []*MuxAPI{mux}
@@ -430,16 +439,20 @@ func (mux *MuxAPI) HandlerProgeny() []*MuxAPI {
 	return nodes
 }
 
+// MuxAPIs is the array of muxAPIs for sorting
 type MuxAPIs []*MuxAPI
 
+// Len returns the length of muxAPIs
 func (ends MuxAPIs) Len() int {
 	return len(ends)
 }
 
+// Less returns the smaller muxAPI.
 func (ends MuxAPIs) Less(i, j int) bool {
 	return ends[i].path <= ends[j].path
 }
 
+// Swap swaps the two muxAPIs
 func (ends MuxAPIs) Swap(i, j int) {
 	ends[i], ends[j] = ends[j], ends[i]
 }

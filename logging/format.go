@@ -105,7 +105,7 @@ type Formatter interface {
 	Format(calldepth int, colorful bool, r *Record, w io.Writer) error
 }
 
-// formatter is used by all backends unless otherwise overriden.
+// formatter is used by all backends unless otherwise overridden.
 var formatter struct {
 	sync.RWMutex
 	def Formatter
@@ -400,7 +400,7 @@ type backendFormatter struct {
 }
 
 // NewBackendFormatter creates a new backend which makes all records that
-// passes through it beeing formatted by the specific formatter.
+// passes through it being formatted by the specific formatter.
 func NewBackendFormatter(b Backend, f Formatter) Backend {
 	return &backendFormatter{b, f}
 }

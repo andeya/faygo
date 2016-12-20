@@ -138,7 +138,7 @@ type (
 	}
 )
 
-// The log used by the user bissness
+// Log used by the user bissness
 func (ctx *Context) Log() *logging.Logger {
 	return ctx.frame.bizlog
 }
@@ -466,12 +466,12 @@ func (ctx *Context) Stop() {
 	ctx.pos = stopExecutionposition
 }
 
-// Whether the operation has stopped.
+// Stopped returns whether the operation has stopped.
 func (ctx *Context) Stopped() bool {
 	return ctx.pos >= ctx.handlerChainLen
 }
 
-// Whether the operation is stopped halfway.
+// IsBreak returns whether the operation is stopped halfway.
 func (ctx *Context) IsBreak() bool {
 	return ctx.pos == stopExecutionposition
 }

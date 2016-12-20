@@ -1,5 +1,5 @@
 /*
-Thinkgo is a Golang Web framework that handler is middleware,
+Package thinkgo is a Golang Web framework that handler is middleware,
 supports intelligent parameter mapping and validation, and automates API documentation.
 
 Copyright 2016 HenryLee. All Rights Reserved.

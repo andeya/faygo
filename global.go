@@ -65,6 +65,7 @@ type GlobalSetting struct {
 	bizlog *logging.Logger
 }
 
+// PresetStatic is the system default static file routing information
 type PresetStatic struct {
 	root       string
 	nocompress bool
@@ -72,7 +73,7 @@ type PresetStatic struct {
 	handlers   []HandlerWithoutPath
 }
 
-// global configuration and functions...
+// Global is the global configuration, functions and so on.
 var Global = func() *GlobalSetting {
 	global := &GlobalSetting{
 		config:         globalConfig,
@@ -154,36 +155,37 @@ func init() {
 	acceptencoder.InitGzip(Global.config.Gzip.MinLength, Global.config.Gzip.CompressLevel, Global.config.Gzip.Methods)
 }
 
-// When an error occurs, the default handler is invoked.
+// Error calls the default error handler.
 func (global *GlobalSetting) Error(ctx *Context, errStr string, status int) {
 	global.errorFunc(ctx, errStr, status)
 }
 
-// Set the global default `ErrorFunc` function.
+// SetErrorFunc sets the global default `ErrorFunc` function.
 func (global *GlobalSetting) SetErrorFunc(errorFunc ErrorFunc) {
 	global.errorFunc = errorFunc
 }
 
-// Decode params from request body.
+// BodyDecode decodes params from request body.
 func (global *GlobalSetting) BodyDecode(dest reflect.Value, body []byte) error {
 	return global.bodyDecodeFunc(dest, body)
 }
 
-// Set the global default `BodyDecodeFunc` function.
+// SetBodyDecodeFunc sets the global default `BodyDecodeFunc` function.
 func (global *GlobalSetting) SetBodyDecodeFunc(bodyDecodeFunc apiware.BodyDecodeFunc) {
 	global.bodyDecodeFunc = bodyDecodeFunc
 }
 
-// If the APIHander's parameter binding fails, the default handler is invoked.
+// BindError calls the default parameter binding failure handler.
 func (global *GlobalSetting) BindError(ctx *Context, err error) {
 	global.bindErrorFunc(ctx, err)
 }
 
-// Set the global default `BindErrorFunc` function.
+// SetBindErrorFunc sets the global default `BindErrorFunc` function.
 func (global *GlobalSetting) SetBindErrorFunc(bindErrorFunc BindErrorFunc) {
 	global.bindErrorFunc = bindErrorFunc
 }
 
+// ParamMapping maps the APIHander's parameter name from the structure field.
 // When the APIHander's parameter name (struct tag) is unsetted,
 // it is mapped from the structure field name by default.
 // If `paramMapping` is nil, use snake style.
@@ -191,7 +193,7 @@ func (global *GlobalSetting) ParamMapping(fieldName string) (paramName string) {
 	return global.paramMapping(fieldName)
 }
 
-// Set the global default `ParamNameFunc` function.
+// SetParamMapping sets the global default `ParamNameFunc` function.
 func (global *GlobalSetting) SetParamMapping(paramMapping apiware.ParamNameFunc) {
 	global.paramMapping = paramMapping
 }
@@ -201,12 +203,12 @@ func (global *GlobalSetting) Render() *Render {
 	return global.render
 }
 
-// Sets the global template variable or function for pongo2 render.
+// RenderVariable sets the global template variable or function for pongo2 render.
 func (global *GlobalSetting) RenderVariable(name string, v interface{}) {
 	global.render.TemplateVariable(name, v)
 }
 
-// UploadDir returns logs folder path with a slash at the end
+// LogDir returns logs folder path with a slash at the end
 func (global *GlobalSetting) LogDir() string {
 	return global.logDir
 }

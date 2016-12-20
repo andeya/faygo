@@ -13,6 +13,7 @@ import (
 )
 
 type (
+	// Tpl is template with modfied time.
 	Tpl struct {
 		template *pongo2.Template
 		modTime  time.Time
@@ -39,7 +40,7 @@ func newRender(openCacheFile func(name string) (http.File, error)) *Render {
 	}
 }
 
-// Sets the global template variable or function
+// TemplateVariable sets the global template variable or function
 func (render *Render) TemplateVariable(name string, v interface{}) {
 	switch d := v.(type) {
 	case func(in *pongo2.Value, param *pongo2.Value) (out *pongo2.Value, err *pongo2.Error):
@@ -72,7 +73,7 @@ func (render *Render) Render(filename string, data Map) ([]byte, error) {
 
 }
 
-// Render should render the template to the io.Writer.
+// RenderFromBytes should render the template to the io.Writer.
 func (render *Render) RenderFromBytes(fbytes []byte, data Map) ([]byte, error) {
 	template, err := render.set.FromBytes(fbytes)
 	if err != nil {

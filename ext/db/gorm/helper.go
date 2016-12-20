@@ -5,7 +5,7 @@ import (
 	"github.com/jinzhu/gorm"
 )
 
-// Gets the specified database engine,
+// MustDB gets the specified database engine,
 // or the default DB if no name is specified.
 func MustDB(name ...string) *gorm.DB {
 	db, ok := DB(name...)
@@ -33,7 +33,7 @@ func List() map[string]*gorm.DB {
 	return dbService.List
 }
 
-// Gets the connection string for the specified database,
+// MustConnstring gets the connection string for the specified database,
 // or returns the default if no name is specified.
 func MustConnstring(name ...string) string {
 	conn, ok := Connstring(name...)

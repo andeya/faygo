@@ -56,6 +56,7 @@ var (
 	htmlEntity = regexp.MustCompile(`&[a-z]{2,5};`)
 )
 
+// HtmlRendererParameters contains the parameters of the render
 type HtmlRendererParameters struct {
 	// Prepend this text to each relative URL.
 	AbsolutePrefix string

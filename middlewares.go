@@ -24,7 +24,7 @@ import (
 	"github.com/henrylee2cn/thinkgo/logging/color"
 )
 
-// Create middleware that intercepts the specified IP prefix.
+// NewIPFilter creates middleware that intercepts the specified IP prefix.
 func NewIPFilter(whitelist []string, realIP bool) HandlerFunc {
 	var noAccess bool
 	var match []string
@@ -71,7 +71,7 @@ func NewIPFilter(whitelist []string, realIP bool) HandlerFunc {
 	}
 }
 
-// Cross-Domain middleware
+// CrossDomainFilter creates Cross-Domain middleware
 func CrossDomainFilter() HandlerFunc {
 	return func(ctx *Context) error {
 		ctx.SetHeader(HeaderAccessControlAllowOrigin, ctx.HeaderParam(HeaderOrigin))

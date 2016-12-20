@@ -15,6 +15,7 @@ import (
 	"github.com/henrylee2cn/thinkgo/utils"
 )
 
+// DBService is a database engine object.
 type DBService struct {
 	Default *gorm.DB            // the default database engine
 	List    map[string]*gorm.DB // database engine list

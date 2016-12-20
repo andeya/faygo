@@ -27,6 +27,7 @@ import (
 	// "github.com/facebookgo/grace/gracehttp"
 )
 
+// web server object
 type Server struct {
 	nameWithVersion string
 	netType         string
