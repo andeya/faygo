@@ -1,6 +1,6 @@
-# Thinkgo    [![GoDoc](https://godoc.org/github.com/tsuna/gohbase?status.png)](https://godoc.org/github.com/henrylee2cn/thinkgo)
+# Thinkgo    [![GoDoc](https://godoc.org/github.com/tsuna/gohbase?status.png)](https://godoc.org/github.com/henrylee2cn/thinkgo)    ![Thinkgo goreportcard](https://goreportcard.com/badge/github.com/henrylee2cn/thinkgo)
 
-![Lessgo Favicon](https://github.com/henrylee2cn/thinkgo/raw/master/doc/thinkgo_96x96.png)
+![Thinkgo Favicon](https://github.com/henrylee2cn/thinkgo/raw/master/doc/thinkgo_96x96.png)
 
 Thinkgo is a Golang Web framework that handler is middleware, supports intelligent parameter mapping and validation, and automates API documentation.
 
