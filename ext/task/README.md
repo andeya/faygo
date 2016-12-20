@@ -9,7 +9,7 @@ Task是一个非常易用的定时任务管理工具（移植自beego框架）�
 
 1. 初始化一个任务
 
-        tk1 := toolbox.NewTask("tk1", "0 12 * * * *", func() error { fmt.Println("tk1"); return nil })
+        tk1 := task.NewTask("tk1", "0 12 * * * *", func() error { fmt.Println("tk1"); return nil })
     
     函数原型：
     
@@ -29,12 +29,12 @@ Task是一个非常易用的定时任务管理工具（移植自beego框架）�
     
 3. 加入全局的计划任务列表  
     
-        toolbox.AddTask("tk1", tk1)
+        task.AddTask("tk1", tk1)
 
 4. 开始执行全局的任务
 
-        toolbox.StartTask()
-        defer toolbox.StopTask()
+        task.StartTask()
+        defer task.StopTask()
         
 ## spec 详解     
 
