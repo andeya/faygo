@@ -1,7 +1,7 @@
 # directSQL 使用说明
 
 ## 简介
-    directSQL通过配置sql映射文件，配置路由后可u直接执行配置的sql并返回结果到客户端。
+    directSQL通过配置sql映射文件，配置路由后可直接执行配置的sql并返回结果到客户端。
 
 ## 直接执行SQL引擎
     - 通过url直接执行SQL，参数采用POST方式传递  /bos/... sql标示
@@ -10,7 +10,7 @@
     - sqlrouter--SQL路由处理
     - sqlmanage--管理维护SQL定义文件到内存中
     - sqlservice--通过代码调用的接口单元
-    - checkparamater -- 参数处理（参数验证与默认参数处理）
+    - checkparameter -- 参数处理（参数验证与默认参数处理）
     - resultcache --查询结果缓存处理单元
     - sqlhelper--辅助函数
     - sqlwatcher--SQL配置文件监控自动更新(  属于实现文件修改，删除监控，改名，新增貌似不行)
@@ -69,8 +69,8 @@
          参数main,sub1,sub2分别对应配置的三个cmd的sql参数(每个cmd可以批量执行，同batchexec)
 
 ## 参数配置
-    `<paramater type="string" name="code" desc="用户帐号" required="true" minlen="5" maxlen="50" default="usercode" return="true"/> `
-    - paramater的属性说明
+    `<parameter type="string" name="code" desc="用户帐号" required="true" minlen="5" maxlen="50" default="usercode" return="true"/> `
+    - parameter的属性说明
          - name: 参数名称，必须与SQL中的参数名称对应，即?name
          - desc: 参数描述
          - type:参数类型 string/int/float/date/datetime/email/blob 会根据类型进行验证                 
@@ -96,9 +96,9 @@
                2）注册函数
                   RegAny("name",func)
                3）SQL默认参数配置实用，系统会自动解析调用
-                <paramaters>
-                    <paramater name="id" desc="用户id" type="string" required="true" maxlen="36" minlen="36" default="name" return="true"/>
-                </paramaters>
+                <parameters>
+                    <parameter name="id" desc="用户id" type="string" required="true" maxlen="36" minlen="36" default="name" return="true"/>
+                </parameters>
 
 ## 查询结果缓存
     - 首先在 directsql.config中进行配置全局参数
@@ -113,8 +113,7 @@
        - 缓存的key值用 执行请求的路径(/sys/home/select)， 参数名与参数值对作为suffix，进行确定换成值，对于同一个sql只缓存一次，就是第一次执行的参数的结果，其他的参数查询部缓存；对于没有参数的结果缓存suffix=nil  
 
 ## 完整示例
-`
-      <?xml version="1.0" encoding="utf-8"?>
+ ` <?xml version="1.0" encoding="utf-8"?>
        <!-- id为本model的标识一般同文件名，database为xorm.config中配置的数据库名称，为执行该配置文件sql的连接，空为默认数据库 -->
        <model id="demo" database="">
         <comment>
@@ -127,9 +126,9 @@
         <sql type="select" id="select" desc="查询SQL,结果缓存30分钟" cached="true" cachetime="30">
             <cmd in="" out="">
                 <![CDATA[ select * from sys_user where code=?code ]]>
-                <paramaters>
-                    <paramater type="string" name="code" desc="用户帐号" required="true" minlen="5" maxlen="50"/>
-                </paramaters>
+                <parameters>
+                    <parameter type="string" name="code" desc="用户帐号" required="true" minlen="5" maxlen="50"/>
+                </parameters>
             </cmd>
         </sql>
         <!-- JSON参数示例：{'name':'李四','start':1,'limted':20 } -->
@@ -139,10 +138,10 @@
             </cmd>
             <cmd in="" out="data">
                 <![CDATA[ SELECT * FROM sys_user LIMIT ?start,?limted ]]>
-                <paramaters>
-                    <paramater  name="start" desc="start" type="int" required="true" />
-                    <paramater  name="limted" desc="size" type="int" required="true" />
-                </paramaters>
+                <parameters>
+                    <parameter  name="start" desc="start" type="int" required="true" />
+                    <parameter  name="limted" desc="size" type="int" required="true" />
+                </parameters>
             </cmd>
         </sql>
          <!-- JSON参数示例：{'code':'12345'} -->
@@ -155,73 +154,73 @@
         <sql type="multiselect" id="multi" desc="多个Select返回多个结果集的查询组合，一个json参数">
             <cmd in="" out="main">
                 <![CDATA[  SELECT id,code FROM sys_user where code=?code ]]>
-                <paramaters>
-                    <paramater type="string" name="code" desc="用户帐号" required="true" minlen="5" maxlen="50" />
-                </paramaters>
+                <parameters>
+                    <parameter type="string" name="code" desc="用户帐号" required="true" minlen="5" maxlen="50" />
+                </parameters>
             </cmd>
             <cmd in="" out="detail1">
                 <![CDATA[   SELECT id,code,pwd,nick FROM sys_user   ]]>
             </cmd>
             <cmd in="" out="detail2">
                 <![CDATA[   SELECT id,code,cnname,pwd,nick FROM sys_user WHERE nick=?nick   ]]>
-                <paramaters>
-                    <paramater type="string" name="nick" desc="用户帐号" required="true" />
-                </paramaters>
+                <parameters>
+                    <parameter type="string" name="nick" desc="用户帐号" required="true" />
+                </parameters>
             </cmd>
         </sql>
         <!-- JSON参数示例：{'code':'123'} -->
         <sql type="delete" id="delete" desc="删除，可以执行多条删除语句,建议类型改为 exec">
             <cmd in="" out="">
                 <![CDATA[   DELETE FROM sys_user where code=?code   ]]>
-                <paramaters>
-                    <paramater name="code" desc="用户帐号" type="string" required="true" />
-                </paramaters>
+                <parameters>
+                    <parameter name="code" desc="用户帐号" type="string" required="true" />
+                </parameters>
             </cmd>
             <cmd in="" out="">
                 <![CDATA[   DELETE FROM sys_userdetail where pcode=?code   ]]>
-                <paramaters>
-                    <paramater name="code" desc="用户帐号" type="string" required="true" />
-                </paramaters>
+                <parameters>
+                    <parameter name="code" desc="用户帐号" type="string" required="true" />
+                </parameters>
             </cmd>
         </sql>
         <!-- JSON参数示例：{'code':'123','name':'xxx'} -->
         <sql type="insert" id="insert" desc="新增服务端生成newid返回,建议类型改为 exec">
             <cmd in="" out="">
                 <![CDATA[       INSERT INTO sys_user(id,code,cnname,pwd,nick) VALUES(?id,?code,?cnname,?pwd,?nick) ]]>
-                <paramaters>
-                    <paramater name="id" desc="用户id" type="string" required="true" maxlen="36" minlen="36" default="uuid" return="true"/>
-                    <paramater name="code" desc="用户帐号" type="string" required="true" maxlen="50" minlen="5" />
-                    <paramater name="cnname" desc="cnname" type="string" required="true" />
-                    <paramater name="nick" desc="昵称" type="string" required="true" maxlen="30" minlen="0" />
-                </paramaters>
+                <parameters>
+                    <parameter name="id" desc="用户id" type="string" required="true" maxlen="36" minlen="36" default="uuid" return="true"/>
+                    <parameter name="code" desc="用户帐号" type="string" required="true" maxlen="50" minlen="5" />
+                    <parameter name="cnname" desc="cnname" type="string" required="true" />
+                    <parameter name="nick" desc="昵称" type="string" required="true" maxlen="30" minlen="0" />
+                </parameters>
             </cmd>
         </sql>
         <!-- JSON参数示例：{'code':'123','nick':'xxx'} -->
         <sql type="update" id="update" desc="更新,建议类型改为 exec" >
             <cmd in="" out="">
                 <![CDATA[ update sys_user set nick=?nick where code=?code ]]>
-                <paramaters>
-                    <paramater type="string" name="code" desc="用户帐号" required="true" />
-                    <paramater type="string" name="nick" desc="用户帐号" required="true" />
-                </paramaters>
+                <parameters>
+                    <parameter type="string" name="code" desc="用户帐号" required="true" />
+                    <parameter type="string" name="nick" desc="用户帐号" required="true" />
+                </parameters>
             </cmd>
         </sql>
         <!-- JSON参数示例：{'code':'123','nick':'xxx'} -->
         <sql type="insert" id="save" desc="保存(插入或更新),建议类型改为 exec" >
             <cmd in="" out="">
                 <![CDATA[ INSERT INTO sys_user(uid,code,pwd,nick,login_ip,login_time,regist_time) VALUES(?uid,?code,?pwd,?nick,?login_ip,?login_time,?regist_time) ON DUPLICATE KEY UPDATE nick=?nick   ]]>
-                <paramaters>
-                    <paramater type="string" name="id" desc="id" required="true" default="uuid" return="true"/>
-                </paramaters>
+                <parameters>
+                    <parameter type="string" name="id" desc="id" required="true" default="uuid" return="true"/>
+                </parameters>
             </cmd>
         </sql>
         <!-- JSON参数示例：{data:[{'id':'123','name':'xxx'},{},...]} -->
         <sql type="batchinsert" id="batchinsert" desc="批量新增，json传来多条数据，一个批次插入，要么全部成功要么全部失败">
             <cmd in="" out="">
                 <![CDATA[ INSERT INTO sys_user(id,code,cnname,pwd,nick) VALUES(?id,?code,?cnname,?pwd,?nick)            ]]>
-                <paramaters>
-                    <paramater type="string" name="id" desc="用户帐号" required="true" minlen="30" default="uuid" return="true"/>
-                </paramaters>
+                <parameters>
+                    <parameter type="string" name="id" desc="用户帐号" required="true" minlen="30" default="uuid" return="true"/>
+                </parameters>
             </cmd>
         </sql>
         <!-- JSON参数示例：{data:[{'id':'123','name':'xxx'},{},...]} -->
@@ -234,18 +233,18 @@
         <sql type="batchdelete" id="delete" desc="批量删除，根据参数多次执行该语句">
             <cmd in="" out="">
                 <![CDATA[   DELETE FROM sys_user where code=?code   ]]>
-                <paramaters>
-                    <paramater name="code" desc="用户帐号" type="string" required="true" />
-                </paramaters>
+                <parameters>
+                    <parameter name="code" desc="用户帐号" type="string" required="true" />
+                </parameters>
             </cmd>
         </sql>
         <!-- JSON参数示例：{main:[{'id':'123','name':'xxx'}],detail1:[{},...],detail2:[{},...]} -->
         <sql type="batchmultiexec" id="bacthcomplexsave" desc="批量在一个事务里边组合执行多个表的保存，要么全部成功要么全部失败">
             <cmd in="main" desc="主表的数据，支持多条">
                 <![CDATA[   INSERT INTO sys_user(id,code,cnname,pwd,nick) VALUES(?id,?code,?cnname,?pwd,?nick) ]]>
-                <paramaters>
-                    <paramater type="string" name="id" desc="用户帐号" required="true" default="uuid" />
-                </paramaters>
+                <parameters>
+                    <parameter type="string" name="id" desc="用户帐号" required="true" default="uuid" />
+                </parameters>
             </cmd>
             <cmd in="detail1" desc="子表一数据，支持多条">
                 <![CDATA[  INSERT INTO sys_user(id,code,cnname,pwd,nick) VALUES(?id,?code,?cnname,?pwd,?nick)]]>

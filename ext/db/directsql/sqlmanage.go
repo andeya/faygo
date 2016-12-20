@@ -76,7 +76,7 @@ type TCmd struct {
 	Pin        string           `xml:"in,attr"`   //输入参数标示
 	Rout       string           `xml:"out,attr"`  //输出结果标示
 	Sql        string           `xml:",chardata"` //SQL
-	Paramaters []*TSqlParamater `xml:"paramaters>paramater"`
+	Paramaters []*TSqlParameter `xml:"paramaters>paramater"`
 }
 
 //TSql 类型
@@ -92,8 +92,8 @@ const (
 	ST_BATCHMULTIEXEC                 //6 批量执行复合SQL(多数据集批量插入、更新、删除)---OK!
 )
 
-//TSqlParamater 参数校验定义
-type TSqlParamater struct {
+//TSqlParameter 参数校验定义
+type TSqlParameter struct {
 	Name        string       `xml:"name,attr"`     //参数名称必须与cmd中的对应
 	Paratypestr string       `xml:"type,attr"`     //string/number/email/date/datetime/time  -不定义则不需要验证
 	Paratype    TParaType    `-`                   //数值类型

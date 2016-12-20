@@ -99,7 +99,7 @@ func newUUID() string {
 //检查并处理参数
 //paras:sql的cmd中的参数定义slice；mp:客户端提交的参数map；ctx *lessgo.Context当前执行该功能的上下文
 //根据待默认值的参数是否需要返回构造返回到客户端的值
-func dealwithParameter(paras []*TSqlParamater, mp map[string]interface{}, ctx *thinkgo.Context) (map[string]interface{}, error) {
+func dealwithParameter(paras []*TSqlParameter, mp map[string]interface{}, ctx *thinkgo.Context) (map[string]interface{}, error) {
 	//没有参数处理定义返回
 	if len(paras) == 0 {
 		//thinkgo.Debug("Check sql paramaters - nil")
