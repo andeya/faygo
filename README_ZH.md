@@ -176,6 +176,7 @@ console_enable = true                            # 是否启用控制台日志
 console_level  = debug                           # 控制台日志打印水平
 file_enable    = true                            # 是否启用文件日志
 file_level     = debug                           # 文件日志打印水平
+async_len      = 0                               # 0表示同步打印，大于0表示异步缓存长度
 ```
 
 ## Handler结构体字段标签说明

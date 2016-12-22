@@ -174,6 +174,7 @@ console_enable = true                            # Whether enabled or not consol
 console_level  = debug                           # Console logger level
 file_enable    = true                            # Whether enabled or not file logger
 file_level     = debug                           # File logger level
+async_len      = 0                               # The length of asynchronous buffer, 0 means synchronization
 ```
 
 ## Handler struct tags
