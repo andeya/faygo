@@ -70,7 +70,7 @@ type PresetStatic struct {
 	root       string
 	nocompress bool
 	nocache    bool
-	handlers   []HandlerWithoutPath
+	handlers   []Handler
 }
 
 // Global is the global configuration, functions and so on.
@@ -216,7 +216,7 @@ func (global *GlobalSetting) LogDir() string {
 // SetUpload sets upload folder path such as `./upload/`
 // with a slash `/` at the end.
 // note: it should be called before Run()
-func (global *GlobalSetting) SetUpload(dir string, nocompress bool, nocache bool, handlers ...HandlerWithoutPath) {
+func (global *GlobalSetting) SetUpload(dir string, nocompress bool, nocache bool, handlers ...Handler) {
 	if !strings.HasSuffix(dir, "/") {
 		dir += "/"
 	}
@@ -236,7 +236,7 @@ func (global *GlobalSetting) UploadDir() string {
 // SetStatic sets static folder path, such as `./staic/`
 // with a slash `/` at the end.
 // note: it should be called before Run()
-func (global *GlobalSetting) SetStatic(dir string, nocompress bool, nocache bool, handlers ...HandlerWithoutPath) {
+func (global *GlobalSetting) SetStatic(dir string, nocompress bool, nocache bool, handlers ...Handler) {
 	if !strings.HasSuffix(dir, "/") {
 		dir += "/"
 	}

@@ -32,7 +32,7 @@ func Route1(frame *thinkgo.Framework) {
 			frame.NewNamedStaticFS("markdown fs test", "/md", thinkgo.MarkdownFS(
 				"./static/markdown",
 			)),
-		)
+		).Use(thinkgo.CrossOrigin)
 }
 
 // Register the route in a chain style
@@ -60,4 +60,5 @@ func Route2(frame *thinkgo.Framework) {
 	frame.NamedStaticFS("markdown fs test", "/md", thinkgo.MarkdownFS(
 		"./static/markdown",
 	))
+	frame.Use(thinkgo.CrossOrigin)
 }

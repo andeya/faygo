@@ -71,15 +71,13 @@ func NewIPFilter(whitelist []string, realIP bool) HandlerFunc {
 	}
 }
 
-// CrossDomainFilter creates Cross-Domain middleware
-func CrossDomainFilter() HandlerFunc {
-	return func(ctx *Context) error {
-		ctx.SetHeader(HeaderAccessControlAllowOrigin, ctx.HeaderParam(HeaderOrigin))
-		// ctx.SetHeader(HeaderAccessControlAllowOrigin, "*")
-		ctx.SetHeader(HeaderAccessControlAllowCredentials, "true")
-		return nil
-	}
-}
+// CrossOrigin creates Cross-Domain middleware
+var CrossOrigin = HandlerFunc(func(ctx *Context) error {
+	ctx.SetHeader(HeaderAccessControlAllowOrigin, ctx.HeaderParam(HeaderOrigin))
+	// ctx.SetHeader(HeaderAccessControlAllowOrigin, "*")
+	ctx.SetHeader(HeaderAccessControlAllowCredentials, "true")
+	return nil
+})
 
 // Access log statistics
 func accessLogWare() HandlerFunc {

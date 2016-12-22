@@ -264,7 +264,7 @@ func (mux *MuxAPI) Static(pattern string, root string, nocompressAndNocache ...b
 
 // Use inserts the middlewares at the left end of the node's handler chain.
 // notes: handler cannot be nil.
-func (mux *MuxAPI) Use(handlers ...HandlerWithoutPath) *MuxAPI {
+func (mux *MuxAPI) Use(handlers ...Handler) *MuxAPI {
 	_handlers := make([]Handler, len(handlers))
 	for i, h := range handlers {
 		if h == nil {
