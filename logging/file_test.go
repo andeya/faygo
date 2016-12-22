@@ -10,16 +10,21 @@ import (
 )
 
 func TestFile1(t *testing.T) {
-	log := NewLogger(10000)
-	log.AddAdapter("file", `{"filename":"test.log"}`)
-	log.Debug("debug")
-	log.Info("info")
-	log.Notice("notice")
-	log.Warn("warning")
-	log.Error("error")
-	log.Alert("alert")
-	log.Critical("critical")
-	log.Emergency("emergency")
+	log := NewLogger("TestFile1")
+	fileBackend, err := NewDefaultFileBackend("test.log")
+	if err != nil {
+		panic(err)
+	}
+	var format = MustStringFormatter(
+		`%{color}%{module} %{time:15:04:05.000} %{longfile} ▶ %{level:.4s} %{id:03x}%{color:reset} %{message}`,
+	)
+	log.SetBackend(AddModuleLevel(NewBackendFormatter(fileBackend, format)))
+	log.Debug("debug\n")
+	log.Info("info\n")
+	log.Notice("notice\n")
+	log.Warning("warning\n")
+	log.Error("error\n")
+	log.Critical("critical\n")
 	f, err := os.Open("test.log")
 	if err != nil {
 		t.Fatal(err)
@@ -35,7 +40,9 @@ func TestFile1(t *testing.T) {
 			lineNum++
 		}
 	}
-	var expected = LevelDebug + 1
+	f.Close()
+	fileBackend.Close()
+	var expected = int(DEBUG) + 1
 	if lineNum != expected {
 		t.Fatal(lineNum, "not "+strconv.Itoa(expected)+" lines")
 	}
@@ -43,16 +50,22 @@ func TestFile1(t *testing.T) {
 }
 
 func TestFile2(t *testing.T) {
-	log := NewLogger(10000)
-	log.AddAdapter("file", fmt.Sprintf(`{"filename":"test2.log","level":%d}`, LevelError))
-	log.Debug("debug")
-	log.Info("info")
-	log.Notice("notice")
-	log.Warn("warning")
-	log.Error("error")
-	log.Alert("alert")
-	log.Critical("critical")
-	log.Emergency("emergency")
+	log := NewLogger("TestFile2")
+	fileBackend, err := NewDefaultFileBackend("test2.log", 1000)
+	if err != nil {
+		panic(err)
+	}
+	var format = MustStringFormatter(
+		`%{color}%{module} %{time:15:04:05.000} %{longfile} ▶ %{level:.4s} %{id:03x}%{color:reset} %{message}`,
+	)
+	log.SetBackend(AddModuleLevel(NewBackendFormatter(fileBackend, format)))
+	log.Debug("debug\n")
+	log.Info("info\n")
+	log.Notice("notice\n")
+	log.Warning("warning\n")
+	log.Error("error\n")
+	log.Critical("critical\n")
+	log.Close()
 	f, err := os.Open("test2.log")
 	if err != nil {
 		t.Fatal(err)
@@ -68,7 +81,8 @@ func TestFile2(t *testing.T) {
 			lineNum++
 		}
 	}
-	var expected = LevelError + 1
+	f.Close()
+	var expected = int(DEBUG) + 1
 	if lineNum != expected {
 		t.Fatal(lineNum, "not "+strconv.Itoa(expected)+" lines")
 	}
@@ -76,22 +90,26 @@ func TestFile2(t *testing.T) {
 }
 
 func TestFileRotate(t *testing.T) {
-	log := NewLogger(10000)
-	log.AddAdapter("file", `{"filename":"test3.log","maxlines":4}`)
+	log := NewLogger("TestFileRotate")
+	fileBackend, err := NewDefaultFileBackend("test3.log")
+	if err != nil {
+		panic(err)
+	}
+	fileBackend.MaxLines = 4
+	log.SetBackend(AddModuleLevel(fileBackend))
 	log.Debug("debug")
 	log.Info("info")
 	log.Notice("notice")
 	log.Warn("warning")
 	log.Error("error")
-	log.Alert("alert")
 	log.Critical("critical")
-	log.Emergency("emergency")
 	rotateName := "test3" + fmt.Sprintf(".%s.%03d", time.Now().Format("2006-01-02"), 1) + ".log"
 	b, err := exists(rotateName)
 	if !b || err != nil {
 		os.Remove("test3.log")
 		t.Fatal("rotate not generated")
 	}
+	fileBackend.Close()
 	os.Remove(rotateName)
 	os.Remove("test3.log")
 }
@@ -108,52 +126,73 @@ func exists(path string) (bool, error) {
 }
 
 func BenchmarkFile(b *testing.B) {
-	log := NewLogger(100000)
-	log.AddAdapter("file", `{"filename":"test4.log"}`)
+	log := NewLogger("BenchmarkFile")
+	fileBackend, err := NewDefaultFileBackend("test4.log")
+	if err != nil {
+		panic(err)
+	}
+	log.SetBackend(AddModuleLevel(fileBackend))
 	for i := 0; i < b.N; i++ {
 		log.Debug("debug")
 	}
+	fileBackend.Close()
 	os.Remove("test4.log")
 }
 
 func BenchmarkFileAsynchronous(b *testing.B) {
-	log := NewLogger(100000)
-	log.AddAdapter("file", `{"filename":"test4.log"}`)
-	// log.Async()
+	log := NewLogger("BenchmarkFileAsynchronous")
+	fileBackend, err := NewDefaultFileBackend("test4.log")
+	if err != nil {
+		panic(err)
+	}
+	log.SetBackend(AddModuleLevel(fileBackend))
 	for i := 0; i < b.N; i++ {
 		log.Debug("debug")
 	}
+	fileBackend.Close()
 	os.Remove("test4.log")
 }
 
 func BenchmarkFileCallDepth(b *testing.B) {
-	log := NewLogger(100000)
-	log.AddAdapter("file", `{"filename":"test4.log"}`)
-	log.EnableFuncCallDepth(true)
-	log.SetLogFuncCallDepth(2)
+	log := NewLogger("BenchmarkFileCallDepth")
+	fileBackend, err := NewDefaultFileBackend("test4.log")
+	if err != nil {
+		panic(err)
+	}
+	log.SetBackend(AddModuleLevel(fileBackend))
+	log.ExtraCalldepth = 2
 	for i := 0; i < b.N; i++ {
 		log.Debug("debug")
 	}
+	fileBackend.Close()
 	os.Remove("test4.log")
 }
 
 func BenchmarkFileAsynchronousCallDepth(b *testing.B) {
-	log := NewLogger(100000)
-	log.AddAdapter("file", `{"filename":"test4.log"}`)
-	log.EnableFuncCallDepth(true)
-	log.SetLogFuncCallDepth(2)
-	// log.Async()
+	log := NewLogger("BenchmarkFileAsynchronousCallDepth")
+	fileBackend, err := NewDefaultFileBackend("test4.log")
+	if err != nil {
+		panic(err)
+	}
+	log.SetBackend(AddModuleLevel(fileBackend))
+	log.ExtraCalldepth = 2
 	for i := 0; i < b.N; i++ {
 		log.Debug("debug")
 	}
+	fileBackend.Close()
 	os.Remove("test4.log")
 }
 
 func BenchmarkFileOnGoroutine(b *testing.B) {
-	log := NewLogger(100000)
-	log.AddAdapter("file", `{"filename":"test4.log"}`)
+	log := NewLogger("BenchmarkFileOnGoroutine")
+	fileBackend, err := NewDefaultFileBackend("test4.log")
+	if err != nil {
+		panic(err)
+	}
+	log.SetBackend(AddModuleLevel(fileBackend))
 	for i := 0; i < b.N; i++ {
 		go log.Debug("debug")
 	}
+	fileBackend.Close()
 	os.Remove("test4.log")
 }

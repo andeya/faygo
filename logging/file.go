@@ -17,6 +17,8 @@ import (
 // It writes messages by lines limit, file size limit, or time frequency.
 type FileBackend struct {
 	sync.Mutex // write log order by order and  atomic incr maxLinesCurLines and maxSizeCurSize
+	statusLock sync.RWMutex
+	status     int8 // 0:close 1:run
 	// The opened file
 	Filename   string `json:"filename"`
 	fileWriter *os.File
@@ -39,13 +41,17 @@ type FileBackend struct {
 	Perm os.FileMode `json:"perm"`
 
 	fileNameOnly, suffix string // like "project.log", project is fileNameOnly and .log is suffix
+	// Asynchronous output channels
+	asyncMsgChan    chan []byte
+	asyncSignalChan chan struct{}
 }
 
 // NewDefaultFileBackend create a FileLogWriter returning as LoggerInterface.
-func NewDefaultFileBackend(filename string) (*FileBackend, error) {
+func NewDefaultFileBackend(filename string, asyncLen ...int) (*FileBackend, error) {
 	if len(filename) == 0 {
 		return nil, errors.New("FileBackend must have filename")
 	}
+
 	w := &FileBackend{
 		Filename: filename,
 		MaxLines: 1000000,
@@ -54,6 +60,10 @@ func NewDefaultFileBackend(filename string) (*FileBackend, error) {
 		MaxDays:  7,
 		Rotate:   true,
 		Perm:     0660,
+	}
+	if len(asyncLen) > 0 && asyncLen[0] > 0 {
+		w.asyncMsgChan = make(chan []byte, asyncLen[0])
+		w.asyncSignalChan = make(chan struct{})
 	}
 
 	w.suffix = filepath.Ext(w.Filename)
@@ -80,7 +90,23 @@ func (w *FileBackend) startLogger() error {
 		w.fileWriter.Close()
 	}
 	w.fileWriter = file
-	return w.initFd()
+	err = w.initFd()
+	if err == nil {
+		w.status = 1
+		if w.asyncMsgChan != nil {
+			go func() {
+				for {
+					select {
+					case msg := <-w.asyncMsgChan:
+						w.write(msg)
+					case <-w.asyncSignalChan:
+						return
+					}
+				}
+			}()
+		}
+	}
+	return err
 }
 
 func (w *FileBackend) needRotate(size int, day int) bool {
@@ -93,7 +119,12 @@ func (w *FileBackend) needRotate(size int, day int) bool {
 var colorRegexp = regexp.MustCompile("\x1b\\[[0-9]{1,2}m")
 
 // Log implements the Backend interface.
-func (w *FileBackend) Log(level Level, calldepth int, rec *Record) error {
+func (w *FileBackend) Log(calldepth int, rec *Record) {
+	w.statusLock.RLock()
+	if w.status == 0 {
+		w.statusLock.RUnlock()
+		return
+	}
 	msg := colorRegexp.ReplaceAll([]byte(rec.Formatted(calldepth+1, false)), []byte{})
 	if msg[len(msg)-1] != '\n' {
 		msg = append(msg, '\n')
@@ -110,7 +141,40 @@ func (w *FileBackend) Log(level Level, calldepth int, rec *Record) error {
 			w.Unlock()
 		}
 	}
+	if w.asyncMsgChan != nil {
+		w.asyncMsgChan <- msg
+	} else {
+		w.write(msg)
+	}
+	w.statusLock.RUnlock()
+}
 
+// Close close the file description, close file writer.
+// Flush waits until all records in the buffered channel have been processed,
+// and flushs file logger.
+// there are no buffering messages in file logger in memory.
+// flush file means sync file from disk.
+func (w *FileBackend) Close() {
+	w.statusLock.Lock()
+	if w.status == 0 {
+		w.statusLock.Unlock()
+		return
+	}
+	w.status = 0
+	w.statusLock.Unlock()
+	if w.asyncSignalChan != nil {
+		w.asyncSignalChan <- struct{}{}
+		close(w.asyncSignalChan)
+		close(w.asyncMsgChan)
+		for msg := range w.asyncMsgChan {
+			w.write(msg)
+		}
+	}
+	w.fileWriter.Sync()
+	w.fileWriter.Close()
+}
+
+func (w *FileBackend) write(msg []byte) {
 	w.Lock()
 	_, err := w.fileWriter.Write(msg)
 	if err == nil {
@@ -118,7 +182,9 @@ func (w *FileBackend) Log(level Level, calldepth int, rec *Record) error {
 		w.maxSizeCurSize += len(msg)
 	}
 	w.Unlock()
-	return err
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "unable to File Log msg:%s [error]%s\n", msg, err.Error())
+	}
 }
 
 func (w *FileBackend) createLogFile() (*os.File, error) {
@@ -235,16 +301,4 @@ func (w *FileBackend) deleteOldLog() {
 		}
 		return
 	})
-}
-
-// Destroy close the file description, close file writer.
-func (w *FileBackend) Destroy() {
-	w.fileWriter.Close()
-}
-
-// Flush flush file logger.
-// there are no buffering messages in file logger in memory.
-// flush file means sync file from disk.
-func (w *FileBackend) Flush() {
-	w.fileWriter.Sync()
 }

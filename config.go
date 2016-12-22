@@ -141,6 +141,7 @@ type (
 		ConsoleLevel  string `ini:"console_level"` // critical | error | warning | notice | info | debug
 		FileEnable    bool   `ini:"file_enable"`
 		FileLevel     string `ini:"file_level"` // critical | error | warning | notice | info | debug
+		AsyncLen      int    `ini:"async_len"`  // the length of asynchronous buffer, 0 means synchronization
 	}
 	// APIdocConfig is the configuration about API doc
 	APIdocConfig struct {

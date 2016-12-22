@@ -11,14 +11,14 @@ func TestMultiLogger(t *testing.T) {
 	log2 := NewMemoryBackend(8)
 	SetBackend(MultiLogger(log1, log2))
 
-	log := MustGetLogger("test")
+	log := NewLogger("test")
 	log.Debug("log")
 
-	if "log" != MemoryRecordN(log1, 0).Formatted(0) {
-		t.Errorf("log1: %v", MemoryRecordN(log1, 0).Formatted(0))
+	if "log" != MemoryRecordN(log1, 0).Formatted(0, false) {
+		t.Errorf("log1: %v", MemoryRecordN(log1, 0).Formatted(0, false))
 	}
-	if "log" != MemoryRecordN(log2, 0).Formatted(0) {
-		t.Errorf("log2: %v", MemoryRecordN(log2, 0).Formatted(0))
+	if "log" != MemoryRecordN(log2, 0).Formatted(0, false) {
+		t.Errorf("log2: %v", MemoryRecordN(log2, 0).Formatted(0, false))
 	}
 }
 
@@ -33,7 +33,7 @@ func TestMultiLoggerLevel(t *testing.T) {
 	multi.SetLevel(ERROR, "test")
 	SetBackend(multi)
 
-	log := MustGetLogger("test")
+	log := NewLogger("test")
 	log.Notice("log")
 
 	if nil != MemoryRecordN(log1, 0) || nil != MemoryRecordN(log2, 0) {
@@ -42,7 +42,7 @@ func TestMultiLoggerLevel(t *testing.T) {
 
 	leveled1.SetLevel(DEBUG, "test")
 	log.Notice("log")
-	if "log" != MemoryRecordN(log1, 0).Formatted(0) {
+	if "log" != MemoryRecordN(log1, 0).Formatted(0, false) {
 		t.Errorf("log1 not received")
 	}
 	if nil != MemoryRecordN(log2, 0) {

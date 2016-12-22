@@ -181,9 +181,15 @@ func (frame *Framework) build() {
 	frame.registerSession()
 }
 
-// Log returns the log used by the user bissness
+// Log returns the logger used by the user bissness.
 func (frame *Framework) Log() *logging.Logger {
 	return frame.bizlog
+}
+
+// CloseLog closes loggers.
+func (frame *Framework) CloseLog() {
+	frame.bizlog.Close()
+	frame.syslog.Close()
 }
 
 // MuxAPIsForRouter get an ordered list of nodes used to register router.

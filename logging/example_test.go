@@ -6,7 +6,7 @@ func Example() {
 	// This call is for testing purposes and will set the time to unix epoch.
 	InitForTesting(DEBUG)
 
-	var log = MustGetLogger("example")
+	var log = NewLogger("example")
 
 	// For demo purposes, create two backend for os.Stdout.
 	//

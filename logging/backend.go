@@ -10,7 +10,8 @@ var defaultBackend LeveledBackend
 // Backend is the interface which a log backend need to implement to be able to
 // be used as a logging backend.
 type Backend interface {
-	Log(Level, int, *Record) error
+	Log(int, *Record)
+	Close()
 }
 
 // SetBackend replaces the backend currently set with the given new logging
@@ -28,7 +29,7 @@ func SetBackend(backends ...Backend) LeveledBackend {
 }
 
 // SetLevel sets the logging level for the specified module. The module
-// corresponds to the string specified in GetLogger.
+// corresponds to the string specified in NewLogger.
 func SetLevel(level Level, module string) {
 	defaultBackend.SetLevel(level, module)
 }

@@ -18,22 +18,22 @@ func TestFormat(t *testing.T) {
 	}
 	SetFormatter(f)
 
-	log := MustGetLogger("module")
+	log := NewLogger("module")
 	log.Debug("hello")
 
-	line := MemoryRecordN(backend, 0).Formatted(0)
+	line := MemoryRecordN(backend, 0).Formatted(0, false)
 	if "format_test.go:24 1970-01-01T00:00:00 D 0001 module hello" != line {
 		t.Errorf("Unexpected format: %s", line)
 	}
 }
 
 func logAndGetLine(backend *MemoryBackend) string {
-	MustGetLogger("foo").Debug("hello")
-	return MemoryRecordN(backend, 0).Formatted(1)
+	NewLogger("foo").Debug("hello")
+	return MemoryRecordN(backend, 0).Formatted(1, false)
 }
 
 func getLastLine(backend *MemoryBackend) string {
-	return MemoryRecordN(backend, 0).Formatted(1)
+	return MemoryRecordN(backend, 0).Formatted(1, false)
 }
 
 func realFunc(backend *MemoryBackend) string {
@@ -154,7 +154,7 @@ func TestBackendFormatter(t *testing.T) {
 
 	SetBackend(b1, bf)
 
-	log := MustGetLogger("module")
+	log := NewLogger("module")
 	log.Info("foo")
 	if "foo" != getLastLine(b1) {
 		t.Errorf("Unexpected line: %s", getLastLine(b1))
@@ -170,13 +170,13 @@ func BenchmarkStringFormatter(b *testing.B) {
 
 	backend := InitForTesting(DEBUG)
 	buf := &bytes.Buffer{}
-	log := MustGetLogger("module")
+	log := NewLogger("module")
 	log.Debug("")
 	record := MemoryRecordN(backend, 0)
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		if err := f.Format(1, record, buf); err != nil {
+		if err := f.Format(1, false, record, buf); err != nil {
 			b.Fatal(err)
 			buf.Truncate(0)
 		}

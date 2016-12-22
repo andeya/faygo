@@ -6,13 +6,13 @@ import (
 	"github.com/henrylee2cn/thinkgo/logging"
 )
 
-var log = logging.MustGetLogger("example")
+var log = logging.NewLogger("example")
 
 // Example format string. Everything except the message has a custom color
 // which is dependent on the log level. Many fields have a custom output
 // formatting too, eg. the time returns the hour down to the milli second.
 var format = logging.MustStringFormatter(
-	`%{color}%{module}%{time:15:04:05.000} %{shortfunc} ▶ %{level:.4s} %{id:03x}%{color:reset} %{message}`,
+	`%{color}%{module} %{time:15:04:05.000} %{longfile} ▶ %{level:.4s} %{id:03x}%{color:reset} %{message}`,
 )
 
 // Password is just an example type implementing the Redactor interface. Any
@@ -38,7 +38,7 @@ func main() {
 	backend1Leveled.SetLevel(logging.ERROR, "")
 
 	// Set the backends to be used.
-	logging.SetBackend(backend1Leveled, backend2Formatter)
+	logging.SetBackend(logging.MultiLogger(backend1Leveled, backend2Formatter))
 
 	log.Debugf("debug %s", Password("secret"))
 	log.Info("info")
@@ -46,4 +46,5 @@ func main() {
 	log.Warning("warning")
 	log.Error("err")
 	log.Critical("crit")
+	// log.Close()
 }

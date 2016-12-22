@@ -406,9 +406,14 @@ func NewBackendFormatter(b Backend, f Formatter) Backend {
 }
 
 // Log implements the Log function required by the Backend interface.
-func (bf *backendFormatter) Log(level Level, calldepth int, r *Record) error {
+func (bf *backendFormatter) Log(calldepth int, r *Record) {
 	// Make a shallow copy of the record and replace any formatter
 	r2 := *r
 	r2.formatter = bf.f
-	return bf.b.Log(level, calldepth+1, &r2)
+	bf.b.Log(calldepth+1, &r2)
+}
+
+// Close closes the log service.
+func (bf *backendFormatter) Close() {
+	bf.b.Close()
 }

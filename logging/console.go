@@ -5,10 +5,10 @@
 package logging
 
 import (
-	"bytes"
 	"fmt"
 	"io"
 	"log"
+	"os"
 )
 
 type color int
@@ -43,9 +43,8 @@ var (
 
 // LogBackend utilizes the standard log module.
 type LogBackend struct {
-	Logger      *log.Logger
-	Color       bool
-	ColorConfig []string
+	Logger *log.Logger
+	Color  bool
 }
 
 // NewLogBackend creates a new LogBackend.
@@ -54,24 +53,21 @@ func NewLogBackend(out io.Writer, prefix string, flag int) *LogBackend {
 }
 
 // Log implements the Backend interface.
-func (b *LogBackend) Log(level Level, calldepth int, rec *Record) error {
+func (b *LogBackend) Log(calldepth int, rec *Record) {
+	var msg string
 	if b.Color {
-		// col := colors[level]
-		// if len(b.ColorConfig) > int(level) && b.ColorConfig[level] != "" {
-		// 	col = b.ColorConfig[level]
-		// }
-
-		buf := &bytes.Buffer{}
-		// buf.Write([]byte(col))
-		buf.Write([]byte(rec.Formatted(calldepth+1, b.Color)))
-		// buf.Write([]byte("\033[0m"))
-		// For some reason, the Go logger arbitrarily decided "2" was the correct
-		// call depth...
-		return b.Logger.Output(calldepth+2, buf.String())
+		msg = rec.Formatted(calldepth+1, true)
+	} else {
+		msg = rec.Formatted(calldepth+1, false)
 	}
-
-	return b.Logger.Output(calldepth+2, rec.Formatted(calldepth+1, b.Color))
+	err := b.Logger.Output(calldepth+2, msg)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "unable to Console Log msg:%s [error]%s\n", msg, err.Error())
+	}
 }
+
+// Close closes the log service.
+func (b *LogBackend) Close() {}
 
 // ConvertColors takes a list of ints representing colors for log levels and
 // converts them into strings for ANSI color formatting

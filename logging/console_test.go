@@ -17,17 +17,17 @@ func TestLogCalldepth(t *testing.T) {
 	SetBackend(NewLogBackend(buf, "", log.Lshortfile))
 	SetFormatter(MustStringFormatter("%{shortfile} %{level} %{message}"))
 
-	log := MustGetLogger("test")
+	log := NewLogger("test")
 	log.Info("test filename")
 
 	parts := strings.SplitN(buf.String(), " ", 2)
 
 	// Verify that the correct filename is registered by the stdlib logger
-	if !strings.HasPrefix(parts[0], "log_test.go:") {
+	if !strings.HasPrefix(parts[0], "console_test.go:") {
 		t.Errorf("incorrect filename: %s", parts[0])
 	}
 	// Verify that the correct filename is registered by go-logging
-	if !strings.HasPrefix(parts[1], "log_test.go:") {
+	if !strings.HasPrefix(parts[1], "console_test.go:") {
 		t.Errorf("incorrect filename: %s", parts[1])
 	}
 }
@@ -49,13 +49,13 @@ func testCallpath(t *testing.T, format string, expect string) {
 	SetBackend(NewLogBackend(buf, "", log.Lshortfile))
 	SetFormatter(MustStringFormatter(format))
 
-	logger := MustGetLogger("test")
+	logger := NewLogger("test")
 	rec(logger, 6)
 
 	parts := strings.SplitN(buf.String(), " ", 3)
 
 	// Verify that the correct filename is registered by the stdlib logger
-	if !strings.HasPrefix(parts[0], "log_test.go:") {
+	if !strings.HasPrefix(parts[0], "console_test.go:") {
 		t.Errorf("incorrect filename: %s", parts[0])
 	}
 	// Verify that the correct callpath is registered by go-logging
@@ -132,7 +132,7 @@ func BenchmarkLogLogBackendLongFileFlag(b *testing.B) {
 
 func RunLogBenchmark(b *testing.B) {
 	password := Password("foo")
-	log := MustGetLogger("test")
+	log := NewLogger("test")
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -154,7 +154,7 @@ func BenchmarkLogFixedIgnored(b *testing.B) {
 }
 
 func RunLogBenchmarkFixedString(b *testing.B) {
-	log := MustGetLogger("test")
+	log := NewLogger("test")
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {

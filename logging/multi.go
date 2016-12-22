@@ -22,18 +22,22 @@ func MultiLogger(backends ...Backend) LeveledBackend {
 }
 
 // Log passes the log record to all backends.
-func (b *multiLogger) Log(level Level, calldepth int, rec *Record) (err error) {
+func (b *multiLogger) Log(calldepth int, rec *Record) {
 	for _, backend := range b.backends {
-		if backend.IsEnabledFor(level, rec.Module) {
+		if backend.IsEnabledFor(rec.Level, rec.Module) {
 			// Shallow copy of the record for the formatted cache on Record and get the
 			// record formatter from the backend.
 			r2 := *rec
-			if e := backend.Log(level, calldepth+1, &r2); e != nil {
-				err = e
-			}
+			backend.Log(calldepth+1, &r2)
 		}
 	}
-	return
+}
+
+// Close closes the log service.
+func (b *multiLogger) Close() {
+	for _, backend := range b.backends {
+		backend.Close()
+	}
 }
 
 // GetLevel returns the highest level enabled by all backends.

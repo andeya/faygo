@@ -29,13 +29,13 @@ func NewLog() *logging.Logger {
 	return &newlog
 }
 
-// Sys logs a system message using CRITICAL as log level.
-func Sys(args ...interface{}) {
+// Print logs a system message using CRITICAL as log level.
+func Print(args ...interface{}) {
 	Global.syslog.Critical(args...)
 }
 
-// Sysf logs a system message using CRITICAL as log level.
-func Sysf(format string, args ...interface{}) {
+// Printf logs a system message using CRITICAL as log level.
+func Printf(format string, args ...interface{}) {
 	Global.syslog.Criticalf(format, args...)
 }
 
@@ -119,6 +119,17 @@ func Debugf(format string, args ...interface{}) {
 	Global.bizlog.Debugf(format, args...)
 }
 
+// Log returns the global logger used by the user bissness.
+func Log() {
+	Global.bizlog.Close()
+}
+
+// CloseLog closes global loggers.
+func CloseLog() {
+	Global.bizlog.Close()
+	Global.syslog.Close()
+}
+
 var (
 	consoleLogBackend = &logging.LogBackend{
 		Logger: log.New(color.NewColorableStdout(), "", 0),
@@ -129,7 +140,7 @@ var (
 
 func (global *GlobalSetting) initLogger() {
 	fileBackend = func() *logging.FileBackend {
-		fileBackend, err := logging.NewDefaultFileBackend(global.logDir + "thinkgo.log")
+		fileBackend, err := logging.NewDefaultFileBackend(global.logDir+"thinkgo.log", global.config.Log.AsyncLen)
 		if err != nil {
 			panic(err)
 		}
@@ -142,7 +153,7 @@ func (global *GlobalSetting) initLogger() {
 		panic(err)
 	}
 	consoleBackendLevel.SetLevel(level, "")
-	global.syslog = logging.MustGetLogger("globalsys")
+	global.syslog = logging.NewLogger("globalsys")
 	global.syslog.SetBackend(consoleBackendLevel)
 
 	var consoleFormatString string
@@ -224,7 +235,7 @@ func (global *GlobalSetting) newLogger(module string, consoleFormatString, fileF
 		backends = append(backends, fileBackendLevel)
 	}
 
-	newLog := logging.MustGetLogger(module)
+	newLog := logging.NewLogger(module)
 	switch len(backends) {
 	case 1:
 		newLog.SetBackend(backends[0].(logging.LeveledBackend))

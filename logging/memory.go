@@ -58,7 +58,7 @@ func NewMemoryBackend(size int) *MemoryBackend {
 }
 
 // Log implements the Log method required by Backend.
-func (b *MemoryBackend) Log(level Level, calldepth int, rec *Record) error {
+func (b *MemoryBackend) Log(calldepth int, rec *Record) {
 	var size int32
 
 	n := &node{Record: rec}
@@ -106,8 +106,10 @@ func (b *MemoryBackend) Log(level Level, calldepth int, rec *Record) error {
 			}
 		}
 	}
-	return nil
 }
+
+// Close closes the log service.
+func (b *MemoryBackend) Close() {}
 
 // Head returns the oldest record node kept in memory. It can be used to
 // iterate over records, one by one, up to the last record.
@@ -210,8 +212,8 @@ func (b *ChannelMemoryBackend) Flush() {
 	b.flushWg.Wait()
 }
 
-// Stop signals the internal goroutine to exit and waits until it have.
-func (b *ChannelMemoryBackend) Stop() {
+// Close signals the internal goroutine to exit and waits until it have.
+func (b *ChannelMemoryBackend) Close() {
 	b.mu.Lock()
 	if b.running == true {
 		b.running = false
@@ -222,9 +224,8 @@ func (b *ChannelMemoryBackend) Stop() {
 }
 
 // Log implements the Log method required by Backend.
-func (b *ChannelMemoryBackend) Log(level Level, calldepth int, rec *Record) error {
+func (b *ChannelMemoryBackend) Log(calldepth int, rec *Record) {
 	b.incoming <- rec
-	return nil
 }
 
 // Head returns the oldest record node kept in memory. It can be used to
