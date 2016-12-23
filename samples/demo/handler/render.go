@@ -17,7 +17,7 @@ func (r *Render) Serve(ctx *thinkgo.Context) error {
 }
 
 func init() {
-	thinkgo.VarRender("__PUBLIC__", "/syso")
+	thinkgo.RenderVar("__PUBLIC__", "/syso")
 }
 
 func Index() thinkgo.HandlerFunc {

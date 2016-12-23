@@ -227,9 +227,9 @@ func GetRender() *Render {
 	return global.render
 }
 
-// VarRender sets the global template variable or function for pongo2 render.
-func VarRender(name string, v interface{}) {
-	global.render.VarTemplate(name, v)
+// RenderVar sets the global template variable or function for pongo2 render.
+func RenderVar(name string, v interface{}) {
+	global.render.TemplateVar(name, v)
 }
 
 // LogDir returns logs folder path with a slash at the end
