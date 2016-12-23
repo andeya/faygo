@@ -5,7 +5,7 @@ import (
 )
 
 type Body struct {
-	Json map[string]interface{} `param:"in(body)"`
+	Json map[string]interface{} `param:"<in:body>"`
 }
 
 func (b *Body) Serve(ctx *thinkgo.Context) error {

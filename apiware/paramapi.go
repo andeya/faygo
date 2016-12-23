@@ -150,7 +150,7 @@ func (m *ParamsAPI) addFields(parentIndexPath []int, t reflect.Type, v reflect.V
 		}
 
 		var parsedTags = ParseTags(tag)
-		var paramPosition = parsedTags["in"]
+		var paramPosition = parsedTags[KEY_IN]
 		var paramTypeString = field.Type.String()
 
 		switch paramTypeString {
@@ -179,7 +179,7 @@ func (m *ParamsAPI) addFields(parentIndexPath []int, t reflect.Type, v reflect.V
 			}
 			hasBody = true
 		case "path":
-			parsedTags["required"] = "required"
+			parsedTags[KEY_REQUIRED] = KEY_REQUIRED
 		// case "cookie":
 		// 	switch paramTypeString {
 		// 	case cookieTypeString, fasthttpCookieTypeString, stringTypeString, bytesTypeString, bytes2TypeString:
@@ -191,10 +191,10 @@ func (m *ParamsAPI) addFields(parentIndexPath []int, t reflect.Type, v reflect.V
 				return NewError(t.String(), field.Name, "invalid tag `in` value, refer to the following: `path`, `query`, `formData`, `body`, `header` or `cookie`")
 			}
 		}
-		if _, ok := parsedTags["len"]; ok && paramTypeString != "string" && paramTypeString != "[]string" {
+		if _, ok := parsedTags[KEY_LEN]; ok && paramTypeString != "string" && paramTypeString != "[]string" {
 			return NewError(t.String(), field.Name, "invalid `len` tag for non-string field")
 		}
-		if _, ok := parsedTags["range"]; ok {
+		if _, ok := parsedTags[KEY_RANGE]; ok {
 			switch paramTypeString {
 			case "int", "int8", "int16", "int32", "int64", "uint", "uint8", "uint16", "uint32", "uint64", "float32", "float64":
 			case "[]int", "[]int8", "[]int16", "[]int32", "[]int64", "[]uint", "[]uint8", "[]uint16", "[]uint32", "[]uint64", "[]float32", "[]float64":
@@ -202,13 +202,12 @@ func (m *ParamsAPI) addFields(parentIndexPath []int, t reflect.Type, v reflect.V
 				return NewError(t.String(), field.Name, "invalid `range` tag for non-number field")
 			}
 		}
-		if a, ok := field.Tag.Lookup(TAG_REGEXP); ok {
+		if _, ok := parsedTags[KEY_REGEXP]; ok {
 			if paramTypeString != "string" && paramTypeString != "[]string" {
-				return NewError(t.String(), field.Name, "invalid `"+TAG_REGEXP+"` tag for non-string field")
+				return NewError(t.String(), field.Name, "invalid `"+KEY_REGEXP+"` tag for non-string field")
 			}
-			parsedTags[TAG_REGEXP] = a
 		}
-		if a, ok := parsedTags["maxmb"]; ok {
+		if a, ok := parsedTags[KEY_MAXMB]; ok {
 			i, err := strconv.ParseInt(a, 10, 64)
 			if err != nil {
 				return NewError(t.String(), field.Name, "invalid `maxmb` tag, it must be positive integer")
@@ -226,19 +225,18 @@ func (m *ParamsAPI) addFields(parentIndexPath []int, t reflect.Type, v reflect.V
 			rawValue:  v.Field(i),
 		}
 
-		if errStr, ok := field.Tag.Lookup(TAG_ERR); ok {
-			fd.tags[TAG_ERR] = errStr
+		if errStr, ok := fd.tags[KEY_ERR]; ok {
 			fd.err = errors.New(errStr)
 		}
 
 		// fmt.Printf("%#v\n", fd.tags)
 
-		if fd.name, ok = parsedTags["name"]; !ok {
+		if fd.name, ok = parsedTags[KEY_NAME]; !ok {
 			fd.name = m.paramNameMapper(field.Name)
 		}
 
 		fd.isFile = paramTypeString == fileTypeString
-		_, fd.isRequired = parsedTags["required"]
+		_, fd.isRequired = parsedTags[KEY_REQUIRED]
 
 		// err = fd.validate(v)
 		// if err != nil {

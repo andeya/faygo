@@ -24,44 +24,167 @@ import (
 )
 
 const (
-	TAG_PARAM        = "param"  //request param tag name
-	TAG_REGEXP       = "regexp" //regexp validate tag name(optio)
-	TAG_ERR          = "err"    //the custom error for binding or validating
-	TAG_IGNORE_PARAM = "-"      //ignore request param tag value
+	TAG_PARAM        = "param"    //request param tag name
+	TAG_IGNORE_PARAM = "-"        //ignore request param tag value
+	KEY_IN           = "in"       //position of param
+	KEY_NAME         = "name"     //specify request param`s name
+	KEY_REQUIRED     = "required" //request param is required or not
+	KEY_DESC         = "desc"     //request param description
+	KEY_LEN          = "len"      //length range of param's value
+	KEY_RANGE        = "range"    //numerical range of param's value
+	KEY_NONZERO      = "nonzero"  //param`s value can not be zero
+	KEY_REGEXP       = "regexp"   //verify the value of the param with a regular expression(param value can not be null)
+	KEY_MAXMB        = "maxmb"    //when request Content-Type is multipart/form-data, the max memory for body.(multi-param, whichever is greater)
+	KEY_ERR          = "err"      //the custom error for binding or validating
 
 	MB                 = 1 << 20 // 1MB
 	defaultMaxMemory   = 32 * MB // 32 MB
 	defaultMaxMemoryMB = 32
 )
 
+// ParseTags returns the key-value in the tag string.
+// If the tag does not have the conventional format,
+// the value returned by ParseTags is unspecified.
+func ParseTags(tag string) map[string]string {
+	var values = map[string]string{}
+
+	for tag != "" {
+		// Skip leading space.
+		i := 0
+		for i < len(tag) && tag[i] != '<' {
+			i++
+		}
+		if i >= len(tag) || tag[i] != '<' {
+			break
+		}
+		i++
+
+		// Skip the left Spaces
+		for i < len(tag) && tag[i] == ' ' {
+			i++
+		}
+		if i >= len(tag) {
+			break
+		}
+
+		tag = tag[i:]
+		if tag == "" {
+			break
+		}
+
+		var name, value string
+		var hadName bool
+		i = 0
+	PAIR:
+		for i < len(tag) {
+			switch tag[i] {
+			case ':':
+				if hadName {
+					i++
+					continue
+				}
+				name = strings.TrimRight(tag[:i], " ")
+				tag = strings.TrimLeft(tag[i+1:], " ")
+				hadName = true
+				i = 0
+			case '\\':
+				i++
+				// Fix the escape character of `\\<` or `\\>`
+				if tag[i] == '<' || tag[i] == '>' {
+					tag = tag[:i-1] + tag[i:]
+				} else {
+					i++
+				}
+			case '>':
+				if !hadName {
+					name = strings.TrimRight(tag[:i], " ")
+				} else {
+					value = strings.TrimRight(tag[:i], " ")
+				}
+				values[name] = value
+				break PAIR
+			default:
+				i++
+			}
+		}
+		if i >= len(tag) {
+			break
+		}
+		tag = tag[i+1:]
+	}
+	return values
+}
+
 // func ParseTags(s string) map[string]string {
 // 	c := strings.Split(s, ",")
 // 	m := make(map[string]string)
 // 	for _, v := range c {
-// 		c2 := strings.Split(v, "(")
-// 		if len(c2) == 2 && len(c2[1]) > 1 {
-// 			m[c2[0]] = c2[1][:len(c2[1])-1]
-// 		} else {
-// 			m[v] = ""
+// 		a := strings.IndexByte(v, '(')
+// 		b := strings.LastIndexByte(v, ')')
+// 		if a != -1 && b != -1 {
+// 			m[v[:a]] = v[a+1 : b]
+// 			continue
 // 		}
+// 		m[v] = ""
 // 	}
 // 	return m
 // }
 
-func ParseTags(s string) map[string]string {
-	c := strings.Split(s, ",")
-	m := make(map[string]string)
-	for _, v := range c {
-		a := strings.IndexByte(v, '(')
-		b := strings.LastIndexByte(v, ')')
-		if a != -1 && b != -1 {
-			m[v[:a]] = v[a+1 : b]
-			continue
-		}
-		m[v] = ""
-	}
-	return m
-}
+// ParseTags returns the key-value in the tag string.
+// If the tag does not have the conventional format,
+// the value returned by ParseTags is unspecified.
+// func ParseTags(tag string) map[string]string {
+// 	var values = map[string]string{}
+
+// 	for tag != "" {
+// 		// Skip leading space.
+// 		i := 0
+// 		for i < len(tag) && (tag[i] == ' ' || tag[i] == ',') {
+// 			i++
+// 		}
+// 		tag = tag[i:]
+// 		if tag == "" {
+// 			break
+// 		}
+
+// 		// Scan to colon. A space, a quote or a control character is a syntax error.
+// 		// Strictly speaking, control chars include the range [0x7f, 0x9f], not just
+// 		// [0x00, 0x1f], but in practice, we ignore the multi-byte control characters
+// 		// as it is simpler to inspect the tag's bytes than the tag's runes.
+// 		i = 0
+// 		for i < len(tag) && tag[i] > ' ' && tag[i] != '<' && tag[i] != ',' && tag[i] != 0x7f {
+// 			i++
+// 		}
+// 		if i == 0 || i+1 >= len(tag) || (tag[i] != '<' && tag[i] != ' ' && tag[i] != ',') {
+// 			break
+// 		}
+// 		name := string(tag[:i])
+// 		tag = tag[i:]
+// 		if tag[0] == ' ' || tag[0] == ',' {
+// 			values[name] = ""
+// 			continue
+// 		}
+// 		// Scans a string in parentheses to find the value..
+// 		i = 1
+// 		for i < len(tag) && tag[i] != '>' {
+// 			if tag[i] == '\\' {
+// 				i++
+// 				// Remove the escape character of `(` or `)`
+// 				if tag[i] == '<' || tag[i] == '>' {
+// 					tag = tag[:i-1] + tag[i:]
+// 					continue
+// 				}
+// 			}
+// 			i++
+// 		}
+// 		if i >= len(tag) {
+// 			break
+// 		}
+// 		values[name] = string(tag[1:i])
+// 		tag = tag[i+1:]
+// 	}
+// 	return values
+// }
 
 // use the struct field to define a request parameter model
 type Param struct {
@@ -114,7 +237,7 @@ func (param *Param) Name() string {
 
 // In get the type value for the param
 func (param *Param) In() string {
-	return param.tags["in"]
+	return param.tags[KEY_IN]
 }
 
 // IsRequired tests if the param is declared
@@ -124,7 +247,7 @@ func (param *Param) IsRequired() bool {
 
 // Description gets the description value for the param
 func (param *Param) Description() string {
-	return param.tags["desc"]
+	return param.tags[KEY_DESC]
 }
 
 // IsFile tests if the param is type *multipart.FileHeader
@@ -146,7 +269,7 @@ func (param *Param) validate(value reflect.Value) error {
 }
 
 // Validate tests if the param conforms to it's validation constraints specified
-// int the TAG_REGEXP struct tag
+// int the KEY_REGEXP struct tag
 func (param *Param) validateElem(value reflect.Value) (err error) {
 	defer func() {
 		p := recover()
@@ -159,7 +282,7 @@ func (param *Param) validateElem(value reflect.Value) (err error) {
 		}
 	}()
 	// range
-	if tuple, ok := param.tags["range"]; ok {
+	if tuple, ok := param.tags[KEY_RANGE]; ok {
 		var f64 float64
 		switch value.Kind() {
 		case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
@@ -182,13 +305,13 @@ func (param *Param) validateElem(value reflect.Value) (err error) {
 	}
 	s, isString := obj.(string)
 	// length
-	if tuple, ok := param.tags["len"]; ok && isString {
+	if tuple, ok := param.tags[KEY_LEN]; ok && isString {
 		if err = validateLen(s, tuple, param.name); err != nil {
 			return err
 		}
 	}
 	// regexp
-	if reg, ok := param.tags[TAG_REGEXP]; ok && isString {
+	if reg, ok := param.tags[KEY_REGEXP]; ok && isString {
 		if err = validateRegexp(s, reg, param.name); err != nil {
 			return err
 		}

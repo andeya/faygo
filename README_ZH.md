@@ -39,11 +39,11 @@ import (
 )
 
 type Index struct {
-    Id        int      `param:"in(path),required,desc(ID),range(0:10)"`
-    Title     string   `param:"in(query),nonzero"`
-    Paragraph []string `param:"in(query),name(p),len(1:10)" regexp:"(^[\\w]*$)"`
-    Cookie    string   `param:"in(cookie),name(thinkgoID)"`
-    // Picture         multipart.FileHeader `param:"in(formData),name(pic),maxmb(30)"`
+    Id        int      `param:"<in:path> <required> <desc:ID> <range: 0:10>"`
+    Title     string   `param:"<in:query> <nonzero>"`
+    Paragraph []string `param:"<in:query> <name:p> <len: 1:10> <regexp: ^[\\w]*$>"`
+    Cookie    string   `param:"<in:cookie> <name:thinkgoID>"`
+    // Picture         multipart.FileHeader `param:"<in:formData> <name:pic> <maxmb:30>"`
 }
 
 func (i *Index) Serve(ctx *thinkgo.Context) error {
@@ -191,13 +191,13 @@ param |    in    | 有且只有一个 |     header    | （参数位置）请求
 param |    in    | 有且只有一个 |     cookie    | （参数位置）请求cookie，支持：`http.Cookie`、`fasthttp.Cookie`、`string`、`[]byte`等
 param |   name   |      否      |     (如`id`)   | 自定义参数名
 param | required |      否      |   required    | 参数是否必须
-param |   desc   |      否      |   (e.g. `id`)  | 参数描述
-param |   len    |      否      | (e.g. `3:6``3`) | 字符串类型参数的长度范围
-param |   range  |      否      | (e.g. `0:10`)  | 数字类型参数的数值范围
+param |   desc   |      否      |     (如`id`)   | 参数描述
+param |   len    |      否      |   (如`3:6``3`)  | 字符串类型参数的长度范围
+param |   range  |      否      |   (如`0:10`)   | 数字类型参数的数值范围
 param |  nonzero |      否      |    nonzero    | 是否能为零值
-param |   maxmb  |      否      |  (e.g. `32`)   | 当前`Content-Type`为`multipart/form-data`时，允许使用的最大内存，当设置了多个时使用较大值
-regexp|          |      否      | (e.g. `^\w+$`) | 使用正则验证参数值
-err   |          |      否      |(e.g. `密码格式错误`)| 自定义参数绑定或验证的错误信息
+param |   maxmb  |      否      |    (如`32`)    | 当前`Content-Type`为`multipart/form-data`时，允许使用的最大内存，当设置了多个时使用较大值
+param |  regexp  |      否      |   (如`^\w+$`)  | 使用正则验证参数值
+param |   err    |      否      |(如`密码格式错误`)| 自定义参数绑定或验证的错误信息
 
 **NOTES**:
 * 绑定的对象必须为结构体指针类型
