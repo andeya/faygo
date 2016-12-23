@@ -1,4 +1,4 @@
-# Apiware    [![GoDoc](https://godoc.org/github.com/tsuna/gohbase?status.png)](https://godoc.org/github.com/henrylee2cn/apiware)
+# Apiware    [![GoDoc](https://godoc.org/github.com/tsuna/gohbase?status.png)](https://godoc.org/github.com/henrylee2cn/thinkgo/apiware)
 
 Apiware binds the specified parameters of the Golang `net/http` and `fasthttp` requests to the structure and verifies the validity of the parameter values.
 
@@ -14,7 +14,7 @@ package main
 
 import (
     "encoding/json"
-    "github.com/henrylee2cn/apiware"
+    "github.com/henrylee2cn/thinkgo/apiware"
     // "mime/multipart"
     "net/http"
     "strings"
@@ -30,11 +30,11 @@ type TestApiware struct {
     // Picture   multipart.FileHeader `param:"in(formData),name(pic),maxmb(30)"`
 }
 
-var myApiware = apiware.New(pathDecodeFunc, nil, nil)
+var myApiware = apiware.New(pathdecoder, nil, nil)
 
 var pattern = "/test/:id"
 
-func pathDecodeFunc(urlPath, pattern string) apiware.KV {
+func pathdecoder(urlPath, pattern string) apiware.KV {
     idx := map[int]string{}
     for k, v := range strings.Split(pattern, "/") {
         if !strings.HasPrefix(v, ":") {

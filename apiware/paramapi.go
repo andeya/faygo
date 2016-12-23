@@ -37,9 +37,9 @@ type (
 		//the raw struct pointer
 		rawStructPointer interface{}
 		// create param name from struct field name
-		paramNameFunc ParamNameFunc
+		paramNameMapper ParamNameMapper
 		// decode params from request body
-		bodyDecodeFunc BodyDecodeFunc
+		bodydecoder Bodydecoder
 		//when request Content-Type is multipart/form-data, the max memory for body.
 		maxMemory int64
 	}
@@ -50,11 +50,11 @@ type (
 		sync.RWMutex
 	}
 
-	// Create param name from struct param name
-	ParamNameFunc func(fieldName string) (paramName string)
+	// ParamNameMapper maps param name from struct param name
+	ParamNameMapper func(fieldName string) (paramName string)
 
-	// Decode params from request body
-	BodyDecodeFunc func(dest reflect.Value, body []byte) error
+	// Bodydecoder decodes params from request body.
+	Bodydecoder func(dest reflect.Value, body []byte) error
 )
 
 var (
@@ -64,12 +64,12 @@ var (
 )
 
 // NewParamsAPI parses and store the struct object, requires a struct pointer,
-// if `paramNameFunc` is nil, `paramNameFunc=toSnake`,
-// if `bodyDecodeFunc` is nil, `bodyDecodeFunc=bodyJONS`,
+// if `paramNameMapper` is nil, `paramNameMapper=toSnake`,
+// if `bodydecoder` is nil, `bodydecoder=bodyJONS`,
 func NewParamsAPI(
 	structPointer interface{},
-	paramNameFunc ParamNameFunc,
-	bodyDecodeFunc BodyDecodeFunc,
+	paramNameMapper ParamNameMapper,
+	bodydecoder Bodydecoder,
 ) (
 	*ParamsAPI,
 	error,
@@ -89,15 +89,15 @@ func NewParamsAPI(
 		structType:       v.Type(),
 		rawStructPointer: structPointer,
 	}
-	if paramNameFunc != nil {
-		m.paramNameFunc = paramNameFunc
+	if paramNameMapper != nil {
+		m.paramNameMapper = paramNameMapper
 	} else {
-		m.paramNameFunc = toSnake
+		m.paramNameMapper = toSnake
 	}
-	if bodyDecodeFunc != nil {
-		m.bodyDecodeFunc = bodyDecodeFunc
+	if bodydecoder != nil {
+		m.bodydecoder = bodydecoder
 	} else {
-		m.bodyDecodeFunc = bodyJONS
+		m.bodydecoder = bodyJONS
 	}
 	err := m.addFields([]int{}, m.structType, v)
 	if err != nil {
@@ -109,14 +109,14 @@ func NewParamsAPI(
 
 // Register is similar to a `NewParamsAPI`, but only return error.
 // Parse and store the struct object, requires a struct pointer,
-// if `paramNameFunc` is nil, `paramNameFunc=toSnake`,
-// if `bodyDecodeFunc` is nil, `bodyDecodeFunc=bodyJONS`,
+// if `paramNameMapper` is nil, `paramNameMapper=toSnake`,
+// if `bodydecoder` is nil, `bodydecoder=bodyJONS`,
 func Register(
 	structPointer interface{},
-	paramNameFunc ParamNameFunc,
-	bodyDecodeFunc BodyDecodeFunc,
+	paramNameMapper ParamNameMapper,
+	bodydecoder Bodydecoder,
 ) error {
-	_, err := NewParamsAPI(structPointer, paramNameFunc, bodyDecodeFunc)
+	_, err := NewParamsAPI(structPointer, paramNameMapper, bodydecoder)
 	return err
 }
 
@@ -234,7 +234,7 @@ func (m *ParamsAPI) addFields(parentIndexPath []int, t reflect.Type, v reflect.V
 		// fmt.Printf("%#v\n", fd.tags)
 
 		if fd.name, ok = parsedTags["name"]; !ok {
-			fd.name = m.paramNameFunc(field.Name)
+			fd.name = m.paramNameMapper(field.Name)
 		}
 
 		fd.isFile = paramTypeString == fileTypeString
@@ -494,7 +494,7 @@ func (paramsAPI *ParamsAPI) BindFields(
 			body, err = ioutil.ReadAll(req.Body)
 			req.Body.Close()
 			if err == nil {
-				if err = paramsAPI.bodyDecodeFunc(value, body); err != nil {
+				if err = paramsAPI.bodydecoder(value, body); err != nil {
 					return param.myError(err.Error())
 				}
 			} else if param.IsRequired() {

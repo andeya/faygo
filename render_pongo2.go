@@ -40,8 +40,8 @@ func newRender(openCacheFile func(name string) (http.File, error)) *Render {
 	}
 }
 
-// TemplateVariable sets the global template variable or function
-func (render *Render) TemplateVariable(name string, v interface{}) {
+// VarTemplate sets the global template variable or function
+func (render *Render) VarTemplate(name string, v interface{}) {
 	switch d := v.(type) {
 	case func(in *pongo2.Value, param *pongo2.Value) (out *pongo2.Value, err *pongo2.Error):
 		pongo2.RegisterFilter(name, d)

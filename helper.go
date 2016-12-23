@@ -28,7 +28,7 @@ import (
 
 // JoinStatic adds the static directory prefix to the file name.
 func JoinStatic(shortFilename string) string {
-	return path.Join(Global.StaticDir(), shortFilename)
+	return path.Join(StaticDir(), shortFilename)
 }
 
 // SyncINI quickly create your own configuration files.

@@ -75,18 +75,16 @@ func New(name string, version ...string) *Framework {
 	frame.MuxAPI = newMuxAPI(frame, "root", "", "/")
 
 	id := frame.NameWithVersion()
-	if _, ok := Apps[id]; ok {
+	if _, ok := GetFrame(id); ok {
 		Fatalf("There are two applications with exactly the same name and version: %s", id)
 	}
 
-	Apps[frame.NameWithVersion()] = frame
+	global.frames[frame.NameWithVersion()] = frame
 
 	return frame
 }
 
 var (
-	// Apps is the list of applications that have been created.
-	Apps          = make(map[string]*Framework)
 	mutexNewApp   sync.Mutex
 	mutexForBuild sync.Mutex
 )
@@ -190,6 +188,12 @@ func (frame *Framework) Log() *logging.Logger {
 func (frame *Framework) CloseLog() {
 	frame.bizlog.Close()
 	frame.syslog.Close()
+}
+
+// Close closes the frame service.
+// TODO: close listener
+func (frame *Framework) Close() {
+	frame.CloseLog()
 }
 
 // MuxAPIsForRouter get an ordered list of nodes used to register router.
@@ -406,7 +410,7 @@ func (frame *Framework) makeHandle(handlerChain HandlerChain) Handle {
 // Create the handle to be called by the router
 func (frame *Framework) makeErrorHandler(status int) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		Global.errorFunc(newEmptyContext(frame, w, r), http.StatusText(status), status)
+		global.errorFunc(newEmptyContext(frame, w, r), http.StatusText(status), status)
 	})
 }
 
@@ -432,7 +436,7 @@ func (frame *Framework) makePanicHandler() func(http.ResponseWriter, *http.Reque
 		}
 		stack = bytes.TrimRight(stack, "\n")
 		errStr := fmt.Sprintf("%v\n[TRACE]\n%s\n", rcv, stack)
-		Global.errorFunc(newEmptyContext(frame, w, r), errStr, http.StatusInternalServerError)
+		global.errorFunc(newEmptyContext(frame, w, r), errStr, http.StatusInternalServerError)
 	}
 }
 
@@ -452,19 +456,19 @@ func (frame *Framework) presetSystemMuxes() {
 		frame.MuxAPI.NamedStatic(
 			"Directory for uploading files",
 			"/upload/",
-			Global.upload.root,
-			Global.upload.nocompress,
-			Global.upload.nocache,
-		).Use(Global.upload.handlers...)
+			global.upload.root,
+			global.upload.nocompress,
+			global.upload.nocache,
+		).Use(global.upload.handlers...)
 	}
 	if !hadStatic {
 		frame.MuxAPI.NamedStatic(
 			"Directory for public static files",
 			"/static/",
-			Global.static.root,
-			Global.static.nocompress,
-			Global.static.nocache,
-		).Use(Global.static.handlers...)
+			global.static.root,
+			global.static.nocompress,
+			global.static.nocache,
+		).Use(global.static.handlers...)
 	}
 }
 

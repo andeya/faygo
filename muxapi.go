@@ -242,7 +242,7 @@ func (mux *MuxAPI) NamedStaticFS(name, pattern string, fs FileSystem) *MuxAPI {
 			ctx.R.URL.Path = ctx.pathParams.ByName("filepath")
 			return fileServer.Serve(ctx)
 		})
-	}(Global.fsManager.FileServer(fs))
+	}(global.fsManager.FileServer(fs))
 	return mux.NamedAPI(name, "GET", pattern, handler)
 }
 
@@ -298,7 +298,7 @@ func (mux *MuxAPI) comb() {
 			continue
 		}
 
-		h, err := newHandlerStruct(apiHandler, Global.paramMapping)
+		h, err := newHandlerStruct(apiHandler, global.paramNameMapper)
 		if err != nil {
 			errStr := "[Thinkgo-newHandlerStruct] " + err.Error()
 			mux.frame.Log().Panicf("%s\n", errStr)

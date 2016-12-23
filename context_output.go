@@ -393,7 +393,7 @@ func (ctx *Context) NoContent(status int) {
 
 // Send error message and stop handler chain.
 func (ctx *Context) Error(status int, errStr string) {
-	Global.errorFunc(ctx, errStr, status)
+	global.errorFunc(ctx, errStr, status)
 	ctx.Stop()
 }
 
@@ -555,12 +555,12 @@ func (ctx *Context) File(file string, filename ...string) {
 	ctx.W.Header().Set(HeaderExpires, "0")
 	ctx.W.Header().Set(HeaderCacheControl, "must-revalidate")
 	ctx.W.Header().Set(HeaderPragma, "public")
-	Global.fsManager.ServeFile(ctx, file)
+	global.fsManager.ServeFile(ctx, file)
 }
 
 // Render renders a template with data and sends a text/html response with status code.
 func (ctx *Context) Render(status int, name string, data Map) error {
-	b, err := Global.render.Render(name, data)
+	b, err := global.render.Render(name, data)
 	if err != nil {
 		return err
 	}

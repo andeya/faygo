@@ -19,7 +19,7 @@ import (
 	"reflect"
 	"sort"
 
-	"github.com/henrylee2cn/apiware"
+	"github.com/henrylee2cn/thinkgo/apiware"
 )
 
 type (
@@ -38,11 +38,11 @@ type (
 	// APIHandlerWithBody is the Thinkgo APIHandler interface but with DecodeBody method.
 	APIHandlerWithBody interface {
 		APIHandler
-		BodyDecoder // Decode params from request body
+		Bodydecoder // Decode params from request body
 	}
 
-	// BodyDecoder is an interface to customize decoding operation
-	BodyDecoder interface {
+	// Bodydecoder is an interface to customize decoding operation
+	Bodydecoder interface {
 		Decode(dest reflect.Value, body []byte) error
 	}
 
@@ -74,8 +74,8 @@ type (
 	// writes are done to ctx.
 	// The error message should be plain text.
 	ErrorFunc func(ctx *Context, errStr string, status int)
-	// BindErrorFunc is called when binding or validation handlerStruct parameters are wrong.
-	BindErrorFunc func(ctx *Context, err error)
+	// BinderrorFunc is called when binding or validation handlerStruct parameters are wrong.
+	BinderrorFunc func(ctx *Context, err error)
 )
 
 // Serve implements the Handler, is like ServeHTTP but for Thinkgo.
@@ -112,13 +112,13 @@ func IsHandlerWithoutPath(handler Handler) bool {
 }
 
 // Create a `*handlerStruct`.
-func newHandlerStruct(structPointer APIHandler, paramMapping apiware.ParamNameFunc) (*handlerStruct, error) {
-	var bodyDecodeFunc = Global.bodyDecodeFunc
+func newHandlerStruct(structPointer APIHandler, paramNameMapper apiware.ParamNameMapper) (*handlerStruct, error) {
+	var bodydecoder = global.bodydecoder
 	if h, ok := structPointer.(APIHandlerWithBody); ok {
-		bodyDecodeFunc = h.Decode
+		bodydecoder = h.Decode
 	}
 
-	paramsAPI, err := apiware.NewParamsAPI(structPointer, paramMapping, bodyDecodeFunc)
+	paramsAPI, err := apiware.NewParamsAPI(structPointer, paramNameMapper, bodydecoder)
 	if err != nil {
 		return nil, err
 	}

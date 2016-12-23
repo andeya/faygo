@@ -330,7 +330,7 @@ func newEmptyContext(
 	ctx := &Context{
 		frame:      frame,
 		R:          r,
-		enableGzip: Global.config.Gzip.Enable,
+		enableGzip: global.config.Gzip.Enable,
 	}
 	ctx.W = newResponse(ctx, w)
 	return ctx
@@ -370,7 +370,7 @@ func newContext(
 		handlerChain:    chain,
 		handlerChainLen: int16(count),
 		pos:             0,
-		enableGzip:      Global.config.Gzip.Enable,
+		enableGzip:      global.config.Gzip.Enable,
 		enableSession:   frame.config.Session.Enable,
 		enableXSRF:      frame.config.XSRF.Enable,
 		data:            make(map[interface{}]interface{}),
@@ -424,20 +424,20 @@ func (ctx *Context) Next() {
 			err := h.bind(ctx.R, ctx.pathParams)
 			defer h.reset()
 			if err != nil {
-				Global.bindErrorFunc(ctx, err)
+				global.binderrorFunc(ctx, err)
 				ctx.Stop()
 				return
 			}
 			err = h.Serve(ctx)
 			if err != nil {
-				Global.errorFunc(ctx, err.Error(), http.StatusInternalServerError)
+				global.errorFunc(ctx, err.Error(), http.StatusInternalServerError)
 				ctx.Stop()
 				return
 			}
 		default:
 			err := h.Serve(ctx)
 			if err != nil {
-				Global.errorFunc(ctx, err.Error(), http.StatusInternalServerError)
+				global.errorFunc(ctx, err.Error(), http.StatusInternalServerError)
 				ctx.Stop()
 				return
 			}

@@ -51,7 +51,7 @@ package thinkgo
 import (
 	"net/http"
 
-	"github.com/henrylee2cn/apiware"
+	"github.com/henrylee2cn/thinkgo/apiware"
 )
 
 // Handle is a function that can be registered to a route to handle HTTP

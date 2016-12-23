@@ -35,7 +35,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/henrylee2cn/apiware"
+	"github.com/henrylee2cn/thinkgo/apiware"
 	"github.com/henrylee2cn/thinkgo/utils"
 )
 
@@ -434,7 +434,7 @@ func (ctx *Context) BindForm(structObject interface{}) error {
 		}
 		var key = fieldT.Tag.Get(TAG_PARAM)
 		if key == "" {
-			key = Global.ParamMapping(fieldT.Name)
+			key = MapParamName(fieldT.Name)
 		}
 		err := apiware.ConvertAssign(value.Field(i), ctx.FormParams(key)...)
 		if err != nil {
@@ -525,9 +525,9 @@ func (ctx *Context) FormFile(key string) (multipart.File, *multipart.FileHeader,
 	return ctx.R.FormFile(key)
 }
 
-// SaveFile saves the file *Context.FormFile to Global.UploadDir(),
+// SaveFile saves the file *Context.FormFile to global.UploadDir(),
 // character "?" indicates that the original file name.
-// for example newfname="a/?" -> Global.UploadDir()/a/fname.
+// for example newfname="a/?" -> global.UploadDir()/a/fname.
 func (ctx *Context) SaveFile(key string, cover bool, newfname ...string) (fileUrl string, size int64, err error) {
 	f, fh, err := ctx.R.FormFile(key)
 	if err != nil {
@@ -543,16 +543,16 @@ func (ctx *Context) SaveFile(key string, cover bool, newfname ...string) (fileUr
 	// Sets the full file name
 	var fullname string
 	if len(newfname) == 0 {
-		fullname = filepath.Join(Global.UploadDir(), fh.Filename)
+		fullname = filepath.Join(UploadDir(), fh.Filename)
 	} else {
 		if strings.Contains(newfname[0], "?") {
-			fullname = filepath.Join(Global.UploadDir(), strings.Replace(newfname[0], "?", fh.Filename, -1))
+			fullname = filepath.Join(UploadDir(), strings.Replace(newfname[0], "?", fh.Filename, -1))
 		} else {
 			fname := strings.TrimRight(newfname[0], ".")
 			if filepath.Ext(fname) == "" {
-				fullname = filepath.Join(Global.UploadDir(), fname+filepath.Ext(fh.Filename))
+				fullname = filepath.Join(UploadDir(), fname+filepath.Ext(fh.Filename))
 			} else {
-				fullname = filepath.Join(Global.UploadDir(), fname)
+				fullname = filepath.Join(UploadDir(), fname)
 			}
 		}
 	}

@@ -263,7 +263,7 @@ func RenderFS(root string, suffix string, tplVar Map) FileSystem {
 		dir:    root,
 		suffix: suffix,
 		tplVar: tplVar,
-		render: Global.Render(),
+		render: GetRender(),
 	}, false, true)
 }
 
@@ -285,7 +285,7 @@ func (fs *renderFS) Open(name string) (http.File, error) {
 	}
 	fname := filepath.Join(dir, filepath.FromSlash(path.Clean("/"+name)))
 	if fs.suffix != "*" && !strings.HasSuffix(fname, fs.suffix) {
-		f, err := Global.fsManager.Open(fname, "", false)
+		f, err := global.fsManager.Open(fname, "", false)
 		if err != nil {
 			// Error("RenderFS:", fname, err)
 			return nil, err
@@ -324,7 +324,7 @@ func (fs *markdownFS) Open(name string) (http.File, error) {
 		dir = "."
 	}
 	fname := filepath.Join(dir, filepath.FromSlash(path.Clean("/"+name)))
-	f, err := Global.fsManager.Open(fname, "", false)
+	f, err := global.fsManager.Open(fname, "", false)
 	if err != nil {
 		// Error("MarkdownFS:", fname, err)
 		return nil, err
@@ -437,7 +437,7 @@ func (c *FileServerManager) dirList(ctx *Context, f http.File) {
 		// TODO: log err.Error() to the Server.ErrorLog, once it's possible
 		// for a handler to get at its Server via the *Context. See
 		// Issue 12438.
-		Global.errorFunc(ctx, "Error reading directory", http.StatusInternalServerError)
+		global.errorFunc(ctx, "Error reading directory", http.StatusInternalServerError)
 		return
 	}
 	sort.Sort(byName(dirs))
@@ -545,7 +545,7 @@ func (c *FileServerManager) serveContent(ctx *Context, name string, modtime time
 			ctype = http.DetectContentType(buf[:n])
 			_, err := content.Seek(0, io.SeekStart) // rewind to output whole file
 			if err != nil {
-				Global.errorFunc(ctx, "seeker can't seek", http.StatusInternalServerError)
+				global.errorFunc(ctx, "seeker can't seek", http.StatusInternalServerError)
 				return
 			}
 		}
@@ -556,7 +556,7 @@ func (c *FileServerManager) serveContent(ctx *Context, name string, modtime time
 
 	size, err := sizeFunc()
 	if err != nil {
-		Global.errorFunc(ctx, err.Error(), http.StatusInternalServerError)
+		global.errorFunc(ctx, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
@@ -566,7 +566,7 @@ func (c *FileServerManager) serveContent(ctx *Context, name string, modtime time
 	if size >= 0 {
 		ranges, err := parseRange(rangeReq, size)
 		if err != nil {
-			Global.errorFunc(ctx, err.Error(), http.StatusRequestedRangeNotSatisfiable)
+			global.errorFunc(ctx, err.Error(), http.StatusRequestedRangeNotSatisfiable)
 			return
 		}
 		if sumRangesSize(ranges) > size {
@@ -591,7 +591,7 @@ func (c *FileServerManager) serveContent(ctx *Context, name string, modtime time
 			// be sent using the multipart/byteranges media type."
 			ra := ranges[0]
 			if _, err := content.Seek(ra.start, io.SeekStart); err != nil {
-				Global.errorFunc(ctx, err.Error(), http.StatusRequestedRangeNotSatisfiable)
+				global.errorFunc(ctx, err.Error(), http.StatusRequestedRangeNotSatisfiable)
 				return
 			}
 			sendSize = ra.length
@@ -738,7 +738,7 @@ func (c *FileServerManager) serveFile(ctx *Context, fs FileSystem, name string, 
 	f, err := c.OpenFS(ctx, name, fs)
 	if err != nil {
 		msg, code := toHTTPError(err)
-		Global.errorFunc(ctx, msg, code)
+		global.errorFunc(ctx, msg, code)
 		return
 	}
 	defer f.Close()
@@ -746,7 +746,7 @@ func (c *FileServerManager) serveFile(ctx *Context, fs FileSystem, name string, 
 	d, err := f.Stat()
 	if err != nil {
 		msg, code := toHTTPError(err)
-		Global.errorFunc(ctx, msg, code)
+		global.errorFunc(ctx, msg, code)
 		return
 	}
 
@@ -796,7 +796,7 @@ func (c *FileServerManager) serveFile(ctx *Context, fs FileSystem, name string, 
 		if checkLastModified(ctx, d.ModTime()) {
 			return
 		}
-		Global.errorFunc(ctx, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+		global.errorFunc(ctx, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 		// c.dirList(ctx, f)
 		return
 	}
@@ -871,7 +871,7 @@ func (c *FileServerManager) ServeFile(ctx *Context, name string, nocompressAndNo
 		// here and ".." may not be wanted.
 		// Note that name might not contain "..", for example if code (still
 		// incorrectly) used filepath.Join(myDir, ctx.R.URL.Path).
-		Global.errorFunc(ctx, "invalid URL path", http.StatusBadRequest)
+		global.errorFunc(ctx, "invalid URL path", http.StatusBadRequest)
 		return
 	}
 	dir, file := filepath.Split(name)
