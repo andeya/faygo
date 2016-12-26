@@ -35,7 +35,6 @@ var Websocket = thinkgo.DocWrap(
 			}
 		}
 	}),
-	thinkgo.Notes{
-		Note: "websocket example",
-	},
+	"websocket example",
+	map[string]string{"server_time": time.Now().String()},
 )

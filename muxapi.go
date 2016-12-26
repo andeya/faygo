@@ -288,31 +288,32 @@ func (mux *MuxAPI) comb() {
 	mux.paramInfos = mux.paramInfos[:0]
 	mux.notes = mux.notes[:0]
 	for i, handler := range mux.handlers {
-		// Get the notes for apidoc
-		if doc, ok := handler.(Doc); ok {
-			mux.notes = append(mux.notes, doc.Notes())
-		}
-
-		apiHandler := ToAPIHandler(handler)
-		if apiHandler == nil {
-			continue
-		}
-
-		h, err := newHandlerStruct(apiHandler, global.paramNameMapper)
+		h, err := ToAPIHandler(handler)
 		if err != nil {
-			errStr := "[Thinkgo-newHandlerStruct] " + err.Error()
+			if err == ErrNotStructPtr || err == ErrNoParamHandler {
+				// Get the information for apidoc
+				if doc, ok := handler.(APIDoc); ok {
+					docinfo := doc.Doc()
+					if docinfo.Note != "" || docinfo.Return != nil {
+						mux.notes = append(mux.notes, Notes{Note: docinfo.Note, Return: docinfo.Return})
+					}
+					mux.paramInfos = append(mux.paramInfos, docinfo.Params...)
+				}
+				continue
+			}
+			errStr := "[Thinkgo-ToAPIHandler] " + err.Error()
 			mux.frame.Log().Panicf("%s\n", errStr)
-		}
-
-		if h.paramsAPI.Number() == 0 {
-			continue
 		}
 
 		if h.paramsAPI.MaxMemory() == defaultMultipartMaxMemory {
 			h.paramsAPI.SetMaxMemory(mux.frame.config.multipartMaxMemory)
 		}
 		// Get the information for apidoc
-		mux.paramInfos = append(mux.paramInfos, h.paramInfos()...)
+		docinfo := h.Doc()
+		if docinfo.Note != "" || docinfo.Return != nil {
+			mux.notes = append(mux.notes, Notes{Note: docinfo.Note, Return: docinfo.Return})
+		}
+		mux.paramInfos = append(mux.paramInfos, docinfo.Params...)
 
 		mux.handlers[i] = h
 	}

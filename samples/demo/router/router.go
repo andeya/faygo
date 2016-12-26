@@ -32,6 +32,7 @@ func Route1(frame *thinkgo.Framework) {
 			frame.NewNamedStaticFS("markdown fs test", "/md", thinkgo.MarkdownFS(
 				"./static/markdown",
 			)),
+			frame.NewNamedGET("reverse proxy", "/search", handler.Search(0)),
 		).Use(thinkgo.CrossOrigin)
 }
 
@@ -50,6 +51,8 @@ func Route2(frame *thinkgo.Framework) {
 	frame.NamedPOST("binds the body in JSON format", "/body", &handler.Body{})
 	frame.StaticFS("/public", thinkgo.DirFS("./static/public"))
 	frame.Static("/syso", "../../_syso")
+
+	frame.NamedGET("reverse proxy", "/search", handler.Search(0))
 
 	frame.NamedStaticFS("render fs test", "/renderfs", thinkgo.RenderFS(
 		"./static/renderfs",

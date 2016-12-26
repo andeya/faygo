@@ -359,7 +359,7 @@ func newContext(
 	count := len(handlerChain)
 	chain := make(HandlerChain, count)
 	for i, h := range handlerChain {
-		if h2, ok := h.(*handlerStruct); ok {
+		if h2, ok := h.(*apiHandler); ok {
 			chain[i] = h2.new()
 		} else {
 			chain[i] = h
@@ -420,7 +420,7 @@ func (ctx *Context) Next() {
 	//run the next
 	if ctx.pos < ctx.handlerChainLen {
 		switch h := ctx.handlerChain[ctx.pos].(type) {
-		case *handlerStruct:
+		case *apiHandler:
 			err := h.bind(ctx.R, ctx.pathParams)
 			defer h.reset()
 			if err != nil {

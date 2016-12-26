@@ -31,17 +31,29 @@ func (p *Param) Serve(ctx *thinkgo.Context) error {
 		ctx.SetCookie("thinkgo", "henrylee")
 	})
 
-	return ctx.JSON(200, p, true)
+	return ctx.JSON(200,
+		thinkgo.Map{
+			"Struct Params":    p,
+			"Additional Param": ctx.QueryParam("additional"),
+		}, true)
 	// return ctx.String(200, "name: %v\nid: %d", name, id)
 }
 
-// Implementation notes of a response.
-func (p *Param) Notes() thinkgo.Notes {
-	return thinkgo.Notes{
+// Doc returns the API's note, result or parameters information.
+func (p *Param) Doc() thinkgo.Doc {
+	return thinkgo.Doc{
 		Note: "param desc",
 		Return: thinkgo.JSONMsg{
 			Code: 1,
 			Info: "success",
+		},
+		Params: []thinkgo.ParamInfo{
+			{
+				Name:  "additional",
+				In:    "query",
+				Desc:  "defined by the `Doc()` method",
+				Model: "?",
+			},
 		},
 	}
 }

@@ -84,17 +84,23 @@ func SyncINI(structPointer interface{}, callback func() error, filename ...strin
  */
 type docWrap struct {
 	Handler
-	notes Notes
+	doc Doc
 }
 
-func (w *docWrap) Notes() Notes {
-	return w.notes
+var _ APIDoc = new(docWrap)
+
+func (w *docWrap) Doc() Doc {
+	return w.doc
 }
 
 // DocWrap adds a note to the handler
-func DocWrap(handler Handler, notes Notes) Handler {
+func DocWrap(handler Handler, note string, ret interface{}, params ...ParamInfo) Handler {
 	return &docWrap{
 		Handler: handler,
-		notes:   notes,
+		doc: Doc{
+			Note:   note,
+			Return: ret,
+			Params: params,
+		},
 	}
 }
