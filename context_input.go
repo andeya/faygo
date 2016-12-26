@@ -525,6 +525,19 @@ func (ctx *Context) FormFile(key string) (multipart.File, *multipart.FileHeader,
 	return ctx.R.FormFile(key)
 }
 
+// HasFormFile returns if the file header for the provided form key is exist.
+func (ctx *Context) HasFormFile(key string) bool {
+	if ctx.R.MultipartForm == nil {
+		ctx.R.ParseMultipartForm(ctx.frame.config.multipartMaxMemory)
+	}
+	if ctx.R.MultipartForm != nil && ctx.R.MultipartForm.File != nil {
+		if fhs := ctx.R.MultipartForm.File[key]; len(fhs) > 0 {
+			return true
+		}
+	}
+	return false
+}
+
 // SaveFile saves the file *Context.FormFile to global.UploadDir(),
 // character "?" indicates that the original file name.
 // for example newfname="a/?" -> global.UploadDir()/a/fname.
