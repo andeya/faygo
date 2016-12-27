@@ -297,7 +297,13 @@ func (mux *MuxAPI) comb() {
 					if docinfo.Note != "" || docinfo.Return != nil {
 						mux.notes = append(mux.notes, Notes{Note: docinfo.Note, Return: docinfo.Return})
 					}
-					mux.paramInfos = append(mux.paramInfos, docinfo.Params...)
+					for _, param := range docinfo.Params {
+						// The path parameter must be a required parameter.
+						if param.In == "path" {
+							param.Required = true
+						}
+						mux.paramInfos = append(mux.paramInfos, param)
+					}
 				}
 				continue
 			}
@@ -313,7 +319,13 @@ func (mux *MuxAPI) comb() {
 		if docinfo.Note != "" || docinfo.Return != nil {
 			mux.notes = append(mux.notes, Notes{Note: docinfo.Note, Return: docinfo.Return})
 		}
-		mux.paramInfos = append(mux.paramInfos, docinfo.Params...)
+		for _, param := range docinfo.Params {
+			// The path parameter must be a required parameter.
+			if param.In == "path" {
+				param.Required = true
+			}
+			mux.paramInfos = append(mux.paramInfos, param)
+		}
 
 		mux.handlers[i] = h
 	}
@@ -345,16 +357,26 @@ func (mux *MuxAPI) comb() {
 
 // check path params defined, and panic if there is any error.
 func (mux *MuxAPI) checkPathParams() {
+	var numPathParams uint8
 	for _, paramInfo := range mux.paramInfos {
 		if paramInfo.In != "path" {
 			continue
 		}
-		count := strings.Count(mux.pattern, "/:"+paramInfo.Name) + strings.Count(mux.pattern, "/*"+paramInfo.Name)
-		if count != 1 {
-			errStr := "[Thinkgo-checkPathParams] the router pattern does not match the path param:\nname: " +
-				paramInfo.Name + "\ndesc:" + paramInfo.Desc
-			mux.frame.Log().Panicf("%s\n", errStr)
+		if !strings.Contains(mux.pattern, "/:"+paramInfo.Name) && !strings.Contains(mux.pattern, "/*"+paramInfo.Name) {
+			mux.frame.Log().Panicf(
+				"[Thinkgo-checkPathParams] the router pattern `%s` does not match the path param:\n%#v",
+				mux.pattern,
+				paramInfo,
+			)
 		}
+		numPathParams++
+	}
+	if countParams(mux.pattern) < numPathParams {
+		mux.frame.Log().Panicf(
+			"[Thinkgo-checkPathParams] the router pattern `%s` does not match the path params:\n%#v",
+			mux.pattern,
+			mux.paramInfos,
+		)
 	}
 }
 

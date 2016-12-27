@@ -34,7 +34,7 @@ func (p *Param) Serve(ctx *thinkgo.Context) error {
 	return ctx.JSON(200,
 		thinkgo.Map{
 			"Struct Params":    p,
-			"Additional Param": ctx.QueryParam("additional"),
+			"Additional Param": ctx.PathParam("additional"),
 		}, true)
 	// return ctx.String(200, "name: %v\nid: %d", name, id)
 }
@@ -50,8 +50,8 @@ func (p *Param) Doc() thinkgo.Doc {
 		Params: []thinkgo.ParamInfo{
 			{
 				Name:  "additional",
-				In:    "query",
-				Model: "?",
+				In:    "path",
+				Model: "a",
 				Desc:  "defined by the `Doc()` method",
 			},
 		},
