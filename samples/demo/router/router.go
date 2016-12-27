@@ -15,7 +15,7 @@ func Route1(frame *thinkgo.Framework) {
 			frame.NewNamedAPI("index", "*", "/index", handler.Index()),
 			frame.NewGroup("home",
 				frame.NewNamedGET("html", "render", &handler.Render{}),
-				frame.NewNamedAPI("params", "GET POST", "param/:id/:additional", &handler.Param{
+				frame.NewNamedAPI("params", "GET POST", "param/:id/*additional", &handler.Param{
 					Paragraph: []string{"abc"},
 				}),
 			),
@@ -44,7 +44,7 @@ func Route2(frame *thinkgo.Framework) {
 	home := frame.Group("home")
 	{
 		home.NamedGET("html", "render", &handler.Render{})
-		home.NamedAPI("params", "GET POST", "param/:id/:additional", &handler.Param{
+		home.NamedAPI("params", "GET POST", "param/:id/*additional", &handler.Param{
 			Paragraph: []string{"abc"},
 		})
 	}

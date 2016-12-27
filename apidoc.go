@@ -20,6 +20,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"path"
+	"regexp"
 	"strings"
 
 	"github.com/henrylee2cn/thinkgo/swagger"
@@ -60,16 +61,6 @@ func newAPIdocJSONHandler() HandlerFunc {
 		ctx.frame.apidoc.Host = ctx.R.Host
 		return ctx.JSON(200, ctx.frame.apidoc)
 	}
-}
-
-var apiStaticParam = &swagger.Parameter{
-	In:          "path",
-	Name:        "filepath",
-	Type:        swagger.ParamType("*"),
-	Description: "any static path or file",
-	Required:    true,
-	Format:      fmt.Sprintf("%T", "*"),
-	Default:     "",
 }
 
 func (frame *Framework) initAPIdoc(host string) {
@@ -221,7 +212,15 @@ func addpath(mux *MuxAPI, tag *swagger.Tag) {
 
 		// static file
 		if strings.HasSuffix(pid, "/{filepath}") {
-			o.Parameters = append(o.Parameters, apiStaticParam)
+			o.Parameters = append(o.Parameters, &swagger.Parameter{
+				In:          "path",
+				Name:        "filepath",
+				Type:        swagger.ParamType("*"),
+				Description: "any static path or file",
+				Required:    true,
+				Format:      fmt.Sprintf("%T", "*"),
+				Default:     "",
+			})
 		}
 
 		operas[strings.ToLower(method)] = o
@@ -250,20 +249,19 @@ func apiDefinitions(mux *MuxAPI, pname, method string, format interface{}) (ref 
 	return
 }
 
+var (
+	pathWildcardRegexp = regexp.MustCompile(`/\*[^/]*`)
+	pathColonRegexp    = regexp.MustCompile(`/:[^/]*`)
+)
+
 func apiCreatePath(u string) string {
-	a := strings.Split(u, "/*")
-	if len(a) > 1 {
-		u = path.Join(a[0], "{filepath}")
+	for _, wildcard := range pathWildcardRegexp.FindAllString(u, -1) {
+		u = strings.Replace(u, wildcard, "/{"+wildcard[2:]+"}", -1)
 	}
-	s := strings.Split(u, "/:")
-	p := s[0]
-	if len(s) == 1 {
-		return p
+	for _, colon := range pathColonRegexp.FindAllString(u, -1) {
+		u = strings.Replace(u, colon, "/{"+colon[2:]+"}", -1)
 	}
-	for _, param := range s[1:] {
-		p = path.Join(p, "{"+param+"}")
-	}
-	return p
+	return u
 }
 
 func apiTagDesc(desc string) string {
