@@ -93,8 +93,8 @@ func (w *docWrap) Doc() Doc {
 	return w.doc
 }
 
-// DocWrap adds a note to the handler
-func DocWrap(handler Handler, note string, ret interface{}, params ...ParamInfo) Handler {
+// WrapDoc adds a note to the handler
+func WrapDoc(handler Handler, note string, ret interface{}, params ...ParamInfo) Handler {
 	return &docWrap{
 		Handler: handler,
 		doc: Doc{

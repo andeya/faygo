@@ -13,7 +13,7 @@ func WebsocketPage() thinkgo.HandlerFunc {
 	}
 }
 
-var Websocket = thinkgo.DocWrap(
+var Websocket = thinkgo.WrapDoc(
 	thinkgo.HandlerFunc(func(ctx *thinkgo.Context) error {
 		var upgrader = websocket.Upgrader{}
 		conn, err := upgrader.ThinkUpgrade(ctx, nil)

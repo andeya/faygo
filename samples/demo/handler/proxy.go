@@ -19,8 +19,8 @@ func (Search) Doc() thinkgo.Doc {
 				Name:     "q",
 				In:       "query",
 				Required: true,
-				Desc:     "bing search",
 				Model:    "golang",
+				Desc:     "bing search",
 			},
 		},
 	}

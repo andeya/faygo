@@ -54,13 +54,11 @@ type (
 	}
 	// ParamInfo is the request parameter information
 	ParamInfo struct {
-		Name string
-		// the position of the parameter
-		In       string
-		Required bool
-		Desc     string
-		// a parameter value that is used to infer a value type and as a default value
-		Model interface{}
+		Name     string      // Parameter name
+		In       string      // The position of the parameter
+		Required bool        // Is a required parameter
+		Model    interface{} // A parameter value that is used to infer a value type and as a default value
+		Desc     string      // Description
 	}
 	// Doc api information
 	Doc struct {

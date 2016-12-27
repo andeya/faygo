@@ -51,8 +51,8 @@ func (p *Param) Doc() thinkgo.Doc {
 			{
 				Name:  "additional",
 				In:    "query",
-				Desc:  "defined by the `Doc()` method",
 				Model: "?",
+				Desc:  "defined by the `Doc()` method",
 			},
 		},
 	}
