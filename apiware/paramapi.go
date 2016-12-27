@@ -149,6 +149,11 @@ func (m *ParamsAPI) addFields(parentIndexPath []int, t reflect.Type, v reflect.V
 			return NewError(t.String(), field.Name, "field can not be a pointer")
 		}
 
+		var value = v.Field(i)
+		if !value.CanSet() {
+			return NewError(t.String(), field.Name, "field can not be a unexported field")
+		}
+
 		var parsedTags = ParseTags(tag)
 		var paramPosition = parsedTags[KEY_IN]
 		var paramTypeString = field.Type.String()
@@ -184,7 +189,7 @@ func (m *ParamsAPI) addFields(parentIndexPath []int, t reflect.Type, v reflect.V
 		// 	switch paramTypeString {
 		// 	case cookieTypeString, fasthttpCookieTypeString, stringTypeString, bytesTypeString, bytes2TypeString:
 		// 	default:
-		// 		return NewError(t.String(), field.Name, "invalid field type for `in(cookie)`, refer to the following: `http.Cookie`, `fasthttp.Cookie`, `string`, `[]byte` or `[]uint8`")
+		// 		return NewError( t.String(),field.Name, "invalid field type for `in(cookie)`, refer to the following: `http.Cookie`, `fasthttp.Cookie`, `string`, `[]byte` or `[]uint8`")
 		// 	}
 		default:
 			if !TagInValues[paramPosition] {
@@ -222,7 +227,7 @@ func (m *ParamsAPI) addFields(parentIndexPath []int, t reflect.Type, v reflect.V
 			indexPath: indexPath,
 			tags:      parsedTags,
 			rawTag:    field.Tag,
-			rawValue:  v.Field(i),
+			rawValue:  value,
 		}
 
 		if errStr, ok := fd.tags[KEY_ERR]; ok {
@@ -240,7 +245,7 @@ func (m *ParamsAPI) addFields(parentIndexPath []int, t reflect.Type, v reflect.V
 
 		// err = fd.validate(v)
 		// if err != nil {
-		// 	return NewError(t.String(), field.Name, "the initial value failed validation:"+err.Error())
+		// 	return NewError( t.String(),field.Name, "the initial value failed validation:"+err.Error())
 		// }
 
 		m.params = append(m.params, fd)
