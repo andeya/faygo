@@ -6,5 +6,7 @@
 *.log
 *.sublime-project
 *.sublime-workspace
-/think/*
-/samples/demo/log/*
+think/*
+samples/demo/log/*
+samples/demo/static/*
+samples/demo/upload/*
