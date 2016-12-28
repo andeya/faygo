@@ -240,7 +240,8 @@ float64 |  []float64 |
 - [Websocket](https://github.com/henrylee2cn/thinkgo/raw/master/ext/websocket):    `github.com/henrylee2cn/thinkgo/ext/websocket`
 - [ini配置](https://github.com/henrylee2cn/thinkgo/raw/master/ini):                `github.com/henrylee2cn/thinkgo/ini`
 - [定时器](https://github.com/henrylee2cn/thinkgo/raw/master/ext/cron):            `github.com/henrylee2cn/thinkgo/ext/cron`
-- [任务工具](https://github.com/henrylee2cn/thinkgo/raw/master/ext/task):            `github.com/henrylee2cn/thinkgo/ext/task`
+- [任务工具](https://github.com/henrylee2cn/thinkgo/raw/master/ext/task):          `github.com/henrylee2cn/thinkgo/ext/task`
+- [HTTP客户端](https://github.com/henrylee2cn/thinkgo/raw/master/ext/surfer):      `github.com/henrylee2cn/thinkgo/ext/surfer`
 
 
 ## 开源协议
