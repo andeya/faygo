@@ -18,6 +18,7 @@ import (
 	"fmt"
 	"os"
 	"sort"
+	"strings"
 	"sync/atomic"
 	"time"
 )
@@ -259,7 +260,7 @@ func newConfig(filename string) Config {
 		},
 		APIdoc: APIdocConfig{
 			Enable:  true,
-			Path:    "/apidoc",
+			Path:    "/apidoc/",
 			NoLimit: false,
 			RealIP:  false,
 			Whitelist: []string{
@@ -315,4 +316,5 @@ func (conf *APIdocConfig) Comb() {
 		conf.Whitelist = append(conf.Whitelist, ipPrefix)
 	}
 	sort.Strings(conf.Whitelist)
+	conf.Path = "/" + strings.Trim(conf.Path, "/") + "/"
 }

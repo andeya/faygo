@@ -17,8 +17,11 @@
 package thinkgo
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
+	"net/http"
 	"path"
 	"regexp"
 	"strings"
@@ -26,18 +29,37 @@ import (
 	"github.com/henrylee2cn/thinkgo/swagger"
 )
 
+type swaggerFS struct {
+	jsonPath []byte
+	http.FileSystem
+}
+
+func (s *swaggerFS) Open(name string) (http.File, error) {
+	f, err := s.FileSystem.Open(name)
+	if err == nil && name == "/index.html" {
+		b, err := ioutil.ReadAll(f)
+		f.Close()
+		if err != nil {
+			return f, err
+		}
+		b = bytes.Replace(b, []byte(`"/swagger.json"`), s.jsonPath, -1)
+		info, err := swagger.AssetInfo("swagger-ui/index.html")
+		return NewFile(b, info), err
+	}
+	return f, err
+}
+
 // register the API doc router.
 func (frame *Framework) regAPIdoc() {
-	frame.config.APIdoc.Path = path.Join("/", frame.config.APIdoc.Path)
-	// jsonPattern := strings.TrimRight(strings.Replace(frame.config.APIdoc.Path, "/*filepath", "", -1), "/") + ".json"
-	jsonPattern := "/swagger.json"
+	swaggerPath := frame.swaggerPath()
+	fs := FS(&swaggerFS{jsonPath: []byte("\"" + swaggerPath + "\""), FileSystem: swagger.AssetFS()})
 	if frame.config.APIdoc.NoLimit {
-		frame.MuxAPI.NamedStaticFS("APIdoc-Swagger", frame.config.APIdoc.Path, FS(swagger.AssetFS()))
-		frame.MuxAPI.NamedGET("APIdoc-Swagger-JSON", jsonPattern, newAPIdocJSONHandler())
+		frame.MuxAPI.NamedStaticFS("APIdoc-Swagger", frame.config.APIdoc.Path, fs)
+		frame.MuxAPI.NamedGET("APIdoc-Swagger-JSON", swaggerPath, newAPIdocJSONHandler())
 	} else {
 		allowApidoc := NewIPFilter(frame.config.APIdoc.Whitelist, frame.config.APIdoc.RealIP)
-		frame.MuxAPI.NamedStaticFS("APIdoc-Swagger", frame.config.APIdoc.Path, FS(swagger.AssetFS())).Use(allowApidoc)
-		frame.MuxAPI.NamedGET("APIdoc-Swagger-JSON", jsonPattern, newAPIdocJSONHandler(), allowApidoc)
+		frame.MuxAPI.NamedStaticFS("APIdoc-Swagger", frame.config.APIdoc.Path, fs).Use(allowApidoc)
+		frame.MuxAPI.NamedGET("APIdoc-Swagger-JSON", swaggerPath, newAPIdocJSONHandler(), allowApidoc)
 	}
 
 	tip := `APIdoc's URL path is '` + frame.config.APIdoc.Path
@@ -61,6 +83,10 @@ func newAPIdocJSONHandler() HandlerFunc {
 		ctx.frame.apidoc.Host = ctx.R.Host
 		return ctx.JSON(200, ctx.frame.apidoc)
 	}
+}
+
+func (frame *Framework) swaggerPath() string {
+	return strings.TrimRight(frame.config.APIdoc.Path, "/") + "_swagger.json"
 }
 
 func (frame *Framework) initAPIdoc(host string) {
@@ -91,10 +117,10 @@ func (frame *Framework) initAPIdoc(host string) {
 		// Definitions:         map[string]Definition{},
 		// ExternalDocs:        map[string]string{},
 	}
-
+	jsonPattern := frame.swaggerPath()
 	for _, child := range rootMuxAPI.Children() {
 		// filter useless API
-		if (child.pattern == "/swagger.json" || strings.HasPrefix(child.pattern, "/apidoc/")) && child.HasMethod("GET") {
+		if (child.pattern == jsonPattern || strings.HasPrefix(child.pattern, frame.config.APIdoc.Path)) && child.HasMethod("GET") {
 			continue
 		}
 		if !child.IsGroup() {
