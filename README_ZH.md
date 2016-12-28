@@ -3,7 +3,7 @@
 ![Thinkgo Favicon](https://github.com/henrylee2cn/thinkgo/raw/master/doc/thinkgo_96x96.png)
 
 ## 概述
-Thinkgo以全新的架构实现，它面向Handler接口开发，支持智能参数映射与校验、支持自动化API文档的Go语言web框架。
+Thinkgo以全新的架构实现，它面向Handler接口开发，是支持智能参数映射与校验、支持自动化API文档的Go语言web框架。
 
 官方QQ群：Go-Web 编程 42730308    [![Go-Web 编程群](http://pub.idqqimg.com/wpa/images/group.png)](http://jq.qq.com/?_wv=1027&k=fzi4p1)
 
@@ -89,11 +89,11 @@ response:
 
 - 面向Handler接口开发（func or struct），中间件与操作完全等同可任意拼接路由操作链
 - 支持用struct Handler在Tag标签定义请求参数信息及其校验信息
-- 由struct Handler自动构建API文档（swagger2.0）
+- 支持自动构建API文档（swagger2.0）
 - 支持HTTP/HTTP2、HTTPS(tls/letsencrypt)、UNIX多种Server类型
 - 支持多实例运行，且配置信息相互独立
 - 支持同一实例监听多Server类型、多端口
-- 基于著名的httprouter构建路由器，且支持链式与树形两种路由注册风格
+- 基于高性能路由httprouter构建，支持链式与树形两种路由信息注册风格
 - 强大的文件路由功能，支持自定义文件系统，框架提供快捷的DirFS、RenderFS、MarkdownFS等
 - 提供近似LRU的文件缓存功能
 - 跨平台的彩色日志系统，且同时支持console和file两种输出形式（可以同时使用）
