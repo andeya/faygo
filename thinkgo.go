@@ -54,6 +54,7 @@ type Framework struct {
 	servers        []*Server
 	running        bool
 	runOnce        sync.Once
+	buildOnce      sync.Once
 	lock           sync.RWMutex
 	sessionManager *session.Manager
 	syslog         *logging.Logger // for framework
@@ -135,63 +136,65 @@ func (frame *Framework) run() {
 }
 
 func (frame *Framework) build() {
-	// Make sure that the initialization logs for multiple applications are printed in sequence
-	mutexForBuild.Lock()
-	defer mutexForBuild.Unlock()
+	frame.buildOnce.Do(func() {
+		// Make sure that the initialization logs for multiple applications are printed in sequence
+		mutexForBuild.Lock()
+		defer mutexForBuild.Unlock()
 
-	// register the default MuxAPIs
-	{
-		// apidoc
-		if frame.config.APIdoc.Enable {
-			frame.regAPIdoc()
+		// register the default MuxAPIs
+		{
+			// apidoc
+			if frame.config.APIdoc.Enable {
+				frame.regAPIdoc()
+			}
+			// static
+			frame.presetSystemMuxes()
 		}
-		// static
-		frame.presetSystemMuxes()
-	}
 
-	// build router
-	var router = &Router{
-		RedirectTrailingSlash:  frame.config.Router.RedirectTrailingSlash,
-		RedirectFixedPath:      frame.config.Router.RedirectFixedPath,
-		HandleMethodNotAllowed: frame.config.Router.HandleMethodNotAllowed,
-		HandleOPTIONS:          frame.config.Router.HandleOPTIONS,
-		filter:                 frame.makeFilterHandle(),
-		NotFound:               frame.makeErrorHandler(http.StatusNotFound),
-		MethodNotAllowed:       frame.makeErrorHandler(http.StatusMethodNotAllowed),
-		PanicHandler:           frame.makePanicHandler(),
-	}
-
-	// register router
-	for _, node := range frame.MuxAPIsForRouter() {
-		handle := frame.makeHandle(node.handlers)
-		for _, method := range node.methods {
-			frame.syslog.Criticalf("%7s | %-30s", method, node.path)
-			router.Handle(method, node.path, handle)
+		// build router
+		var router = &Router{
+			RedirectTrailingSlash:  frame.config.Router.RedirectTrailingSlash,
+			RedirectFixedPath:      frame.config.Router.RedirectFixedPath,
+			HandleMethodNotAllowed: frame.config.Router.HandleMethodNotAllowed,
+			HandleOPTIONS:          frame.config.Router.HandleOPTIONS,
+			filter:                 frame.makeFilterHandle(),
+			NotFound:               frame.makeErrorHandler(http.StatusNotFound),
+			MethodNotAllowed:       frame.makeErrorHandler(http.StatusMethodNotAllowed),
+			PanicHandler:           frame.makePanicHandler(),
 		}
-	}
 
-	// new server
-	nameWithVersion := frame.NameWithVersion()
-	for i, netType := range frame.config.NetTypes {
-		frame.servers = append(frame.servers, &Server{
-			nameWithVersion: nameWithVersion,
-			netType:         netType,
-			tlsCertFile:     frame.config.TLSCertFile,
-			tlsKeyFile:      frame.config.TLSKeyFile,
-			letsencryptFile: frame.config.LetsencryptFile,
-			unixFileMode:    frame.config.UNIXFileMode,
-			Server: &http.Server{
-				Addr:         frame.config.Addrs[i],
-				Handler:      router,
-				ReadTimeout:  frame.config.ReadTimeout,
-				WriteTimeout: frame.config.WriteTimeout,
-			},
-			log: frame.syslog,
-		})
-	}
+		// register router
+		for _, node := range frame.MuxAPIsForRouter() {
+			handle := frame.makeHandle(node.handlers)
+			for _, method := range node.methods {
+				frame.syslog.Criticalf("%7s | %-30s", method, node.path)
+				router.Handle(method, node.path, handle)
+			}
+		}
 
-	// register session
-	frame.registerSession()
+		// new server
+		nameWithVersion := frame.NameWithVersion()
+		for i, netType := range frame.config.NetTypes {
+			frame.servers = append(frame.servers, &Server{
+				nameWithVersion: nameWithVersion,
+				netType:         netType,
+				tlsCertFile:     frame.config.TLSCertFile,
+				tlsKeyFile:      frame.config.TLSKeyFile,
+				letsencryptFile: frame.config.LetsencryptFile,
+				unixFileMode:    frame.config.UNIXFileMode,
+				Server: &http.Server{
+					Addr:         frame.config.Addrs[i],
+					Handler:      router,
+					ReadTimeout:  frame.config.ReadTimeout,
+					WriteTimeout: frame.config.WriteTimeout,
+				},
+				log: frame.syslog,
+			})
+		}
+
+		// register session
+		frame.registerSession()
+	})
 }
 
 // Running returns whether the frame service is running.
