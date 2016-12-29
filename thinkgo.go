@@ -52,8 +52,9 @@ type Framework struct {
 	muxesForRouter MuxAPIs
 	filter         HandlerChain // called before the route is matched
 	servers        []*Server
-	once           sync.Once
-	lock           sync.Mutex
+	running        bool
+	runOnce        sync.Once
+	lock           sync.RWMutex
 	sessionManager *session.Manager
 	syslog         *logging.Logger // for framework
 	bizlog         *logging.Logger // for user bissness
@@ -110,16 +111,26 @@ func (frame *Framework) NameWithVersion() string {
 
 // Run starts web services.
 func (frame *Framework) Run() {
+	global.framesLock.Lock()
 	frame.lock.Lock()
-	once := frame.once
+	frame.running = true
 	frame.lock.Unlock()
-	once.Do(func() {
+	global.framesLock.Unlock()
+	frame.run()
+}
+
+func (frame *Framework) run() {
+	frame.runOnce.Do(func() {
+		frame.lock.Lock()
 		frame.build()
+		frame.running = true
 		last := len(frame.servers) - 1
 		for i := 0; i < last; i++ {
 			go frame.servers[i].run()
 		}
-		frame.servers[last].run()
+		server := frame.servers[last]
+		frame.lock.Unlock()
+		server.run()
 	})
 }
 
@@ -183,9 +194,11 @@ func (frame *Framework) build() {
 	frame.registerSession()
 }
 
-// Log returns the logger used by the user bissness.
-func (frame *Framework) Log() *logging.Logger {
-	return frame.bizlog
+// Running returns whether the frame service is running.
+func (frame *Framework) Running() bool {
+	frame.lock.RLock()
+	defer frame.lock.RUnlock()
+	return frame.running
 }
 
 // CloseLog closes loggers.
@@ -198,9 +211,17 @@ func (frame *Framework) CloseLog() {
 // TODO: close listener
 func (frame *Framework) Close() {
 	frame.lock.Lock()
-	frame.once = sync.Once{}
-	frame.lock.Unlock()
-	frame.CloseLog()
+	defer frame.lock.Unlock()
+	if frame.running {
+		frame.runOnce = sync.Once{}
+		frame.running = false
+		frame.CloseLog()
+	}
+}
+
+// Log returns the logger used by the user bissness.
+func (frame *Framework) Log() *logging.Logger {
+	return frame.bizlog
 }
 
 // MuxAPIsForRouter get an ordered list of nodes used to register router.

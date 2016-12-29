@@ -198,26 +198,48 @@ func GetFrame(name string, version ...string) (*Framework, bool) {
 
 // Run starts all web services.
 func Run() {
-	global.framesLock.RLock()
+	global.framesLock.Lock()
 	count := len(global.frames)
 	if count == 0 {
-		global.framesLock.RUnlock()
+		global.framesLock.Unlock()
 		return
 	}
-	for _, frame := range global.frames[:count-1] {
-		go frame.Run()
-		time.Sleep(time.Second)
+	var last = -1
+	for i := count - 1; i >= 0; i-- {
+		if !global.frames[i].Running() {
+			last = i
+			break
+		}
 	}
-	frame := global.frames[count-1]
-	global.framesLock.RUnlock()
-	frame.Run()
+	if last == -1 {
+		global.framesLock.Unlock()
+		return
+	}
+	for _, frame := range global.frames[:last] {
+		if !frame.Running() {
+			go frame.run()
+			time.Sleep(time.Second)
+		}
+	}
+	frame := global.frames[last]
+	global.framesLock.Unlock()
+	frame.run()
+}
+
+// Running returns whether the frame service is running.
+func Running(name string, version ...string) bool {
+	frame, ok := GetFrame(name, version...)
+	if !ok {
+		return false
+	}
+	return frame.Running()
 }
 
 // Close closes all the frame services.
 // TODO: close listeners
 func Close() {
-	global.framesLock.RLock()
-	defer global.framesLock.RUnlock()
+	global.framesLock.Lock()
+	defer global.framesLock.Unlock()
 	for _, frame := range global.frames {
 		frame.Close()
 	}
