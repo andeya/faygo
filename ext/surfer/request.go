@@ -94,9 +94,6 @@ func (self *Request) prepare() error {
 			return err
 		}
 	}
-	if self.Header == nil {
-		self.Header = make(http.Header)
-	}
 	if self.DialTimeout < 0 {
 		self.DialTimeout = 0
 	} else if self.DialTimeout == 0 {
@@ -119,6 +116,17 @@ func (self *Request) prepare() error {
 
 	if self.DownloaderID != PhomtomJsID {
 		self.DownloaderID = SurfID
+	}
+
+	if self.Header == nil {
+		self.Header = make(http.Header)
+	}
+	var commonUserAgentIndex int
+	if !self.EnableCookie {
+		commonUserAgentIndex = rand.Intn(len(UserAgents["common"]))
+		self.Header.Set("User-Agent", UserAgents["common"][commonUserAgentIndex])
+	} else if len(self.Header["User-Agent"]) == 0 {
+		self.Header.Set("User-Agent", UserAgents["common"][commonUserAgentIndex])
 	}
 
 	self.Method = strings.ToUpper(self.Method)
@@ -156,16 +164,6 @@ func (self *Request) prepare() error {
 	default:
 		if len(self.Method) == 0 {
 			self.Method = DefaultMethod
-		}
-	}
-
-	if len(self.Header["User-Agent"]) == 0 {
-		if self.EnableCookie {
-			self.Header.Add("User-Agent", UserAgents["common"][0])
-		} else {
-			l := len(UserAgents["common"])
-			r := rand.New(rand.NewSource(time.Now().UnixNano()))
-			self.Header.Add("User-Agent", UserAgents["common"][r.Intn(l)])
 		}
 	}
 

@@ -23,13 +23,20 @@ import (
 )
 
 func TestSurf(t *testing.T) {
-	resp, _ := Download(&Request{
-		Method: "GET",
-		Url:    "https://www.bing.com/search?q=golang",
+	req := &Request{
+		Method:       "GET",
+		Url:          "https://www.bing.com/search?q=golang",
+		EnableCookie: true,
 		Header: http.Header{
 			"Origin": []string{"https://cn.bing.com"},
 		},
-	})
+	}
+	resp, _ := Download(req)
 	b, _ := ioutil.ReadAll(resp.Body)
-	t.Logf("response:\n%#v\nresponse_body:\n%s", resp, b)
+	t.Logf("request:\n%#v", req)
+	t.Logf("response:\n%#v\nresponse_body:\n%s", resp, b[:200])
+	resp, _ = Download(req)
+	b, _ = ioutil.ReadAll(resp.Body)
+	t.Logf("request:\n%#v", req)
+	t.Logf("response:\n%#v\nresponse_body:\n%s", resp, b[:200])
 }
