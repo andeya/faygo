@@ -53,6 +53,7 @@ type Framework struct {
 	filter         HandlerChain // called before the route is matched
 	servers        []*Server
 	once           sync.Once
+	lock           sync.Mutex
 	sessionManager *session.Manager
 	syslog         *logging.Logger // for framework
 	bizlog         *logging.Logger // for user bissness
@@ -79,7 +80,7 @@ func New(name string, version ...string) *Framework {
 		Fatalf("There are two applications with exactly the same name and version: %s", id)
 	}
 
-	global.frames[frame.NameWithVersion()] = frame
+	addFrame(frame)
 
 	return frame
 }
@@ -109,7 +110,10 @@ func (frame *Framework) NameWithVersion() string {
 
 // Run starts web services.
 func (frame *Framework) Run() {
-	frame.once.Do(func() {
+	frame.lock.Lock()
+	once := frame.once
+	frame.lock.Unlock()
+	once.Do(func() {
 		frame.build()
 		last := len(frame.servers) - 1
 		for i := 0; i < last; i++ {
@@ -193,6 +197,9 @@ func (frame *Framework) CloseLog() {
 // Close closes the frame service.
 // TODO: close listener
 func (frame *Framework) Close() {
+	frame.lock.Lock()
+	frame.once = sync.Once{}
+	frame.lock.Unlock()
 	frame.CloseLog()
 }
 

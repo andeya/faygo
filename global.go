@@ -21,6 +21,8 @@ import (
 	"os"
 	"reflect"
 	"strings"
+	"sync"
+	"time"
 
 	"github.com/henrylee2cn/thinkgo/acceptencoder"
 	"github.com/henrylee2cn/thinkgo/apiware"
@@ -32,7 +34,8 @@ type (
 	// GlobalVariables defines the global frames, configuration, function and so on.
 	GlobalVariables struct {
 		// the list of applications that have been created.
-		frames map[string]*Framework
+		frames     []*Framework
+		framesLock sync.RWMutex
 		// global config
 		config GlobalConfig
 		// Error replies to the request with the specified error message and HTTP code.
@@ -81,7 +84,7 @@ var (
 	// global is the global configuration, functions and so on.
 	global = func() *GlobalVariables {
 		global := &GlobalVariables{
-			frames:          make(map[string]*Framework),
+			frames:          []*Framework{},
 			config:          globalConfig,
 			errorFunc:       defaultErrorFunc,
 			bodydecoder:     defaultBodyJSONFunc,
@@ -159,20 +162,62 @@ func init() {
 	acceptencoder.InitGzip(global.config.Gzip.MinLength, global.config.Gzip.CompressLevel, global.config.Gzip.Methods)
 }
 
+func addFrame(frame *Framework) {
+	global.framesLock.Lock()
+	defer global.framesLock.Unlock()
+	name := frame.NameWithVersion()
+	for _, v := range global.frames {
+		if v.NameWithVersion() == name {
+			frame.Log().Panicf("frame %s is registered repeatedly", name)
+		}
+	}
+	global.frames = append(global.frames, frame)
+}
+
 // AllFrames returns the list of applications that have been created.
-func AllFrames() map[string]*Framework {
+func AllFrames() []*Framework {
+	global.framesLock.RLock()
+	defer global.framesLock.RUnlock()
 	return global.frames
 }
 
-// GetFrame returns the specified frame instance by name.
-func GetFrame(name string) (*Framework, bool) {
-	frame, ok := global.frames[name]
-	return frame, ok
+// GetFrame returns the specified frame instance by name and version.
+func GetFrame(name string, version ...string) (*Framework, bool) {
+	if len(version) > 0 && len(version[0]) > 0 {
+		name = name + "_" + version[0]
+	}
+	global.framesLock.RLock()
+	defer global.framesLock.RUnlock()
+	for _, frame := range global.frames {
+		if frame.NameWithVersion() == name {
+			return frame, true
+		}
+	}
+	return nil, false
+}
+
+// Run starts all web services.
+func Run() {
+	global.framesLock.RLock()
+	count := len(global.frames)
+	if count == 0 {
+		global.framesLock.RUnlock()
+		return
+	}
+	for _, frame := range global.frames[:count-1] {
+		go frame.Run()
+		time.Sleep(time.Second)
+	}
+	frame := global.frames[count-1]
+	global.framesLock.RUnlock()
+	frame.Run()
 }
 
 // Close closes all the frame services.
 // TODO: close listeners
 func Close() {
+	global.framesLock.RLock()
+	defer global.framesLock.RUnlock()
 	for _, frame := range global.frames {
 		frame.Close()
 	}
