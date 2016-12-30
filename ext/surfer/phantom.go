@@ -16,7 +16,6 @@ package surfer
 
 import (
 	"encoding/json"
-	"errors"
 	"io/ioutil"
 	"log"
 	"mime"
@@ -38,8 +37,8 @@ type (
 		jsFileMap     map[string]string //已存在的js文件
 	}
 	Response struct {
-		Cookie string
-		Body   string
+		Cookies []string
+		Body    string
 	}
 )
 
@@ -61,8 +60,7 @@ func NewPhantom(phantomjsFile, tempJsDir string) Surfer {
 		log.Printf("[E] Surfer: %v\n", err)
 		return phantom
 	}
-	phantom.createJsFile("get", getJs)
-	phantom.createJsFile("post", postJs)
+	phantom.createJsFile("js", js)
 	return phantom
 }
 
@@ -70,7 +68,7 @@ func NewPhantom(phantomjsFile, tempJsDir string) Surfer {
 func (self *Phantom) Download(req *Request) (resp *http.Response, err error) {
 	err = req.prepare()
 	if err != nil {
-		return
+		return resp, err
 	}
 	var encoding = "utf-8"
 	if _, params, err := mime.ParseMediaType(req.Header.Get("Content-Type")); err == nil {
@@ -83,27 +81,14 @@ func (self *Phantom) Download(req *Request) (resp *http.Response, err error) {
 
 	resp = req.writeback(resp)
 
-	var args []string
-	switch req.Method {
-	case "GET":
-		args = []string{
-			self.jsFileMap["get"],
-			req.Url,
-			req.Header.Get("Cookie"),
-			encoding,
-			req.Header.Get("User-Agent"),
-		}
-	case "POST":
-		args = []string{
-			self.jsFileMap["post"],
-			req.Url,
-			req.Header.Get("Cookie"),
-			encoding,
-			req.Header.Get("User-Agent"),
-			req.Values.Encode(),
-		}
-	default:
-		return nil, errors.New("Unsupported HTTP method: " + req.Method)
+	var args = []string{
+		self.jsFileMap["js"],
+		req.Url,
+		req.Header.Get("Cookie"),
+		encoding,
+		req.Header.Get("User-Agent"),
+		req.Values.Encode(),
+		strings.ToLower(req.Method),
 	}
 
 	for i := 0; i < req.TryTimes; i++ {
@@ -112,7 +97,8 @@ func (self *Phantom) Download(req *Request) (resp *http.Response, err error) {
 			time.Sleep(req.RetryPause)
 			continue
 		}
-		if cmd.Start() != nil || resp.Body == nil {
+		err = cmd.Start()
+		if err != nil || resp.Body == nil {
 			time.Sleep(req.RetryPause)
 			continue
 		}
@@ -130,8 +116,7 @@ func (self *Phantom) Download(req *Request) (resp *http.Response, err error) {
 		}
 		resp.Header = req.Header
 		delete(resp.Header, "Set-Cookie")
-		cookies := strings.Split(strings.TrimSpace(retResp.Cookie), "; ")
-		for _, c := range cookies {
+		for _, c := range retResp.Cookies {
 			resp.Header.Add("Set-Cookie", c)
 		}
 		resp.Body = ioutil.NopCloser(strings.NewReader(retResp.Body))
@@ -143,9 +128,9 @@ func (self *Phantom) Download(req *Request) (resp *http.Response, err error) {
 		resp.Status = http.StatusText(http.StatusOK)
 	} else {
 		resp.StatusCode = http.StatusBadGateway
-		resp.Status = http.StatusText(http.StatusBadGateway)
+		resp.Status = err.Error()
 	}
-	return
+	return resp, err
 }
 
 //销毁js临时文件
@@ -172,53 +157,15 @@ func (self *Phantom) createJsFile(fileName, jsCode string) {
 }
 
 /*
-* GET method
-* system.args[0] == get.js
-* system.args[1] == url
-* system.args[2] == cookie
-* system.args[3] == pageEncode
-* system.args[4] == userAgent
- */
-
-const getJs string = `
-var system = require('system');
-var page = require('webpage').create();
-var url = system.args[1];
-var cookie = system.args[2];
-var pageEncode = system.args[3];
-var userAgent = system.args[4];
-page.onResourceRequested = function(requestData, request) {
-    request.setHeader('Cookie', cookie)
-};
-phantom.outputEncoding = pageEncode;
-page.settings.userAgent = userAgent;
-page.open(url, function(status) {
-    if (status !== 'success') {
-        console.log('Unable to access network');
-    } else {
-       	var cookie = page.evaluate(function(s) {
-            return document.cookie;
-        });
-        var resp = {
-            "Cookie": cookie,
-            "Body": page.content
-        };
-        console.log(JSON.stringify(resp));
-    }
-    phantom.exit();
-});
-`
-
-/*
-* POST method
 * system.args[0] == post.js
 * system.args[1] == url
 * system.args[2] == cookie
 * system.args[3] == pageEncode
 * system.args[4] == userAgent
 * system.args[5] == postdata
+* system.args[6] == method
  */
-const postJs string = `
+const js string = `
 var system = require('system');
 var page = require('webpage').create();
 var url = system.args[1];
@@ -226,20 +173,30 @@ var cookie = system.args[2];
 var pageEncode = system.args[3];
 var userAgent = system.args[4];
 var postdata = system.args[5];
+var method = system.args[6];
 page.onResourceRequested = function(requestData, request) {
     request.setHeader('Cookie', cookie)
 };
 phantom.outputEncoding = pageEncode;
 page.settings.userAgent = userAgent;
-page.open(url, 'post', postdata, function(status) {
-    if (status !== 'success') {
+page.open(url, method, postdata, function(status) {
+   if (status !== 'success') {
         console.log('Unable to access network');
     } else {
-        var cookie = page.evaluate(function(s) {
-            return document.cookie;
-        });
+        var cookies = new Array();
+        for(var i = 0;i<page.cookies.length; i++) {
+        	var cookie = page.cookies[i];
+        	var c = cookie["name"] + "=" + cookie["value"];
+			c +=  "; " +　"domain=" + cookie["domain"];
+			c +=  "; " +　"expires=" + cookie["expires"];
+			c +=  "; " +　"expiry=" + cookie["expiry"];
+			c +=  "; " +　"httponly=" + cookie["httponly"];
+			c +=  "; " +　"path=" + cookie["path"];
+			c +=  "; " +　"secure=" + cookie["secure"];
+			cookies[i] = c;
+		}
         var resp = {
-            "Cookie": cookie,
+            "Cookies": cookies,
             "Body": page.content
         };
         console.log(JSON.stringify(resp));

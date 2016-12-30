@@ -80,7 +80,6 @@ func Download(req *Request) (resp *http.Response, err error) {
 		once_surf.Do(func() { surf = New() })
 		resp, err = surf.Download(req)
 	case PhomtomJsID:
-		println(phantomjsFile)
 		once_phantom.Do(func() { phantom = NewPhantom(phantomjsFile, tempJsDir) })
 		resp, err = phantom.Download(req)
 	}
