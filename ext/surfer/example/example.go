@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/henrylee2cn/surfer"
+	"github.com/henrylee2cn/thinkgo/ext/surfer"
 	"io/ioutil"
 	"log"
 	"net/url"
@@ -27,10 +27,10 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	log.Println(resp.Header)
+	log.Printf("baidu resp.Header: %#v\n", resp.Header)
 
 	b, err := ioutil.ReadAll(resp.Body)
-	log.Println(string(b), err)
+	log.Printf("baidu resp.Body: %s\n%v", b, err)
 
 	log.Println("********************************************* surf内核GET下载测试完毕 *********************************************")
 
@@ -45,10 +45,10 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	log.Println(resp.Header)
+	log.Printf("lewaos resp.Header: %#v\n", resp.Header)
 
 	b, err = ioutil.ReadAll(resp.Body)
-	log.Println(string(b), err)
+	log.Printf("lewaos resp.Body: %s\n%v", b, err)
 
 	log.Println("********************************************* surf内核POST下载测试完毕 *********************************************")
 
@@ -62,10 +62,10 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	log.Println(resp.Header)
+	log.Printf("baidu resp.Header: %#v\n", resp.Header)
 
 	b, err = ioutil.ReadAll(resp.Body)
-	log.Println(string(b), err)
+	log.Printf("baidu resp.Body: %s\n%v", b, err)
 
 	log.Println("********************************************* phantomjs内核GET下载测试完毕 *********************************************")
 
@@ -81,10 +81,10 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	log.Println(resp.Header)
+	log.Printf("lewaos resp.Header: %#v\n", resp.Header)
 
 	b, err = ioutil.ReadAll(resp.Body)
-	log.Println(string(b), err)
+	log.Printf("lewaos resp.Body: %s\n%v", b, err)
 
 	log.Println("********************************************* phantomjs内核POST下载测试完毕 *********************************************")
 
