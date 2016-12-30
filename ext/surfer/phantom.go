@@ -157,7 +157,7 @@ func (self *Phantom) createJsFile(fileName, jsCode string) {
 }
 
 /*
-* system.args[0] == post.js
+* system.args[0] == js
 * system.args[1] == url
 * system.args[2] == cookie
 * system.args[3] == pageEncode
@@ -184,15 +184,15 @@ page.open(url, method, postdata, function(status) {
         console.log('Unable to access network');
     } else {
         var cookies = new Array();
-        for(var i = 0;i<page.cookies.length; i++) {
+        for(var i in page.cookies) {
         	var cookie = page.cookies[i];
         	var c = cookie["name"] + "=" + cookie["value"];
-			c +=  "; " +　"domain=" + cookie["domain"];
-			c +=  "; " +　"expires=" + cookie["expires"];
-			c +=  "; " +　"expiry=" + cookie["expiry"];
-			c +=  "; " +　"httponly=" + cookie["httponly"];
-			c +=  "; " +　"path=" + cookie["path"];
-			c +=  "; " +　"secure=" + cookie["secure"];
+        	for (var obj in cookie){
+        		if(obj == 'name' || obj == 'value'){
+        			continue;
+        		}
+				c +=  "; " +　obj + "=" +  cookie[obj];
+    		}
 			cookies[i] = c;
 		}
         var resp = {
