@@ -1,6 +1,46 @@
-// Copyright 2013 Julien Schmidt. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be found
-// in the LICENSE file.
+// The router matches incoming requests by the request method and the path.
+// If a handle is registered for this path and method, the router delegates the
+// request to that function.
+// For the methods GET, POST, PUT, PATCH and DELETE shortcut functions exist to
+// register handles, for all other methods router.Handle can be used.
+//
+// The registered path, against which the router matches incoming requests, can
+// contain two types of parameters:
+//  Syntax    Type
+//  :name     named parameter
+//  *name     catch-all parameter
+//
+// Named parameters are dynamic path segments. They match anything until the
+// next '/' or the path end:
+//  Path: /blog/:category/:post
+//
+//  Requests:
+//   /blog/go/request-routers            match: category="go", post="request-routers"
+//   /blog/go/request-routers/           no match, but the router would redirect
+//   /blog/go/                           no match
+//   /blog/go/request-routers/comments   no match
+//
+// Catch-all parameters match anything until the path end, including the
+// directory index (the '/' before the catch-all). Since they match anything
+// until the end, catch-all parameters must always be the final path element.
+//  Path: /files/*filepath
+//
+//  Requests:
+//   /files/                             match: filepath="/"
+//   /files/LICENSE                      match: filepath="/LICENSE"
+//   /files/templates/article.html       match: filepath="/templates/article.html"
+//   /files                              no match, but the router would redirect
+//
+// The value of parameters is saved as a slice of the Param struct, consisting
+// each of a key and a value. The slice is passed to the Handle func as a third
+// parameter.
+// There are two ways to retrieve the value of a parameter:
+//  // by the name of the parameter
+//  user := ps.ByName("user") // defined by :user or *user
+//
+//  // by the index of the parameter. This way you can also get the name (key)
+//  thirdKey   := ps[2].Key   // the name of the 3rd parameter
+//  thirdValue := ps[2].Value // the value of the 3rd parameter
 
 package thinkgo
 
@@ -8,7 +48,47 @@ import (
 	"strings"
 	"unicode"
 	"unicode/utf8"
+
+	"github.com/henrylee2cn/thinkgo/apiware"
 )
+
+// Handle is a function that can be registered to a route to handle HTTP requests.
+type Handle func(*Context, PathParams)
+
+// PathParam is a single URL parameter, consisting of a key and a value.
+type PathParam struct {
+	Key   string
+	Value string
+}
+
+// PathParams is a Param-slice, as returned by the router.
+// The slice is ordered, the first URL parameter is also the first slice value.
+// It is therefore safe to read values by the index.
+type PathParams []PathParam
+
+// ByName returns the value of the first PathParam which key matches the given name.
+// If no matching PathParam is found, an empty string is returned.
+func (ps PathParams) ByName(name string) string {
+	for i := range ps {
+		if ps[i].Key == name {
+			return ps[i].Value
+		}
+	}
+	return ""
+}
+
+var _ apiware.KV = PathParams{}
+
+// Get returns the value of the first PathParam which key matches the given name.
+// It implements the apiware.KV interface.
+func (ps PathParams) Get(name string) (string, bool) {
+	for i := range ps {
+		if ps[i].Key == name {
+			return ps[i].Value, true
+		}
+	}
+	return "", false
+}
 
 func min(a, b int) int {
 	if a <= b {
@@ -17,7 +97,7 @@ func min(a, b int) int {
 	return b
 }
 
-func countParams(path string) uint8 {
+func countPathParams(path string) uint8 {
 	var n uint
 	for i := 0; i < len(path); i++ {
 		if path[i] != ':' && path[i] != '*' {
@@ -82,7 +162,7 @@ func (n *node) incrementChildPrio(pos int) int {
 func (n *node) addRoute(path string, handle Handle) {
 	fullPath := path
 	n.priority++
-	numParams := countParams(path)
+	numParams := countPathParams(path)
 
 	// non-empty tree
 	if len(n.path) > 0 || len(n.children) > 0 {
@@ -324,7 +404,7 @@ func (n *node) insertChild(numParams uint8, path, fullPath string, handle Handle
 // If no handle can be found, a TSR (trailing slash redirect) recommendation is
 // made if a handle exists with an extra (without the) trailing slash for the
 // given path.
-func (n *node) getValue(path string) (handle Handle, p Params, tsr bool) {
+func (n *node) getValue(path string) (handle Handle, p PathParams, tsr bool) {
 walk: // outer loop for walking the tree
 	for {
 		if len(path) > len(n.path) {
@@ -363,7 +443,7 @@ walk: // outer loop for walking the tree
 					// save param value
 					if p == nil {
 						// lazy allocation
-						p = make(Params, 0, n.maxParams)
+						p = make(PathParams, 0, n.maxParams)
 					}
 					i := len(p)
 					p = p[:i+1] // expand slice within preallocated capacity
@@ -398,7 +478,7 @@ walk: // outer loop for walking the tree
 					// save param value
 					if p == nil {
 						// lazy allocation
-						p = make(Params, 0, n.maxParams)
+						p = make(PathParams, 0, n.maxParams)
 					}
 					i := len(p)
 					p = p[:i+1] // expand slice within preallocated capacity

@@ -124,7 +124,7 @@ type (
 		limitedRequestBody []byte // the copy of requset body(Limited by maximum length)
 		frame              *Framework
 		handlerChain       HandlerChain                // keep track all registed handlers
-		pathParams         Params                      // The parameter values on the URL path
+		pathParams         PathParams                  // The parameter values on the URL path
 		queryParams        url.Values                  // URL query string values
 		data               map[interface{}]interface{} // Used to transfer variables between Handler-chains
 		handlerChainLen    int16
@@ -321,41 +321,26 @@ func (ctx *Context) ReverseProxy(targetUrlBase string, pathAppend bool) error {
 	return nil
 }
 
-// Create the context for the router handle
-func newEmptyContext(
-	frame *Framework,
-	w http.ResponseWriter,
-	r *http.Request,
-) *Context {
-	ctx := &Context{
-		frame:      frame,
-		R:          r,
-		enableGzip: global.config.Gzip.Enable,
+func (ctx *Context) doFilter() bool {
+	if count := len(ctx.frame.filter); count > 0 {
+		ctx.handlerChain = ctx.frame.filter
+		ctx.handlerChainLen = int16(count)
+		ctx.posReset()
+		ctx.Next()
+		if ctx.IsBreak() {
+			if !ctx.W.Committed() {
+				ctx.Error(http.StatusForbidden, http.StatusText(http.StatusForbidden))
+			}
+			return false
+		}
 	}
-	ctx.W = newResponse(ctx, w)
-	return ctx
+	return true
 }
 
-// Create the context for the filter
-func newFilterContext(
-	frame *Framework,
-) *Context {
-	ctx := &Context{
-		frame:           frame,
-		handlerChain:    frame.filter,
-		handlerChainLen: int16(len(frame.filter)),
-		pos:             0,
-		data:            make(map[interface{}]interface{}),
-	}
-	ctx.W = newResponse(ctx, nil)
-	return ctx
-}
-
-// Create the context for common handle
-func newContext(
-	frame *Framework,
-	handlerChain HandlerChain,
-) *Context {
+// doHandler calls the first handler only, it's like Next with negative pos, used only on Router&MemoryRouter
+func (ctx *Context) doHandler(handlerChain HandlerChain, pathParams PathParams) {
+	ctx.posReset()
+	ctx.pathParams = pathParams
 	count := len(handlerChain)
 	chain := make(HandlerChain, count)
 	for i, h := range handlerChain {
@@ -365,18 +350,12 @@ func newContext(
 			chain[i] = h
 		}
 	}
-	ctx := &Context{
-		frame:           frame,
-		handlerChain:    chain,
-		handlerChainLen: int16(count),
-		pos:             0,
-		enableGzip:      global.config.Gzip.Enable,
-		enableSession:   frame.config.Session.Enable,
-		enableXSRF:      frame.config.XSRF.Enable,
-		data:            make(map[interface{}]interface{}),
+	ctx.handlerChain = chain
+	ctx.handlerChainLen = int16(count)
+	if !ctx.prepare() {
+		return
 	}
-	ctx.W = newResponse(ctx, nil)
-	return ctx
+	ctx.Next()
 }
 
 // Called before the start
@@ -401,15 +380,6 @@ func (ctx *Context) prepare() bool {
 // reset the cursor
 func (ctx *Context) posReset() {
 	ctx.pos = -1
-}
-
-// do calls the first handler only, it's like Next with negative pos, used only on Router&MemoryRouter
-func (ctx *Context) do() {
-	if !ctx.prepare() {
-		return
-	}
-	ctx.posReset()
-	ctx.Next()
 }
 
 // Next calls all the next handler from the middleware stack, it used inside a middleware.
@@ -478,13 +448,12 @@ func (ctx *Context) IsBreak() bool {
 
 // reset ctx.
 // Note: Never reset `ctx.frame`, `ctx.W`, `ctx.enableGzip`, `ctx.enableSession` and `ctx.enableXSRF`!
-func (ctx *Context) reset(w http.ResponseWriter, r *http.Request, pathParams Params, data map[interface{}]interface{}) {
+func (ctx *Context) reset(w http.ResponseWriter, r *http.Request) {
 	ctx.limitedRequestBody = nil
-	ctx.data = data
+	ctx.data = nil
 	ctx.queryParams = nil
 	ctx._xsrfToken = ""
 	ctx._xsrfTokenReset = false
-	ctx.pathParams = pathParams
 	ctx.W.reset(w)
 	ctx.R = r
 }

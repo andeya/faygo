@@ -94,7 +94,7 @@ response:
 - Supports HTTP/HTTP2, HTTPS (tls/letsencrypt), UNIX and other Server types
 - Multi-instance is supported, and these configurations information are independent of each other
 - Supports the same instance to monitor multi-server and multi-port
-- Based on the popular httprouter build router, and supports chain or tree style to register router
+- Based on the high-performance `httprouter` to redevelope, and provides chain or tree style to register router
 - Powerful file router supports for custom file systems, framework has provided DirFS, RenderFS, MarkdownFS and so on
 - Supports cross-platform color log system, and has two output interface (console and file)
 - Supports session management

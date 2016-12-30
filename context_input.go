@@ -57,6 +57,11 @@ func (ctx *Context) URI() string {
 	return ctx.R.RequestURI
 }
 
+// URL returns full request url with query string, fragment.
+func (ctx *Context) URL() *url.URL {
+	return ctx.R.URL
+}
+
 // Path returns request url path (without query string, fragment).
 func (ctx *Context) Path() string {
 	return ctx.R.URL.Path
@@ -366,7 +371,7 @@ func (ctx *Context) PathParam(key string) string {
 }
 
 // PathParamAll returns whole path parameters.
-func (ctx *Context) PathParamAll() Params {
+func (ctx *Context) PathParamAll() PathParams {
 	return ctx.pathParams
 }
 

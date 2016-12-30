@@ -27,6 +27,7 @@ import (
 	"github.com/henrylee2cn/thinkgo/logging/color"
 	"github.com/henrylee2cn/thinkgo/session"
 	"github.com/henrylee2cn/thinkgo/swagger"
+	"github.com/henrylee2cn/thinkgo/utils"
 )
 
 const (
@@ -45,22 +46,59 @@ const (
 
 // Framework is the thinkgo web framework.
 type Framework struct {
-	name           string // name of the application
-	version        string // version of the application
-	config         Config
-	*MuxAPI        // root muxAPI node
+	// name of the application
+	name string
+	// version of the application
+	version string
+	config  Config
+	// root muxAPI node
+	*MuxAPI
 	muxesForRouter MuxAPIs
-	filter         HandlerChain // called before the route is matched
+	// called before the route is matched
+	filter         HandlerChain
 	servers        []*Server
 	running        bool
 	runOnce        sync.Once
 	buildOnce      sync.Once
 	lock           sync.RWMutex
 	sessionManager *session.Manager
-	syslog         *logging.Logger // for framework
-	bizlog         *logging.Logger // for user bissness
-	apidoc         *swagger.Swagger
+	// for framework
+	syslog *logging.Logger
+	// for user bissness
+	bizlog *logging.Logger
+	apidoc *swagger.Swagger
+	trees  map[string]*node
+	// Enables automatic redirection if the current route can't be matched but a
+	// handler for the path with (without) the trailing slash exists.
+	// For example if /foo/ is requested but a route only exists for /foo, the
+	// client is redirected to /foo with http status code 301 for GET requests
+	// and 307 for all other request methods.
+	redirectTrailingSlash bool
+	// If enabled, the router tries to fix the current request path, if no
+	// handle is registered for it.
+	// First superfluous path elements like ../ or // are removed.
+	// Afterwards the router does a case-insensitive lookup of the cleaned path.
+	// If a handle can be found for this route, the router makes a redirection
+	// to the corrected path with status code 301 for GET requests and 307 for
+	// all other request methods.
+	// For example /FOO and /..//Foo could be redirected to /foo.
+	// redirectTrailingSlash is independent of this option.
+	redirectFixedPath bool
+	// If enabled, the router checks if another method is allowed for the
+	// current route, if the current request can not be routed.
+	// If this is the case, the request is answered with 'Method Not Allowed'
+	// and HTTP status code 405.
+	// If no other Method is allowed, the request is delegated to the NotFound
+	// handler.
+	handleMethodNotAllowed bool
+	// If enabled, the router automatically replies to OPTIONS requests.
+	// Custom OPTIONS handlers take priority over automatic replies.
+	handleOPTIONS bool
+	contextPool   sync.Pool
 }
+
+// Make sure the Framework conforms with the http.Handler interface
+var _ http.Handler = new(Framework)
 
 // New uses the thinkgo web framework to create a new application.
 func New(name string, version ...string) *Framework {
@@ -71,7 +109,23 @@ func New(name string, version ...string) *Framework {
 		name:           name,
 		version:        ver,
 		muxesForRouter: nil,
-		config:         newConfig(configFileName),
+	}
+	frame.setConfig(newConfig(configFileName))
+	frame.redirectTrailingSlash = frame.config.Router.RedirectTrailingSlash
+	frame.redirectFixedPath = frame.config.Router.RedirectFixedPath
+	frame.handleMethodNotAllowed = frame.config.Router.HandleMethodNotAllowed
+	frame.handleOPTIONS = frame.config.Router.HandleOPTIONS
+	frame.contextPool = sync.Pool{
+		New: func() interface{} {
+			ctx := &Context{
+				frame:         frame,
+				enableGzip:    global.config.Gzip.Enable,
+				enableSession: frame.config.Session.Enable,
+				enableXSRF:    frame.config.XSRF.Enable,
+			}
+			ctx.W = &Response{context: ctx}
+			return ctx
+		},
 	}
 	frame.initSysLogger()
 	frame.initBizLogger()
@@ -81,7 +135,6 @@ func New(name string, version ...string) *Framework {
 	if _, ok := GetFrame(id); ok {
 		Fatalf("There are two applications with exactly the same name and version: %s", id)
 	}
-
 	addFrame(frame)
 
 	return frame
@@ -91,6 +144,10 @@ var (
 	mutexNewApp   sync.Mutex
 	mutexForBuild sync.Mutex
 )
+
+func (frame *Framework) setConfig(config Config) {
+	frame.config = config
+}
 
 // Name returns the name of the application
 func (frame *Framework) Name() string {
@@ -151,24 +208,23 @@ func (frame *Framework) build() {
 			frame.presetSystemMuxes()
 		}
 
-		// build router
-		var router = &Router{
-			RedirectTrailingSlash:  frame.config.Router.RedirectTrailingSlash,
-			RedirectFixedPath:      frame.config.Router.RedirectFixedPath,
-			HandleMethodNotAllowed: frame.config.Router.HandleMethodNotAllowed,
-			HandleOPTIONS:          frame.config.Router.HandleOPTIONS,
-			filter:                 frame.makeFilterHandle(),
-			NotFound:               frame.makeErrorHandler(http.StatusNotFound),
-			MethodNotAllowed:       frame.makeErrorHandler(http.StatusMethodNotAllowed),
-			PanicHandler:           frame.makePanicHandler(),
-		}
-
 		// register router
-		for _, node := range frame.MuxAPIsForRouter() {
-			handle := frame.makeHandle(node.handlers)
-			for _, method := range node.methods {
-				frame.syslog.Criticalf("%7s | %-30s", method, node.path)
-				router.Handle(method, node.path, handle)
+		for _, api := range frame.MuxAPIsForRouter() {
+			handle := frame.makeHandle(api.handlers)
+			for _, method := range api.methods {
+				if api.path[0] != '/' {
+					Panic("path must begin with '/' in path '" + api.path + "'")
+				}
+				if frame.trees == nil {
+					frame.trees = make(map[string]*node)
+				}
+				root := frame.trees[method]
+				if root == nil {
+					root = new(node)
+					frame.trees[method] = root
+				}
+				root.addRoute(api.path, handle)
+				frame.syslog.Criticalf("%7s | %-30s", method, api.path)
 			}
 		}
 
@@ -184,7 +240,7 @@ func (frame *Framework) build() {
 				unixFileMode:    frame.config.UNIXFileMode,
 				Server: &http.Server{
 					Addr:         frame.config.Addrs[i],
-					Handler:      router,
+					Handler:      frame,
 					ReadTimeout:  frame.config.ReadTimeout,
 					WriteTimeout: frame.config.WriteTimeout,
 				},
@@ -373,106 +429,7 @@ func (frame *Framework) NewNamedStaticFS(name, pattern string, fs FileSystem) *M
 	return (&MuxAPI{frame: frame}).NamedStaticFS(name, pattern, fs)
 }
 
-// makeFilterHandle makes an FilterFunc.
-func (frame *Framework) makeFilterHandle() FilterFunc {
-	if len(frame.filter) == 0 {
-		return nil
-	}
-	ctxPool := sync.Pool{
-		New: func() interface{} {
-			return newFilterContext(frame)
-		},
-	}
-	return func(w http.ResponseWriter, r *http.Request) (map[interface{}]interface{}, bool) {
-		ctx := ctxPool.Get().(*Context)
-		ctx.reset(w, r, nil, nil)
-		defer func() {
-			ctxPool.Put(ctx)
-		}()
-		ctx.posReset()
-
-		var u = ctx.URI()
-		start := time.Now()
-
-		ctx.Next()
-		if ctx.IsBreak() {
-			if !ctx.W.Committed() {
-				ctx.Error(http.StatusForbidden, http.StatusText(http.StatusForbidden))
-			}
-			stop := time.Now()
-			method := ctx.Method()
-			if u == "" {
-				u = "/"
-			}
-			n := ctx.W.Status()
-			code := color.Green(n)
-			switch {
-			case n >= 500:
-				code = color.Red(n)
-			case n >= 400:
-				code = color.Magenta(n)
-			case n >= 300:
-				code = color.Grey(n)
-			}
-			ctx.Log().Infof("%15s %7s  %3s %10d %12s %-30s | ", ctx.RealIP(), method, code, ctx.W.Size(), stop.Sub(start), u)
-			return nil, false
-		}
-		return ctx.data, true
-	}
-}
-
-// makeHandle makes an *apiware.ParamsAPI implements the Handle interface.
-func (frame *Framework) makeHandle(handlerChain HandlerChain) Handle {
-	ctxPool := sync.Pool{
-		New: func() interface{} {
-			return newContext(frame, handlerChain)
-		},
-	}
-	return func(w http.ResponseWriter, r *http.Request, pathParams Params, data map[interface{}]interface{}) {
-		ctx := ctxPool.Get().(*Context)
-		ctx.reset(w, r, pathParams, data)
-		defer func() {
-			ctxPool.Put(ctx)
-		}()
-		ctx.do()
-	}
-}
-
-// Create the handle to be called by the router
-func (frame *Framework) makeErrorHandler(status int) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		global.errorFunc(newEmptyContext(frame, w, r), http.StatusText(status), status)
-	})
-}
-
-// Create the handle to be called by the router
-func (frame *Framework) makePanicHandler() func(http.ResponseWriter, *http.Request, interface{}) {
-	s := []byte("/src/runtime/panic.go")
-	e := []byte("\ngoroutine ")
-	line := []byte("\n")
-	return func(w http.ResponseWriter, r *http.Request, rcv interface{}) {
-		stack := make([]byte, 4<<10) //4KB
-		length := runtime.Stack(stack, true)
-		start := bytes.Index(stack, s)
-		stack = stack[start:length]
-		start = bytes.Index(stack, line) + 1
-		stack = stack[start:]
-		end := bytes.LastIndex(stack, line)
-		if end != -1 {
-			stack = stack[:end]
-		}
-		end = bytes.Index(stack, e)
-		if end != -1 {
-			stack = stack[:end]
-		}
-		stack = bytes.TrimRight(stack, "\n")
-		errStr := fmt.Sprintf("%v\n[TRACE]\n%s\n", rcv, stack)
-		global.errorFunc(newEmptyContext(frame, w, r), errStr, http.StatusInternalServerError)
-	}
-}
-
 func (frame *Framework) presetSystemMuxes() {
-	frame.Use(accessLogWare())
 	var hadUpload, hadStatic bool
 	for _, child := range frame.MuxAPI.children {
 		if strings.Contains(child.pattern, "/upload/") {
@@ -525,6 +482,171 @@ func (frame *Framework) registerSession() {
 		panic(err)
 	}
 	go frame.sessionManager.GC()
+}
+
+// ServeHTTP makes the router implement the http.Handler interface.
+func (frame *Framework) ServeHTTP(w http.ResponseWriter, req *http.Request) {
+	var start = time.Now()
+	var ctx = frame.contextPool.Get().(*Context)
+	defer func() {
+		if rcv := recover(); rcv != nil {
+			panicHandler(ctx, rcv)
+		}
+		frame.contextPool.Put(ctx)
+	}()
+	ctx.reset(w, req)
+	var u = ctx.URI()
+	var method = ctx.Method()
+	if u == "" {
+		u = "/"
+	}
+	frame.serveHTTP(ctx)
+	var n = ctx.Status()
+	var code string
+	switch {
+	case n >= 500:
+		code = color.Red(n)
+	case n >= 400:
+		code = color.Magenta(n)
+	case n >= 300:
+		code = color.Grey(n)
+	default:
+		code = color.Green(n)
+	}
+	ctx.Log().Infof("%15s %7s  %3s %10d %12s %-30s | ", ctx.RealIP(), method, code, ctx.Size(), time.Since(start), u)
+}
+
+func (frame *Framework) serveHTTP(ctx *Context) {
+	if !ctx.doFilter() {
+		return
+	}
+	var path = ctx.Path()
+	var method = ctx.Method()
+	if root := frame.trees[method]; root != nil {
+		if handle, ps, tsr := root.getValue(path); handle != nil {
+			handle(ctx, ps)
+			return
+		} else if method != "CONNECT" && path != "/" {
+			code := 301 // Permanent redirect, request with GET method
+			if method != "GET" {
+				// Temporary redirect, request with same method
+				// As of Go 1.3, Go does not support status code 308.
+				code = 307
+			}
+
+			if tsr && frame.redirectTrailingSlash {
+				if len(path) > 1 && path[len(path)-1] == '/' {
+					ctx.ModifyPath(path[:len(path)-1])
+				} else {
+					ctx.ModifyPath(path + "/")
+				}
+				http.Redirect(ctx.W, ctx.R, ctx.URL().String(), code)
+				return
+			}
+
+			// Try to fix the request path
+			if frame.redirectFixedPath {
+				fixedPath, found := root.findCaseInsensitivePath(
+					utils.CleanPath(path),
+					frame.redirectTrailingSlash,
+				)
+				if found {
+					ctx.ModifyPath(string(fixedPath))
+					http.Redirect(ctx.W, ctx.R, ctx.URL().String(), code)
+					return
+				}
+			}
+		}
+	}
+
+	if method == "OPTIONS" {
+		// Handle OPTIONS requests
+		if frame.handleOPTIONS {
+			if allow := frame.allowed(path, method); len(allow) > 0 {
+				ctx.SetHeader("Allow", allow)
+				return
+			}
+		}
+	} else {
+		// Handle 405
+		if frame.handleMethodNotAllowed {
+			if allow := frame.allowed(path, method); len(allow) > 0 {
+				ctx.SetHeader("Allow", allow)
+				global.errorFunc(ctx, "Method Not Allowed", 405)
+				return
+			}
+		}
+	}
+
+	// Handle 404
+	global.errorFunc(ctx, "Not Found", 404)
+}
+
+func (frame *Framework) allowed(path, reqMethod string) (allow string) {
+	if path == "*" { // server-wide
+		for method := range frame.trees {
+			if method == "OPTIONS" {
+				continue
+			}
+
+			// add request method to list of allowed methods
+			if len(allow) == 0 {
+				allow = method
+			} else {
+				allow += ", " + method
+			}
+		}
+	} else { // specific path
+		for method := range frame.trees {
+			// Skip the requested method - we already tried this one
+			if method == reqMethod || method == "OPTIONS" {
+				continue
+			}
+
+			handle, _, _ := frame.trees[method].getValue(path)
+			if handle != nil {
+				// add request method to list of allowed methods
+				if len(allow) == 0 {
+					allow = method
+				} else {
+					allow += ", " + method
+				}
+			}
+		}
+	}
+	if len(allow) > 0 {
+		allow += ", OPTIONS"
+	}
+	return
+}
+
+// makeHandle makes an *apiware.ParamsAPI implements the Handle interface.
+func (frame *Framework) makeHandle(handlerChain HandlerChain) Handle {
+	return func(ctx *Context, pathParams PathParams) {
+		ctx.doHandler(handlerChain, pathParams)
+	}
+}
+
+func panicHandler(ctx *Context, rcv interface{}) {
+	s := []byte("/src/runtime/panic.go")
+	e := []byte("\ngoroutine ")
+	line := []byte("\n")
+	stack := make([]byte, 4<<10) //4KB
+	length := runtime.Stack(stack, true)
+	start := bytes.Index(stack, s)
+	stack = stack[start:length]
+	start = bytes.Index(stack, line) + 1
+	stack = stack[start:]
+	end := bytes.LastIndex(stack, line)
+	if end != -1 {
+		stack = stack[:end]
+	}
+	end = bytes.Index(stack, e)
+	if end != -1 {
+		stack = stack[:end]
+	}
+	stack = bytes.TrimRight(stack, "\n")
+	global.errorFunc(ctx, fmt.Sprintf("%v\n[TRACE]\n%s\n", rcv, stack), http.StatusInternalServerError)
 }
 
 func createConfigFilenameAndVersion(name string, version ...string) (fileName string, ver string) {

@@ -87,7 +87,7 @@ var (
 			frames:          []*Framework{},
 			config:          globalConfig,
 			errorFunc:       defaultErrorFunc,
-			bodydecoder:     defaultBodyJSONFunc,
+			bodydecoder:     defaultBodydecoder,
 			binderrorFunc:   defaultBinderrorFunc,
 			paramNameMapper: defaultParamNameMapper,
 			fsManager: newFileServerManager(
@@ -111,7 +111,9 @@ var (
 		return global
 	}()
 	defaultErrorFunc = func(ctx *Context, errStr string, status int) {
-		ctx.Log().Error(errStr)
+		if status >= 500 {
+			ctx.Log().Error(errStr)
+		}
 		statusText := http.StatusText(status)
 		if len(errStr) > 0 {
 			errStr = `<br><p><b style="color:red;">[ERROR]</b> <pre>` + errStr + `</pre></p>`
@@ -126,7 +128,7 @@ var (
 		)
 	}
 	// The default body decoder is json format decoding
-	defaultBodyJSONFunc = func(dest reflect.Value, body []byte) error {
+	defaultBodydecoder = func(dest reflect.Value, body []byte) error {
 		var err error
 		if dest.Kind() == reflect.Ptr {
 			err = json.Unmarshal(body, dest.Interface())
@@ -253,7 +255,11 @@ func HandleError(ctx *Context, errStr string, status int) {
 
 // SetErrorFunc sets the global default `ErrorFunc` function.
 func SetErrorFunc(errorFunc ErrorFunc) {
-	global.errorFunc = errorFunc
+	if errorFunc == nil {
+		global.errorFunc = defaultErrorFunc
+	} else {
+		global.errorFunc = errorFunc
+	}
 }
 
 // DecodeBody decodes params from request body.
@@ -263,7 +269,11 @@ func DecodeBody(dest reflect.Value, body []byte) error {
 
 // SetBodydecoder sets the global default `Bodydecoder` function.
 func SetBodydecoder(bodydecoder apiware.Bodydecoder) {
-	global.bodydecoder = bodydecoder
+	if bodydecoder == nil {
+		global.bodydecoder = defaultBodydecoder
+	} else {
+		global.bodydecoder = bodydecoder
+	}
 }
 
 // HandleBinderror calls the default parameter binding failure handler.
@@ -273,7 +283,11 @@ func HandleBinderror(ctx *Context, err error) {
 
 // SetBinderrorFunc sets the global default `BinderrorFunc` function.
 func SetBinderrorFunc(binderrorFunc BinderrorFunc) {
-	global.binderrorFunc = binderrorFunc
+	if binderrorFunc == nil {
+		global.binderrorFunc = defaultBinderrorFunc
+	} else {
+		global.binderrorFunc = binderrorFunc
+	}
 }
 
 // MapParamName maps the APIHander's parameter name from the structure field.
@@ -286,7 +300,11 @@ func MapParamName(fieldName string) (paramName string) {
 
 // SetParamNameMapper sets the global default `ParamNameMapper` function.
 func SetParamNameMapper(paramNameMapper apiware.ParamNameMapper) {
-	global.paramNameMapper = paramNameMapper
+	if paramNameMapper == nil {
+		global.paramNameMapper = defaultParamNameMapper
+	} else {
+		global.paramNameMapper = paramNameMapper
+	}
 }
 
 // GetRender returns a custom thinkgo template renderer using pongo2.
@@ -294,7 +312,7 @@ func GetRender() *Render {
 	return global.render
 }
 
-// RenderVar sets the global template variable or function for pongo2 render.
+// RenderVar sets the global template variable, function or pongo2.FilterFunction for pongo2 render.
 func RenderVar(name string, v interface{}) {
 	global.render.TemplateVar(name, v)
 }

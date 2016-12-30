@@ -371,7 +371,7 @@ func (mux *MuxAPI) checkPathParams() {
 		}
 		numPathParams++
 	}
-	if countParams(mux.pattern) < numPathParams {
+	if countPathParams(mux.pattern) < numPathParams {
 		mux.frame.Log().Panicf(
 			"[Thinkgo-checkPathParams] the router pattern `%s` does not match the path params:\n%#v",
 			mux.pattern,

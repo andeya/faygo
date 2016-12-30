@@ -14,18 +14,17 @@
 
 // define common middlewares.
 
-package thinkgo
+package middleware
 
 import (
 	"net/http"
 	"strings"
-	"time"
 
-	"github.com/henrylee2cn/thinkgo/logging/color"
+	"github.com/henrylee2cn/thinkgo"
 )
 
 // NewIPFilter creates middleware that intercepts the specified IP prefix.
-func NewIPFilter(whitelist []string, realIP bool) HandlerFunc {
+func NewIPFilter(whitelist []string, realIP bool) thinkgo.HandlerFunc {
 	var noAccess bool
 	var match []string
 	var prefix []string
@@ -42,7 +41,7 @@ func NewIPFilter(whitelist []string, realIP bool) HandlerFunc {
 		}
 	}
 
-	return func(ctx *Context) error {
+	return func(ctx *thinkgo.Context) error {
 		if noAccess {
 			ctx.Error(http.StatusForbidden, "no access")
 			return nil
@@ -72,38 +71,9 @@ func NewIPFilter(whitelist []string, realIP bool) HandlerFunc {
 }
 
 // CrossOrigin creates Cross-Domain middleware
-var CrossOrigin = HandlerFunc(func(ctx *Context) error {
-	ctx.SetHeader(HeaderAccessControlAllowOrigin, ctx.HeaderParam(HeaderOrigin))
-	// ctx.SetHeader(HeaderAccessControlAllowOrigin, "*")
-	ctx.SetHeader(HeaderAccessControlAllowCredentials, "true")
+var CrossOrigin = thinkgo.HandlerFunc(func(ctx *thinkgo.Context) error {
+	ctx.SetHeader(thinkgo.HeaderAccessControlAllowOrigin, ctx.HeaderParam(thinkgo.HeaderOrigin))
+	// ctx.SetHeader(thinkgo.HeaderAccessControlAllowOrigin, "*")
+	ctx.SetHeader(thinkgo.HeaderAccessControlAllowCredentials, "true")
 	return nil
 })
-
-// Access log statistics
-func accessLogWare() HandlerFunc {
-	return func(ctx *Context) error {
-		var u = ctx.URI()
-		start := time.Now()
-		ctx.Next()
-		stop := time.Now()
-
-		method := ctx.Method()
-		if u == "" {
-			u = "/"
-		}
-
-		n := ctx.W.Status()
-		code := color.Green(n)
-		switch {
-		case n >= 500:
-			code = color.Red(n)
-		case n >= 400:
-			code = color.Magenta(n)
-		case n >= 300:
-			code = color.Grey(n)
-		}
-
-		ctx.Log().Infof("%15s %7s  %3s %10d %12s %-30s | ", ctx.RealIP(), method, code, ctx.W.Size(), stop.Sub(start), u)
-		return nil
-	}
-}

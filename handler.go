@@ -208,9 +208,9 @@ func (h *apiHandler) new() *apiHandler {
 	return h2
 }
 
-// Bind the request params to `apiHandler.handler`.
-func (h *apiHandler) bind(req *http.Request, params Params) error {
-	return h.paramsAPI.BindFields(h.paramValues, req, params)
+// Bind the request path params to `apiHandler.handler`.
+func (h *apiHandler) bind(req *http.Request, pathParams PathParams) error {
+	return h.paramsAPI.BindFields(h.paramValues, req, pathParams)
 }
 
 // Reset all fields to a value of zero
