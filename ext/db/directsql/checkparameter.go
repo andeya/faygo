@@ -10,12 +10,13 @@ package directsql
 
 import (
 	"errors"
-	"github.com/henrylee2cn/thinkgo"
-	"github.com/henrylee2cn/thinkgo/ext/uuid"
 	"regexp"
 	"strconv"
 	"time"
 	"unicode/utf8"
+
+	"github.com/henrylee2cn/thinkgo"
+	"github.com/henrylee2cn/thinkgo/ext/uuid"
 )
 
 // 类型判断正则表达式定义
@@ -91,24 +92,18 @@ func CheckRequired(str string) bool {
 	return len(str) > 0
 }
 
-//获取一个新的UUID
-func newUUID() string {
-	return uuid.New().String()
-}
-
 //检查并处理参数
 //paras:sql的cmd中的参数定义slice；mp:客户端提交的参数map；ctx *lessgo.Context当前执行该功能的上下文
 //根据待默认值的参数是否需要返回构造返回到客户端的值
 func dealwithParameter(paras []*TSqlParameter, mp map[string]interface{}, ctx *thinkgo.Context) (map[string]interface{}, error) {
 	//没有参数处理定义返回
 	if len(paras) == 0 {
-		//thinkgo.Debug("Check sql paramaters - nil")
+		//thinkgo.Debug("Check sql parameters - nil")
 		return nil, nil
 	}
 	//将在服务端生成的默认值需要返回的放入到该结果map中。
 	var result map[string]interface{}
 	result = make(map[string]interface{})
-
 	//循环处理参数
 	for _, para := range paras {
 		//默认值处理，存在就不处理使用存在的值，不存在就增加并返回给客户端
@@ -118,7 +113,7 @@ func dealwithParameter(paras []*TSqlParameter, mp map[string]interface{}, ctx *t
 			//根据默认值类型分别处理
 			switch para.Default {
 			case DT_UUID: //uuid
-				mp[para.Name] = newUUID()
+				mp[para.Name] = uuid.New().String()
 			case DT_NOWDATE: // now date
 				mp[para.Name] = time.Now().Format("2006-01-02")
 			case DT_NOWDATETIME: //now(date +time)
@@ -127,11 +122,11 @@ func dealwithParameter(paras []*TSqlParameter, mp map[string]interface{}, ctx *t
 				mp[para.Name] = time.Now().Unix()
 			case DT_CUSTOM: //通过RegAny注册的变量或函数
 				value, err := contextcall(para.Defaultstr, ctx)
-				//thinkgo.Debug("SQL Default paramater value:", value)
+				//thinkgo.Debug("SQL Default parameter value:", value)
 				if err == nil {
 					mp[para.Name] = value.Interface()
 				} else {
-					thinkgo.Error("SQL Default paramater error：", err)
+					thinkgo.Error("Error: sql default parameter error,", err)
 				}
 			}
 			//如果需要返回
@@ -148,7 +143,7 @@ func dealwithParameter(paras []*TSqlParameter, mp map[string]interface{}, ctx *t
 			if _, ok := v.(string); ok && (para.Required) && (len(v.(string)) == 0) {
 				return nil, errors.New("错误：参数[" + para.Name + "]不能为空！")
 			}
-			//thinkgo.Debug("Check sql paramaters - get value")
+			//thinkgo.Debug("Check sql parameters - get value")
 			//参数类型处理
 			switch para.Paratype {
 			case PT_STRING:
@@ -160,7 +155,7 @@ func dealwithParameter(paras []*TSqlParameter, mp map[string]interface{}, ctx *t
 				}
 
 			case PT_INT:
-				thinkgo.Debug("Check sql int paramater -", v)
+				//thinkgo.Debug("Check sql int parameter -", v)
 				//验证是否整数
 				if IsInt(v) {
 				} else {
@@ -208,7 +203,7 @@ func dealwithParameter(paras []*TSqlParameter, mp map[string]interface{}, ctx *t
 					return nil, errors.New("错误：参数[" + para.Name + "]不是有效的电子信箱！")
 				}
 			}
-			//thinkgo.Debug("Check sql paramaters - " + para.Name + ": " + v.(string))
+			//thinkgo.Debug("Check sql parameters - " + para.Name + ": " + v.(string))
 		} else {
 			//sql的cmd参数中存在该参数定义但传入的post参数不存在则返回错误
 			return nil, errors.New("错误：参数[" + para.Name + "]未定义！")

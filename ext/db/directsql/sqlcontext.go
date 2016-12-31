@@ -11,15 +11,16 @@ package directsql
 import (
 	"errors"
 	"fmt"
-	"github.com/henrylee2cn/thinkgo"
 	"reflect"
 	"regexp"
 	"time"
+
+	"github.com/henrylee2cn/thinkgo"
 )
 
 var reIdentifiers = regexp.MustCompile("^[a-zA-Z0-9_]+$")
 
-// A Context type provides constants, variables or functions to a sql paramater's default value.
+// A Context type provides constants, variables or functions to a sql parameter's default value.
 var sqlcontext map[string]interface{}
 
 func init() {
@@ -63,7 +64,7 @@ func contextcall(name string, params ...interface{}) (result reflect.Value, err 
 		thinkgo.Debug("Context Func: ", t)
 		//Check input arguments
 		if len(params) != t.NumIn() {
-			err = errors.New("Paramaters of function not adapted")
+			err = errors.New("parameters of function not adapted")
 			return
 		}
 		// Check output arguments

@@ -9,16 +9,17 @@ package directsql
 
 import (
 	"encoding/xml"
-	"github.com/fsnotify/fsnotify"
-	"github.com/go-xorm/core"
-	"github.com/henrylee2cn/thinkgo"
-	thinkgoxorm "github.com/henrylee2cn/thinkgo/ext/db/xorm"
-	confpkg "github.com/henrylee2cn/thinkgo/ini"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
 	"sync"
+
+	"github.com/fsnotify/fsnotify"
+	"github.com/go-xorm/core"
+	"github.com/henrylee2cn/thinkgo"
+	thinkgoxorm "github.com/henrylee2cn/thinkgo/ext/db/xorm"
+	confpkg "github.com/henrylee2cn/thinkgo/ini"
 )
 
 //var modelsqls map[string]*TModel
@@ -414,13 +415,13 @@ func GetSqlType(modelid string, sqlid string) TSqltype {
 
 //获取sqlentity SQL的执行实体
 func findSql(modelid string, sqlid string) *TSql {
-	thinkgo.Debug("Model Path: " + modelid + " ,SqlId: " + sqlid)
+	//thinkgo.Debug("Model Path: " + modelid + " ,SqlId: " + sqlid)
 	return models.findsql(modelid, sqlid)
 }
 
 //根据TModel文件路径获取 TModel
 func findModel(modelid string) *TModel {
-	thinkgo.Debug("Model Path: " + modelid)
+	//thinkgo.Debug("Model Path: " + modelid)
 	return models.findmodel(modelid)
 }
 

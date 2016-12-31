@@ -10,6 +10,7 @@ package directsql
 
 import (
 	"encoding/json"
+
 	"github.com/henrylee2cn/thinkgo"
 )
 
@@ -18,18 +19,18 @@ func DirectSQL() thinkgo.HandlerFunc {
 	return func(ctx *thinkgo.Context) error {
 		//1.根据路径获取sqlentity:去掉/bos/,再拆分成 modelId，sqlId
 		modelId, sqlId := trimBeforeSplitRight(ctx.Path(), '/', 2)
-		thinkgo.Debug("Model file: " + modelId + "   - sqlId:" + sqlId)
+		thinkgo.Debug("Model file: " + modelId + "  - sqlId:" + sqlId)
 		//2.获取ModelSql
 		m := findModel(modelId)
 		if m == nil {
-			thinkgo.Error("错误：未定义的Model文件: " + modelId)
-			return ctx.JSONMsg(404, 404, "未定义的Model文件: "+modelId)
+			thinkgo.Error("Error: model file does not exist,") //("错误：未定义的Model文件: " + modelId)
+			return ctx.JSONMsg(404, 404, "Error:model file does not exist: "+modelId)
 		}
 		//3.获取Sql
 		se := m.findSql(sqlId)
-		if se == nil {
-			thinkgo.Error("错误：Model文件中未定义sql: " + modelId + "/" + sqlId)
-			return ctx.JSONMsg(404, 404, "Model文件中未定义sql: "+modelId+"/"+sqlId)
+		if se == nil { //
+			thinkgo.Error("Error: sql is not defined in the model file, " + modelId + "/" + sqlId) //错误：Model文件中未定义sql:
+			return ctx.JSONMsg(404, 404, "Error: sql is not defined in the model file, "+modelId+"/"+sqlId)
 		}
 		//4.根据SQL类型分别处理执行并返回结果信息
 		switch se.Sqltype {
@@ -86,8 +87,8 @@ func DirectSQL() thinkgo.HandlerFunc {
 			}
 			//.3 检查sql语句配置个数
 			if len(se.Cmds) != 2 {
-				thinkgo.Error("错误：分页查询必须定义2个SQL节点，一个获取总页数另一个用于查询数据！")
-				return ctx.JSONMsg(404, 404, "分页查询必须定义2个SQL节点，一个获取总页数另一个用于查询数据！")
+				thinkgo.Error("Error: paging query must define two sql nodes, one for total number and one for data query!") //错误：分页查询必须定义2个SQL节点，一个获取总页数另一个用于查询数据！
+				return ctx.JSONMsg(404, 404, "Error: paging query must define two sql nodes, one for total number and one for data query!")
 			}
 
 			//.5 参数验证并处理(参数定义到真正查询结果的cmd下)－OK
