@@ -76,7 +76,7 @@ type TCmd struct {
 	Pin        string           `xml:"in,attr"`   //输入参数标示
 	Rout       string           `xml:"out,attr"`  //输出结果标示
 	Sql        string           `xml:",chardata"` //SQL
-	Paramaters []*TSqlParameter `xml:"paramaters>paramater"`
+	Parameters []*TSqlParameter `xml:"parameters>parameter"`
 }
 
 //TSql 类型
@@ -292,7 +292,7 @@ func (ms *TModels) parseTModel(msqlfile string) (*TModel, error) {
 		//sql下的每个cmd循环处理
 		for _, cmd := range se.Cmds {
 			//每个cmd下的参数循环处理参数类型与默认值类型
-			for _, para := range cmd.Paramaters {
+			for _, para := range cmd.Parameters {
 				//参数类型
 				switch para.Paratypestr { //string/int/float/email/date/datetime/blob
 				case "string":

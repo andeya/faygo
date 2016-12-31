@@ -12,17 +12,18 @@
     - sqlservice--通过代码调用的接口单元
     - checkparameter -- 参数处理（参数验证与默认参数处理）
     - resultcache --查询结果缓存处理单元
+    - sqlcontext --sql参数默认值的自定义函数单元
     - sqlhelper--辅助函数
-    - sqlwatcher--SQL配置文件监控自动更新(  属于实现文件修改，删除监控，改名，新增貌似不行)
+    - sqlwatcher--SQL配置文件监控自动更新(  实现文件修改，删除监控，改名，新增貌似不行)
     - 系统中通过代码如何调用：
         directsql/sqlService 单元中的函数
 
 ## 配置文件：
-    config/directsql.config 的内容
+    config/directsql.ini 的内容
      `
     ;SQL配置文件扩展名，只能一个。
     ext=.msql 
-    ;是否懒惰加载，true 第一次请求才加载请求的sqlmodel文件然后缓存，false＝一开始就根据配置的roots目录全部加载
+    ;是否懒惰加载，true 第一次请求才加载请求的sqlmodel文件然后缓存(未实现)，false＝一开始就根据配置的roots目录全部加载
     lazyload＝false 
     ;是否开始监控所有roots目录下的配置文件变化，改变自动处理(增加，删除，修改)
     watch=true
@@ -101,19 +102,19 @@
                 </parameters>
 
 ## 查询结果缓存
-    - 首先在 directsql.config中进行配置全局参数
+    - 首先在 directsql.ini中进行配置全局参数
        ;是否启用查询数据缓存功能，启用则配置sql中配置属性cached=true 才有效，否则一律不缓存
        cached=true
        ;默认缓存的时间，如果使用缓存并且未配置缓存时间则使用该默认时间，单位为分钟，-1为一直有效，-2为一月，-3为一周 -4为一天，单位为分钟。
       defaultcachetime=30    
     - 在sql配置文件中的sql节点配置 属性
        - cached : 是否缓存结果，0=不缓存 1=缓存，缓存的时间由cachetime确定（如果没有配置cachetime则自动为30分钟），只对 select，multiselect，pagingselect(第一页)有效
-       - cachetime ：缓存有效时间，不配置或配置为0时 默认为directsql.config的参数分钟，-1为一直有效，-2为一月，-3为一周，单位为分钟。 
+       - cachetime ：缓存有效时间，不配置或配置为0时 默认为directsql.ini的参数分钟，-1为一直有效，-2为一月，-3为一周，单位为分钟。 
     - 说明
        - 缓存的key值用 执行请求的路径(/sys/home/select)， 参数名与参数值对作为suffix，进行确定换成值，对于同一个sql只缓存一次，就是第一次执行的参数的结果，其他的参数查询部缓存；对于没有参数的结果缓存suffix=nil  
 
 ## 完整示例
-    ```<!-- id为本model的标识一般同文件名，database为xorm.config中配置的数据库名称，为执行该配置文件sql的连接，空为默认数据库 -->
+    ```<!-- id为本model的标识一般同文件名，database为xorm.ini中配置的数据库名称，为执行该配置文件sql的连接，空为默认数据库 -->
        <model id="demo" database="">
         <comment>
             <desc>DirectSQL功能测试SQL定义</desc>

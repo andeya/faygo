@@ -91,7 +91,7 @@ func DirectSQL() thinkgo.HandlerFunc {
 			}
 
 			//.5 参数验证并处理(参数定义到真正查询结果的cmd下)－OK
-			_, err = dealwithParameter(se.Cmds[1].Paramaters, jsonpara, ctx)
+			_, err = dealwithParameter(se.Cmds[1].Parameters, jsonpara, ctx)
 			if err != nil {
 				thinkgo.Error(err.Error())
 				return ctx.JSONMsg(400, 400, err.Error())
@@ -204,7 +204,7 @@ func DirectSQL() thinkgo.HandlerFunc {
 				}
 			}
 			//.3 参数验证并处理,－OK
-			_, err = dealwithParameter(se.Cmds[0].Paramaters, jsonpara, ctx)
+			_, err = dealwithParameter(se.Cmds[0].Parameters, jsonpara, ctx)
 			if err != nil {
 				thinkgo.Error(err.Error())
 				return ctx.JSONMsg(400, 400, err.Error())
@@ -327,10 +327,10 @@ func DirectSQL() thinkgo.HandlerFunc {
 			//.3 参数验证并处理－OK
 			for _, cmd := range se.Cmds {
 				//未配置参数则直接忽略
-				if len(cmd.Paramaters) == 0 {
+				if len(cmd.Parameters) == 0 {
 					continue
 				}
-				_, err = dealwithParameter(cmd.Paramaters, jsonpara, ctx)
+				_, err = dealwithParameter(cmd.Parameters, jsonpara, ctx)
 				if err != nil {
 					thinkgo.Error(err.Error())
 					return ctx.JSONMsg(400, 400, err.Error())
@@ -399,7 +399,7 @@ func DirectSQL() thinkgo.HandlerFunc {
 				}
 			}
 			//.2.SQL定义参数验证并处理---OK，服务端生成的uuid返回给客户端
-			result, err := dealwithParameter(se.Cmds[0].Paramaters, jsonpara, ctx)
+			result, err := dealwithParameter(se.Cmds[0].Parameters, jsonpara, ctx)
 			if err != nil {
 				thinkgo.Error(err.Error())
 				return ctx.JSONMsg(400, 400, err.Error())
@@ -434,10 +434,10 @@ func DirectSQL() thinkgo.HandlerFunc {
 			//将在服务端生成的uuid返回到客户端的变量
 			var results []map[string]interface{}
 			//未配置参数则直接忽略
-			if len(se.Cmds[0].Paramaters) > 0 {
+			if len(se.Cmds[0].Parameters) > 0 {
 				results = make([]map[string]interface{}, 0)
 				for _, jp := range jsonpara {
-					result, err := dealwithParameter(se.Cmds[0].Paramaters, jp, ctx)
+					result, err := dealwithParameter(se.Cmds[0].Parameters, jp, ctx)
 					if err != nil {
 						thinkgo.Error(err.Error())
 						return ctx.JSONMsg(400, 400, err.Error())
@@ -481,14 +481,14 @@ func DirectSQL() thinkgo.HandlerFunc {
 			//循環每個sql定義
 			for _, cmd := range se.Cmds {
 				//未配置参数则直接忽略
-				if len(cmd.Paramaters) == 0 {
+				if len(cmd.Parameters) == 0 {
 					continue
 				}
 				//循環其批量參數
 				if sp, ok := jsonpara[cmd.Pin]; ok {
 					result1 := make([]map[string]interface{}, 0)
 					for _, p := range sp {
-						result2, err := dealwithParameter(cmd.Paramaters, p, ctx)
+						result2, err := dealwithParameter(cmd.Parameters, p, ctx)
 						if err != nil {
 							thinkgo.Error(err.Error())
 							return ctx.JSONMsg(400, 400, err.Error())
