@@ -235,6 +235,7 @@ float64 |  []float64 |
 - [gorm数据库引擎](https://github.com/henrylee2cn/thinkgo/raw/master/ext/db/gorm): `github.com/henrylee2cn/thinkgo/ext/db/gorm`
 - [sqlx数据库引擎](https://github.com/henrylee2cn/thinkgo/raw/master/ext/db/sqlx): `github.com/henrylee2cn/thinkgo/ext/db/sqlx`
 - [xorm数据库引擎](https://github.com/henrylee2cn/thinkgo/raw/master/ext/db/xorm): `github.com/henrylee2cn/thinkgo/ext/db/xorm`
+- [directSQL(数据库脚本)](https://github.com/henrylee2cn/thinkgo/raw/master/ext/db/directsql): `github.com/henrylee2cn/thinkgo/ext/db/directsql`
 - [口令算法](https://github.com/henrylee2cn/thinkgo/raw/master/ext/otp):           `github.com/henrylee2cn/thinkgo/ext/otp`
 - [UUID](https://github.com/henrylee2cn/thinkgo/raw/master/ext/uuid):              `github.com/henrylee2cn/thinkgo/ext/uuid`
 - [Websocket](https://github.com/henrylee2cn/thinkgo/raw/master/ext/websocket):    `github.com/henrylee2cn/thinkgo/ext/websocket`
