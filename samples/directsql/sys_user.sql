@@ -4,7 +4,7 @@ MySQL Data Transfer
 Source Server         : MysqlLocal
 Source Server Version : 50712
 Source Host           : localhost:3306
-Source Database       : bimonline
+Source Database       : thinkgo
 
 Target Server Type    : MYSQL
 Target Server Version : 50712
