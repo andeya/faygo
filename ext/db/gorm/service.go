@@ -6,10 +6,11 @@ import (
 	"time"
 
 	"github.com/jinzhu/gorm"
-	// _ "github.com/jinzhu/gorm/dialects/mssql"
-	// _ "github.com/jinzhu/gorm/dialects/mysql" //github.com/go-sql-driver/mysql
-	// _ "github.com/jinzhu/gorm/dialects/postgres"
-	// _ "github.com/jinzhu/gorm/dialects/sqlite" //github.com/mattn/go-sqlite3
+
+	// _ "github.com/jinzhu/gorm/dialects/mssql"    //github.com/denisenkom/go-mssqldb
+	_ "github.com/jinzhu/gorm/dialects/mysql"    //github.com/go-sql-driver/mysql
+	_ "github.com/jinzhu/gorm/dialects/postgres" //github.com/lib/pq
+	// _ "github.com/jinzhu/gorm/dialects/sqlite"   //github.com/mattn/go-sqlite3
 
 	"github.com/henrylee2cn/thinkgo"
 	"github.com/henrylee2cn/thinkgo/utils"

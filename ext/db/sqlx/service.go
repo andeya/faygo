@@ -9,6 +9,12 @@ import (
 	"github.com/jmoiron/sqlx"
 	"github.com/jmoiron/sqlx/reflectx"
 
+	// _ "github.com/denisenkom/go-mssqldb" //mssql
+	_ "github.com/go-sql-driver/mysql" //mysql
+	_ "github.com/lib/pq"              //postgres
+	// _ "github.com/mattn/go-oci8"         //oracle(need to install the pkg-config utility)
+	// _ "github.com/mattn/go-sqlite3"      //sqlite
+
 	"github.com/henrylee2cn/thinkgo"
 	"github.com/henrylee2cn/thinkgo/utils"
 )
