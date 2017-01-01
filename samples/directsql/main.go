@@ -1,6 +1,7 @@
 package main
 
 import (
+	_ "github.com/go-sql-driver/mysql" //mysql driver
 	"github.com/henrylee2cn/thinkgo"
 	"github.com/henrylee2cn/thinkgo/samples/directsql/router"
 )
