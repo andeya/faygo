@@ -543,7 +543,7 @@ func (ctx *Context) HasFormFile(key string) bool {
 	return false
 }
 
-// SaveFile saves the file *Context.FormFile to global.UploadDir(),
+// SaveFile saves the uploaded file to global.UploadDir(),
 // character "?" indicates that the original file name.
 // for example newfname="a/?" -> global.UploadDir()/a/fname.
 func (ctx *Context) SaveFile(key string, cover bool, newfname ...string) (fileUrl string, size int64, err error) {
@@ -602,6 +602,92 @@ func (ctx *Context) SaveFile(key string, cover bool, newfname ...string) (fileUr
 	err3 := f2.Close()
 	if err3 != nil && err == nil {
 		err = err3
+	}
+	return
+}
+
+// SavedFileInfo for SaveFiles()
+type SavedFileInfo struct {
+	Url  string
+	Size int64
+}
+
+// SaveFiles saves the uploaded files to global.UploadDir(),
+// it's similar to SaveFile, but for saving multiple files.
+func (ctx *Context) SaveFiles(key string, cover bool, newfnames []string) (savedFileInfos []SavedFileInfo, err error) {
+	if !ctx.HasFormFile(key) {
+		err = errors.New("there are no file param: " + key)
+		return
+	}
+	files := ctx.R.MultipartForm.File[key]
+	hasFilename := len(newfnames) > 0
+	if hasFilename && len(newfnames) != len(files) {
+		err = errors.New("the number of new file names is not equal to the number of uploaded files")
+		return
+	}
+	for i, fh := range files {
+		var f multipart.File
+		f, err = fh.Open()
+		if err != nil {
+			return
+		}
+		defer func() {
+			err2 := f.Close()
+			if err2 != nil && err == nil {
+				err = err2
+			}
+		}()
+
+		// Sets the full file name
+		var fullname string
+		if !hasFilename {
+			fullname = filepath.Join(UploadDir(), fh.Filename)
+		} else {
+			if strings.Contains(newfnames[i], "?") {
+				fullname = filepath.Join(UploadDir(), strings.Replace(newfnames[i], "?", fh.Filename, -1))
+			} else {
+				fname := strings.TrimRight(newfnames[i], ".")
+				if filepath.Ext(fname) == "" {
+					fullname = filepath.Join(UploadDir(), fname+filepath.Ext(fh.Filename))
+				} else {
+					fullname = filepath.Join(UploadDir(), fname)
+				}
+			}
+		}
+
+		// Create the completion file path
+		p, _ := filepath.Split(fullname)
+		err = os.MkdirAll(p, 0777)
+		if err != nil {
+			return
+		}
+
+		// If the file with the same name exists, add the suffix of the serial number
+		idx := strings.LastIndex(fullname, filepath.Ext(fullname))
+		_fullname := fullname
+		for i := 2; utils.FileExists(_fullname) && !cover; i++ {
+			_fullname = fmt.Sprintf("%s(%d)%s", fullname[:idx], i, fullname[idx:])
+		}
+		fullname = _fullname
+
+		var info SavedFileInfo
+
+		// Create the URL of the file
+		info.Url = "/" + strings.Replace(fullname, `\`, `/`, -1)
+
+		// Save the file to local
+		var f2 *os.File
+		f2, err = os.OpenFile(fullname, os.O_CREATE|os.O_WRONLY, 0644)
+		if err != nil {
+			return
+		}
+		info.Size, err = io.Copy(f2, f)
+		err3 := f2.Close()
+		if err3 != nil && err == nil {
+			err = err3
+			return
+		}
+		savedFileInfos = append(savedFileInfos, info)
 	}
 	return
 }
