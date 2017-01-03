@@ -31,8 +31,8 @@ func (p *Param) Serve(ctx *thinkgo.Context) error {
 		ctx.SetCookie("thinkgo", "henrylee")
 	})
 
-	u, size, err := ctx.SaveFile("pic", false)
-	ctx.Log().Infof("ctx.SaveFile: filename %s  url %s, size %d, err %v", p.Picture.Filename, u, size, err)
+	info, err := ctx.SaveFile("pic", false)
+	ctx.Log().Infof("ctx.SaveFile: filename %s  url %s, size %d, err %v", p.Picture.Filename, info.Url, info.Size, err)
 
 	return ctx.JSON(200,
 		thinkgo.Map{

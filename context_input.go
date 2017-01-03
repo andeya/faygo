@@ -543,10 +543,16 @@ func (ctx *Context) HasFormFile(key string) bool {
 	return false
 }
 
+// SavedFileInfo for SaveFiles()
+type SavedFileInfo struct {
+	Url  string
+	Size int64
+}
+
 // SaveFile saves the uploaded file to global.UploadDir(),
 // character "?" indicates that the original file name.
 // for example newfname="a/?" -> global.UploadDir()/a/fname.
-func (ctx *Context) SaveFile(key string, cover bool, newfname ...string) (fileUrl string, size int64, err error) {
+func (ctx *Context) SaveFile(key string, cover bool, newfname ...string) (savedFileInfo SavedFileInfo, err error) {
 	f, fh, err := ctx.R.FormFile(key)
 	if err != nil {
 		return
@@ -591,25 +597,19 @@ func (ctx *Context) SaveFile(key string, cover bool, newfname ...string) (fileUr
 	fullname = _fullname
 
 	// Create the URL of the file
-	fileUrl = "/" + strings.Replace(fullname, `\`, `/`, -1)
+	savedFileInfo.Url = "/" + strings.Replace(fullname, `\`, `/`, -1)
 
 	// Save the file to local
 	f2, err := os.OpenFile(fullname, os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
 		return
 	}
-	size, err = io.Copy(f2, f)
+	savedFileInfo.Size, err = io.Copy(f2, f)
 	err3 := f2.Close()
 	if err3 != nil && err == nil {
 		err = err3
 	}
 	return
-}
-
-// SavedFileInfo for SaveFiles()
-type SavedFileInfo struct {
-	Url  string
-	Size int64
 }
 
 // SaveFiles saves the uploaded files to global.UploadDir(),
