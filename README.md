@@ -199,7 +199,7 @@ param |   err    |    no    |(e.g.`incorrect password format`)| the custom error
 
 **NOTES**:
 * the binding object must be a struct pointer
-* the binding struct's field can not be a pointer
+* in addition to `*multipart.FileHeader`, the binding struct's field can not be a pointer
 * `regexp` or `param` tag is only usable when `param:"type(xxx)"` is exist
 * if the `param` tag is not exist, anonymous field will be parsed
 * when the param's position(`in`) is `formData` and the field's type is `multipart.FileHeader`, the param receives file uploaded
@@ -213,11 +213,11 @@ base    |   slice    | special
 --------|------------|-------------------------------------------------------
 string  |  []string  | [][]byte
 byte    |  []byte    | [][]uint8
-uint8   |  []uint8   | multipart.FileHeader (only for `formData` param)
-bool    |  []bool    | http.Cookie (only for `net/http`'s `cookie` param)
-int     |  []int     | fasthttp.Cookie (only for `fasthttp`'s `cookie` param)
-int8    |  []int8    | struct (struct type only for `body` param or as an anonymous field to extend params)
-int16   |  []int16   |
+uint8   |  []uint8   | *multipart.FileHeader (only for `formData` param)
+bool    |  []bool    | []*multipart.FileHeader (only for `formData` param)
+int     |  []int     | http.Cookie (only for `net/http`'s `cookie` param)
+int8    |  []int8    | fasthttp.Cookie (only for `fasthttp`'s `cookie` param)
+int16   |  []int16   | struct (struct type only for `body` param or as an anonymous field to extend params)
 int32   |  []int32   |
 int64   |  []int64   |
 uint8   |  []uint8   |
