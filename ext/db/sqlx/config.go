@@ -30,10 +30,10 @@ var (
 	dbConfigs     = map[string]*DBConfig{DEFAULTDB_NAME: defaultConfig}
 	defaultConfig = &DBConfig{
 		Name:         DEFAULTDB_NAME,
-		Driver:       "sqlite3",
-		Connstring:   DATABASE_DIR + "sqlite.db",
-		MaxOpenConns: 0,
-		MaxIdleConns: 0,
+		Driver:       "mysql",
+		Connstring:   "root:@tcp(127.0.0.1:3306)/thinkgo?charset=utf8",
+		MaxOpenConns: 100,
+		MaxIdleConns: 100,
 		ColumnSnake:  true,
 		StructTag:    "db",
 	}

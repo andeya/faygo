@@ -10,15 +10,14 @@ import (
 // MustDB gets the specified database engine,
 // or the default DB if no name is specified.
 func MustDB(name ...string) *xorm.Engine {
-	db, ok := DB(name...)
-	if !ok {
-		_name := "default"
-		if len(name) == 0 {
-			_name = name[0]
-		}
-		thinkgo.Panicf("the database engine `%s` is not configured", _name)
+	if len(name) == 0 {
+		return dbService.Default
 	}
-	return db
+	engine, ok := dbService.List[name[0]]
+	if !ok {
+		thinkgo.Panicf("[xorm] the database engine `%s` is not configured", name[0])
+	}
+	return engine
 }
 
 // DB is similar to MustDB, but safe.
@@ -35,30 +34,29 @@ func List() map[string]*xorm.Engine {
 	return dbService.List
 }
 
-// MustConnstring gets the connection string for the specified database,
+// MustConfig gets the configuration information for the specified database,
 // or returns the default if no name is specified.
-func MustConnstring(name ...string) string {
-	conn, ok := Connstring(name...)
-	if !ok {
-		_name := "default"
-		if len(name) == 0 {
-			_name = name[0]
-		}
-		thinkgo.Panicf("the database engine `%s` is not configured", _name)
-	}
-	return conn
-}
-
-// Connstring is similar to MustConnstring, but safe.
-func Connstring(name ...string) (string, bool) {
+func MustConfig(name ...string) DBConfig {
 	if len(name) == 0 {
-		return defaultConfig.Connstring, true
+		return *defaultConfig
 	}
 	config, ok := dbConfigs[name[0]]
 	if !ok {
-		return "", false
+		thinkgo.Panicf("[xorm] the database engine `%s` is not configured", name[0])
 	}
-	return config.Connstring, true
+	return *config
+}
+
+// Config is similar to MustConfig, but safe.
+func Config(name ...string) (DBConfig, bool) {
+	if len(name) == 0 {
+		return *defaultConfig, true
+	}
+	config, ok := dbConfigs[name[0]]
+	if !ok {
+		return DBConfig{}, false
+	}
+	return *config, true
 }
 
 // Table returns table name
@@ -94,7 +92,7 @@ func CallbackByName(dbName string, fn func(*xorm.Session) error, session ...*xor
 	if sess == nil {
 		engine, ok := DB(dbName)
 		if !ok {
-			return errors.New("the database engine `" + dbName + "` is not configured")
+			return errors.New("[xorm] the database engine `" + dbName + "` is not configured")
 		}
 		sess = engine.NewSession()
 		defer sess.Close()
@@ -114,17 +112,18 @@ func TransactCallback(fn func(*xorm.Session) error, session ...*xorm.Session) (e
 	}
 	if sess == nil {
 		sess = MustDB().NewSession()
-		defer sess.Close()
 		err = sess.Begin()
 		if err != nil {
+			sess.Close()
 			return
 		}
 		defer func() {
 			if err != nil {
 				sess.Rollback()
-				return
+			} else {
+				err = sess.Commit()
 			}
-			err = sess.Commit()
+			sess.Close()
 		}()
 	}
 	err = fn(sess)
@@ -144,20 +143,21 @@ func TransactCallbackByName(dbName string, fn func(*xorm.Session) error, session
 	if sess == nil {
 		engine, ok := DB(dbName)
 		if !ok {
-			return errors.New("the database engine `" + dbName + "` is not configured")
+			return errors.New("[xorm] the database engine `" + dbName + "` is not configured")
 		}
 		sess = engine.NewSession()
-		defer sess.Close()
 		err = sess.Begin()
 		if err != nil {
+			sess.Close()
 			return
 		}
 		defer func() {
 			if err != nil {
 				sess.Rollback()
-				return
+			} else {
+				err = sess.Commit()
 			}
-			err = sess.Commit()
+			sess.Close()
 		}()
 	}
 	err = fn(sess)

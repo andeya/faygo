@@ -4,7 +4,6 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-	"time"
 
 	"github.com/jmoiron/sqlx"
 	"github.com/jmoiron/sqlx/reflectx"
@@ -30,22 +29,27 @@ var dbService = func() (serv *DBService) {
 		List: map[string]*sqlx.DB{},
 	}
 
+	var errs []string
 	defer func() {
+		if len(errs) > 0 {
+			panic("[sqlx] " + strings.Join(errs, "\n"))
+		}
 		if serv.Default == nil {
-			time.Sleep(2e9)
+			thinkgo.Panicf("[sqlx] the `default` database engine must be configured")
 		}
 	}()
 
 	err := loadDBConfig()
 	if err != nil {
-		thinkgo.Error(err.Error())
+		thinkgo.Panicf("[sqlx]", err.Error())
 		return
 	}
 
 	for _, conf := range dbConfigs {
 		db, err := sqlx.Connect(conf.Driver, conf.Connstring)
 		if err != nil {
-			thinkgo.Error(err.Error())
+			thinkgo.Critical("[sqlx]", err.Error())
+			errs = append(errs, err.Error())
 			continue
 		}
 
@@ -64,7 +68,8 @@ var dbService = func() (serv *DBService) {
 			os.MkdirAll(filepath.Dir(conf.Connstring), 0777)
 			f, err := os.Create(conf.Connstring)
 			if err != nil {
-				thinkgo.Error(err.Error())
+				thinkgo.Critical("[sqlx]", err.Error())
+				errs = append(errs, err.Error())
 			} else {
 				f.Close()
 			}
