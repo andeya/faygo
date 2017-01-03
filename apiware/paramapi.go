@@ -18,7 +18,7 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
-	// "mime/multipart"
+	"mime/multipart"
 	"net/http"
 	"net/url"
 	"reflect"
@@ -159,7 +159,7 @@ func (m *ParamsAPI) addFields(parentIndexPath []int, t reflect.Type, v reflect.V
 		var paramTypeString = field.Type.String()
 
 		switch paramTypeString {
-		case fileTypeString:
+		case fileTypeString, filesTypeString, filesTypeString2:
 			if paramPosition != "formData" {
 				return NewError(t.String(), field.Name, "when field type is `"+paramTypeString+"`, tag `in` value must be `formData`")
 			}
@@ -240,7 +240,7 @@ func (m *ParamsAPI) addFields(parentIndexPath []int, t reflect.Type, v reflect.V
 			fd.name = m.paramNameMapper(field.Name)
 		}
 
-		fd.isFile = paramTypeString == fileTypeString
+		fd.isFile = paramTypeString == fileTypeString || paramTypeString == filesTypeString || paramTypeString == filesTypeString2
 		_, fd.isRequired = parsedTags[KEY_REQUIRED]
 
 		// err = fd.validate(v)
@@ -475,7 +475,20 @@ func (paramsAPI *ParamsAPI) BindFields(
 						}
 						continue
 					}
-					value.Set(reflect.ValueOf(fhs[0]).Elem())
+					if value.Kind() != reflect.Slice {
+						value.Set(reflect.ValueOf(fhs[0]).Elem())
+					} else {
+						tt := value.Type().Elem()
+						if tt.Kind() == reflect.Ptr {
+							value.Set(reflect.ValueOf(fhs))
+						} else {
+							fhs2 := make([]multipart.FileHeader, len(fhs))
+							for i, fh := range fhs {
+								fhs2[i] = *fh
+							}
+							value.Set(reflect.ValueOf(fhs2))
+						}
+					}
 				} else if param.IsRequired() {
 					return param.myError("missing formData param")
 				}
