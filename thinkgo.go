@@ -224,7 +224,7 @@ func (frame *Framework) build() {
 					frame.trees[method] = root
 				}
 				root.addRoute(api.path, handle)
-				frame.syslog.Criticalf("%7s | %-30s", method, api.path)
+				frame.syslog.Criticalf("\x1b[46m[SYS]\x1b[0m %7s | %-30s", method, api.path)
 			}
 		}
 
@@ -513,7 +513,7 @@ func (frame *Framework) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	default:
 		code = color.Green(n)
 	}
-	ctx.Log().Infof("%15s %7s  %3s %10d %12s %-30s | ", ctx.RealIP(), method, code, ctx.Size(), time.Since(start), u)
+	frame.syslog.Infof("[I] %15s %7s  %3s %10d %12s %-30s | ", ctx.RealIP(), method, code, ctx.Size(), time.Since(start), u)
 }
 
 func (frame *Framework) serveHTTP(ctx *Context) {

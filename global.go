@@ -362,25 +362,10 @@ func StaticDir() string {
 	return global.static.root
 }
 
-// Log returns the global logger used by the user bissness.
-func Log() {
-	global.bizlog.Close()
-}
-
 // CloseLog closes global loggers.
 func CloseLog() {
 	global.bizlog.Close()
 	global.syslog.Close()
-}
-
-// Print logs a system message using CRITICAL as log level.
-func Print(args ...interface{}) {
-	global.syslog.Critical(args...)
-}
-
-// Printf logs a system message using CRITICAL as log level.
-func Printf(format string, args ...interface{}) {
-	global.syslog.Criticalf(format, args...)
 }
 
 // Fatal is equivalent to l.Critical(fmt.Sprint()) followed by a call to os.Exit(1).

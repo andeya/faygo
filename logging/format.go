@@ -311,8 +311,11 @@ func (f *stringFormatter) Format(calldepth int, colorful bool, r *Record, output
 				if !ok {
 					file = "???"
 					line = 0
-				} else if part.verb == fmtVerbShortfile {
+				}
+				if part.verb == fmtVerbShortfile {
 					file = filepath.Base(file)
+				} else if idx := strings.Index(file, "/src/"); idx >= 0 {
+					file = file[idx+5:]
 				}
 				v = fmt.Sprintf("%s:%d", file, line)
 			case fmtVerbLongfunc, fmtVerbShortfunc,
