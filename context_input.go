@@ -656,9 +656,8 @@ func (ctx *Context) SaveFiles(key string, cover bool, newfname ...string) (saved
 		idx := strings.LastIndex(fullname, filepath.Ext(fullname))
 		num := filemap[fullname]
 		_fullname := fullname
-		if num < 2 {
-			num = 1
-		} else {
+		num++
+		if num >= 2 {
 			_fullname = fmt.Sprintf("%s(%d)%s", fullname[:idx], num, fullname[idx:])
 		}
 		for utils.FileExists(_fullname) && !cover {
