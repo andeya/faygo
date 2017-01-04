@@ -34,7 +34,7 @@ func JoinStatic(shortFilename string) string {
 
 // SyncINI quickly create your own configuration files.
 // Struct tags reference `https://github.com/go-ini/ini`
-func SyncINI(structPointer interface{}, callback func() error, filename ...string) (err error) {
+func SyncINI(structPointer interface{}, callback func() error, filename ...string) error {
 	t := reflect.TypeOf(structPointer)
 	if t.Kind() != reflect.Ptr {
 		return errors.New("SyncINI's param must be struct pointer type.")
@@ -53,12 +53,18 @@ func SyncINI(structPointer interface{}, callback func() error, filename ...strin
 		fname = utils.SnakeString(fname) + ".ini"
 		fname = filepath.Join(CONFIG_DIR, fname)
 	}
-
-	os.MkdirAll(filepath.Dir(fname), 0777)
-
-	cfg, err := ini.LooseLoad(fname)
+	var cfg *ini.File
+	var err error
+	var exist bool
+	cfg, err = ini.Load(fname)
 	if err != nil {
-		return err
+		os.MkdirAll(filepath.Dir(fname), 0777)
+		cfg, err = ini.LooseLoad(fname)
+		if err != nil {
+			return err
+		}
+	} else {
+		exist = true
 	}
 
 	err = cfg.MapTo(structPointer)
@@ -67,17 +73,19 @@ func SyncINI(structPointer interface{}, callback func() error, filename ...strin
 	}
 
 	if callback != nil {
-		if err := callback(); err != nil {
+		if err = callback(); err != nil {
 			return err
 		}
 	}
 
-	err = cfg.ReflectFrom(structPointer)
-	if err != nil {
-		return err
+	if !exist {
+		err = cfg.ReflectFrom(structPointer)
+		if err != nil {
+			return err
+		}
+		return cfg.SaveTo(fname)
 	}
-
-	return cfg.SaveTo(fname)
+	return nil
 }
 
 /**

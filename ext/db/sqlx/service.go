@@ -35,7 +35,7 @@ var dbService = func() (serv *DBService) {
 			panic("[sqlx] " + strings.Join(errs, "\n"))
 		}
 		if serv.Default == nil {
-			thinkgo.Panicf("[sqlx] the `default` database engine must be configured")
+			thinkgo.Panicf("[sqlx] the `default` database engine must be configured and enabled")
 		}
 	}()
 
@@ -46,6 +46,9 @@ var dbService = func() (serv *DBService) {
 	}
 
 	for _, conf := range dbConfigs {
+		if !conf.Enable {
+			continue
+		}
 		db, err := sqlx.Connect(conf.Driver, conf.Connstring)
 		if err != nil {
 			thinkgo.Critical("[sqlx]", err.Error())

@@ -34,7 +34,7 @@ var dbService = func() (serv *DBService) {
 			panic("[xorm] " + strings.Join(errs, "\n"))
 		}
 		if serv.Default == nil {
-			thinkgo.Panicf("[xorm] the `default` database engine must be configured")
+			thinkgo.Panicf("[xorm] the `default` database engine must be configured and enabled")
 		}
 	}()
 
@@ -45,6 +45,9 @@ var dbService = func() (serv *DBService) {
 	}
 
 	for _, conf := range dbConfigs {
+		if !conf.Enable {
+			continue
+		}
 		engine, err := xorm.NewEngine(conf.Driver, conf.Connstring)
 		if err != nil {
 			thinkgo.Critical("[xorm]", err.Error())

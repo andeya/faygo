@@ -11,6 +11,7 @@ import (
 // DBConfig is database connection config
 type DBConfig struct {
 	Name         string `ini:"-"`
+	Enable       bool   `ini:"enable"`
 	Driver       string `ini:"driver"` // driver: mssql | odbc(mssql) | mysql | mymysql | postgres | sqlite3 | oci8 | goracle
 	Connstring   string `ini:"connstring"`
 	MaxOpenConns int    `ini:"max_open_conns"`
@@ -29,6 +30,7 @@ const (
 var (
 	dbConfigs     = map[string]*DBConfig{DEFAULTDB_NAME: defaultConfig}
 	defaultConfig = &DBConfig{
+		Enable:       true,
 		Name:         DEFAULTDB_NAME,
 		Driver:       "mysql",
 		Connstring:   "root:@tcp(127.0.0.1:3306)/thinkgo?charset=utf8",
@@ -40,11 +42,20 @@ var (
 )
 
 func loadDBConfig() error {
-	os.MkdirAll(filepath.Dir(DBCONFIG_FILE), 0777)
-	cfg, err := ini.LooseLoad(DBCONFIG_FILE)
+	var cfg *ini.File
+	var err error
+	var exist bool
+	cfg, err = ini.Load(DBCONFIG_FILE)
 	if err != nil {
-		return err
+		os.MkdirAll(filepath.Dir(DBCONFIG_FILE), 0777)
+		cfg, err = ini.LooseLoad(DBCONFIG_FILE)
+		if err != nil {
+			return err
+		}
+	} else {
+		exist = true
 	}
+	var hadDefaultConfig bool
 	for _, section := range cfg.Sections() {
 		if section.Name() == ini.DEFAULT_SECTION {
 			continue
@@ -52,6 +63,7 @@ func loadDBConfig() error {
 		var dbConfig *DBConfig
 		if section.Name() == DEFAULTDB_NAME {
 			dbConfig = defaultConfig
+			hadDefaultConfig = true
 		} else {
 			dbConfig = &DBConfig{Name: section.Name()}
 		}
@@ -61,13 +73,20 @@ func loadDBConfig() error {
 		}
 		dbConfigs[dbConfig.Name] = dbConfig
 	}
-	_, err = cfg.GetSection(DEFAULTDB_NAME)
-	if err != nil {
-		sec, _ := cfg.NewSection(DEFAULTDB_NAME)
-		err := sec.ReflectFrom(defaultConfig)
+	if !exist {
+		_, err = cfg.GetSection(DEFAULTDB_NAME)
 		if err != nil {
-			return err
+			sec, _ := cfg.NewSection(DEFAULTDB_NAME)
+			err := sec.ReflectFrom(defaultConfig)
+			if err != nil {
+				return err
+			}
+		}
+		return cfg.SaveTo(DBCONFIG_FILE)
+	} else {
+		if !hadDefaultConfig {
+			*defaultConfig = DBConfig{}
 		}
 	}
-	return cfg.SaveTo(DBCONFIG_FILE)
+	return nil
 }

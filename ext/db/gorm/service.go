@@ -33,7 +33,7 @@ var dbService = func() (serv *DBService) {
 			panic("[gorm] " + strings.Join(errs, "\n"))
 		}
 		if serv.Default == nil {
-			thinkgo.Panicf("[gorm] the `default` database engine must be configured")
+			thinkgo.Panicf("[gorm] the `default` database engine must be configured and enabled")
 		}
 	}()
 
@@ -44,6 +44,9 @@ var dbService = func() (serv *DBService) {
 	}
 
 	for _, conf := range dbConfigs {
+		if !conf.Enable {
+			continue
+		}
 		engine, err := gorm.Open(conf.Driver, conf.Connstring)
 		if err != nil {
 			thinkgo.Critical("[gorm]", err.Error())
