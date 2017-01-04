@@ -201,7 +201,8 @@ func ParamType(value interface{}) string {
 	if rv.Kind() == reflect.Ptr {
 		rv = rv.Elem()
 	}
-	if rv.String() == "multipart.FileHeader" {
+	tn := rv.String()
+	if tn == "multipart.FileHeader" || tn == "[]*multipart.FileHeader" || tn == "[]multipart.FileHeader" {
 		return "file"
 	}
 	return mapping[rv.Kind()]

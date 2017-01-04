@@ -43,7 +43,7 @@ type Index struct {
     Title     string   `param:"<in:query> <nonzero>"`
     Paragraph []string `param:"<in:query> <name:p> <len: 1:10> <regexp: ^[\\w]*$>"`
     Cookie    string   `param:"<in:cookie> <name:thinkgoID>"`
-    // Picture         multipart.FileHeader `param:"<in:formData> <name:pic> <maxmb:30>"`
+    // Picture         *multipart.FileHeader `param:"<in:formData> <name:pic> <maxmb:30>"`
 }
 
 func (i *Index) Serve(ctx *thinkgo.Context) error {
