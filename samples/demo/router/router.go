@@ -2,6 +2,7 @@ package router
 
 import (
 	"github.com/henrylee2cn/thinkgo"
+	tgMiddleware "github.com/henrylee2cn/thinkgo/ext/middleware"
 	"github.com/henrylee2cn/thinkgo/samples/demo/handler"
 	"github.com/henrylee2cn/thinkgo/samples/demo/middleware"
 )
@@ -33,7 +34,7 @@ func Route1(frame *thinkgo.Framework) {
 				"./static/markdown",
 			)),
 			frame.NewNamedGET("reverse proxy", "/search", handler.Search(0)),
-		).Use(thinkgo.CrossOrigin)
+		).Use(tgMiddleware.CrossOrigin)
 }
 
 // Register the route in a chain style
@@ -63,5 +64,5 @@ func Route2(frame *thinkgo.Framework) {
 	frame.NamedStaticFS("markdown fs test", "/md", thinkgo.MarkdownFS(
 		"./static/markdown",
 	))
-	frame.Use(thinkgo.CrossOrigin)
+	frame.Use(tgMiddleware.CrossOrigin)
 }

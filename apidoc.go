@@ -57,7 +57,7 @@ func (frame *Framework) regAPIdoc() {
 		frame.MuxAPI.NamedStaticFS("APIdoc-Swagger", frame.config.APIdoc.Path, fs)
 		frame.MuxAPI.NamedGET("APIdoc-Swagger-JSON", swaggerPath, newAPIdocJSONHandler())
 	} else {
-		allowApidoc := NewIPFilter(frame.config.APIdoc.Whitelist, frame.config.APIdoc.RealIP)
+		allowApidoc := newIPFilter(frame.config.APIdoc.Whitelist, frame.config.APIdoc.RealIP)
 		frame.MuxAPI.NamedStaticFS("APIdoc-Swagger", frame.config.APIdoc.Path, fs).Use(allowApidoc)
 		frame.MuxAPI.NamedGET("APIdoc-Swagger-JSON", swaggerPath, newAPIdocJSONHandler(), allowApidoc)
 	}

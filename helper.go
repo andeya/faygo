@@ -118,8 +118,8 @@ func WrapDoc(handler Handler, note string, ret interface{}, params ...ParamInfo)
  * define common middlewares.
  */
 
-// NewIPFilter creates middleware that intercepts the specified IP prefix.
-func NewIPFilter(whitelist []string, realIP bool) HandlerFunc {
+// newIPFilter creates middleware that intercepts the specified IP prefix.
+func newIPFilter(whitelist []string, realIP bool) HandlerFunc {
 	var noAccess bool
 	var match []string
 	var prefix []string
@@ -164,11 +164,3 @@ func NewIPFilter(whitelist []string, realIP bool) HandlerFunc {
 		return nil
 	}
 }
-
-// CrossOrigin creates Cross-Domain middleware
-var CrossOrigin = HandlerFunc(func(ctx *Context) error {
-	ctx.SetHeader(HeaderAccessControlAllowOrigin, ctx.HeaderParam(HeaderOrigin))
-	// ctx.SetHeader(HeaderAccessControlAllowOrigin, "*")
-	ctx.SetHeader(HeaderAccessControlAllowCredentials, "true")
-	return nil
-})
