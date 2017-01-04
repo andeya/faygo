@@ -34,9 +34,8 @@ const (
 )
 
 var (
-	dbConfigs     = map[string]*DBConfig{DEFAULTDB_NAME: defaultConfig}
+	dbConfigs     = map[string]*DBConfig{}
 	defaultConfig = &DBConfig{
-		Enable:       true,
 		Name:         DEFAULTDB_NAME,
 		Driver:       "mysql",
 		Connstring:   "root:@tcp(127.0.0.1:3306)/thinkgo?charset=utf8",
@@ -87,14 +86,13 @@ func loadDBConfig() error {
 		dbConfigs[dbConfig.Name] = dbConfig
 	}
 	if !exist {
-		_, err = cfg.GetSection(DEFAULTDB_NAME)
+		sec, _ := cfg.NewSection(DEFAULTDB_NAME)
+		defaultConfig.Enable = true
+		err := sec.ReflectFrom(defaultConfig)
 		if err != nil {
-			sec, _ := cfg.NewSection(DEFAULTDB_NAME)
-			err := sec.ReflectFrom(defaultConfig)
-			if err != nil {
-				return err
-			}
+			return err
 		}
+		dbConfigs[DEFAULTDB_NAME] = defaultConfig
 		return cfg.SaveTo(DBCONFIG_FILE)
 	} else {
 		if !hadDefaultConfig {
