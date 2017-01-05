@@ -230,12 +230,15 @@ func (ctx *Context) Error(status int, errStr string) {
 }
 
 // Bytes writes the data bytes to the connection as part of an HTTP reply.
-func (ctx *Context) Bytes(status int, content []byte) error {
+func (ctx *Context) Bytes(status int, contentType string, content []byte) error {
 	if ctx.W.committed {
 		ctx.W.multiCommitted()
 		return nil
 	}
-	if ctx.W.Header().Get(HeaderContentEncoding) == "" {
+	if len(ctx.W.Header()[HeaderContentType]) == 0 {
+		ctx.W.Header().Set(HeaderContentType, contentType)
+	}
+	if len(ctx.W.Header()[HeaderContentEncoding]) == 0 {
 		if ctx.enableGzip {
 			encoding := acceptencoder.ParseEncoding(ctx.R)
 			buf := &bytes.Buffer{}
@@ -246,7 +249,7 @@ func (ctx *Context) Bytes(status int, content []byte) error {
 				return err
 			}
 		}
-		if ctx.W.Header().Get(HeaderContentLength) == "" {
+		if len(ctx.W.Header()[HeaderContentLength]) == 0 {
 			ctx.W.Header().Set(HeaderContentLength, strconv.Itoa(len(content)))
 		}
 	}
@@ -257,19 +260,17 @@ func (ctx *Context) Bytes(status int, content []byte) error {
 
 // String writes a string to the client, something like fmt.Fprintf
 func (ctx *Context) String(status int, format string, s ...interface{}) error {
-	ctx.W.Header().Set(HeaderContentType, MIMETextPlainCharsetUTF8)
 	if len(s) == 0 {
-		return ctx.Bytes(status, []byte(format))
+		return ctx.Bytes(status, MIMETextPlainCharsetUTF8, []byte(format))
 	}
-	return ctx.Bytes(status, []byte(fmt.Sprintf(format, s...)))
+	return ctx.Bytes(status, MIMETextPlainCharsetUTF8, []byte(fmt.Sprintf(format, s...)))
 }
 
 // HTML sends an HTTP response with status code.
 func (ctx *Context) HTML(status int, html string) error {
 	x := (*[2]uintptr)(unsafe.Pointer(&html))
 	h := [3]uintptr{x[0], x[1], x[1]}
-	ctx.W.Header().Set(HeaderContentType, MIMETextHTMLCharsetUTF8)
-	return ctx.Bytes(status, *(*[]byte)(unsafe.Pointer(&h)))
+	return ctx.Bytes(status, MIMETextHTMLCharsetUTF8, *(*[]byte)(unsafe.Pointer(&h)))
 }
 
 // JSON sends a JSON response with status code.
@@ -291,8 +292,7 @@ func (ctx *Context) JSON(status int, data interface{}, isIndent ...bool) error {
 
 // JSONBlob sends a JSON blob response with status code.
 func (ctx *Context) JSONBlob(status int, b []byte) error {
-	ctx.W.Header().Set(HeaderContentType, MIMEApplicationJSONCharsetUTF8)
-	return ctx.Bytes(status, b)
+	return ctx.Bytes(status, MIMEApplicationJSONCharsetUTF8, b)
 }
 
 // JSONP sends a JSONP response with status code. It uses `callback` to construct
@@ -310,13 +310,12 @@ func (ctx *Context) JSONP(status int, callback string, data interface{}, isInden
 	if err != nil {
 		return err
 	}
-	ctx.W.Header().Set(HeaderContentType, MIMEApplicationJavaScriptCharsetUTF8)
 	callback = template.JSEscapeString(callback)
 	callbackContent := bytes.NewBufferString(" if(window." + callback + ")" + callback)
 	callbackContent.WriteString("(")
 	callbackContent.Write(b)
 	callbackContent.WriteString(");\r\n")
-	return ctx.Bytes(status, callbackContent.Bytes())
+	return ctx.Bytes(status, MIMEApplicationJavaScriptCharsetUTF8, callbackContent.Bytes())
 }
 
 // JSONMsg sends a JSON with JSONMsg format.
@@ -359,10 +358,9 @@ func (ctx *Context) XML(status int, data interface{}, isIndent ...bool) error {
 
 // XMLBlob sends a XML blob response with status code.
 func (ctx *Context) XMLBlob(status int, b []byte) error {
-	ctx.W.Header().Set(HeaderContentType, MIMEApplicationXMLCharsetUTF8)
 	content := bytes.NewBufferString(xml.Header)
 	content.Write(b)
-	return ctx.Bytes(status, content.Bytes())
+	return ctx.Bytes(status, MIMEApplicationXMLCharsetUTF8, content.Bytes())
 }
 
 // JSONOrXML serve Xml OR Json, depending on the value of the Accept header
@@ -396,6 +394,5 @@ func (ctx *Context) Render(status int, name string, data Map) error {
 	if err != nil {
 		return err
 	}
-	ctx.W.Header().Set(HeaderContentType, MIMETextHTMLCharsetUTF8)
-	return ctx.Bytes(status, b)
+	return ctx.Bytes(status, MIMETextHTMLCharsetUTF8, b)
 }
