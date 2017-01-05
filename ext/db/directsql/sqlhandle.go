@@ -9,7 +9,9 @@
 package directsql
 
 import (
+	"bytes"
 	"encoding/json"
+	"html/template"
 
 	"github.com/henrylee2cn/thinkgo"
 )
@@ -67,22 +69,8 @@ func DirectSQL() thinkgo.HandlerFunc {
 				//如果OK则直接返回缓存
 				if ok, jsonb := GetCache(key, suffix); ok {
 					thinkgo.Debug("Directsql getCache:[" + key + " - " + suffix + "] result from cache.")
-					//发送JSONP响应
-					if len(callback) > 0 {
-						//return ctx.JSONP(200, callback, *data)
-						ctx.SetHeader(thinkgo.HeaderContentType, thinkgo.MIMEApplicationJavaScriptCharsetUTF8)
-						//ctx.WriteHeader(200)
-						if err = ctx.Bytes(200, []byte(callback+"(")); err != nil {
-							return err
-						}
-						if err = ctx.Bytes(200, jsonb); err != nil {
-							return err
-						}
-						err = ctx.Bytes(200, []byte(");"))
-						return err
-					}
-					//正常有数据JSON响应
-					return ctx.JSONBlob(200, jsonb)
+					//发送JSON(P)响应
+					return sendJSON(ctx, callback, jsonb)
 				}
 			}
 			//.3 检查sql语句配置个数
@@ -111,8 +99,7 @@ func DirectSQL() thinkgo.HandlerFunc {
 			}
 			//结果集为空响应
 			if data.Total == 0 {
-
-				err := ctx.Bytes(200, []byte(`{"total":0,"data":[]}`))
+				err := ctx.JSONBlob(200, []byte(`{"total":0,"data":[]}`))
 				if err != nil {
 					return err
 				}
@@ -131,26 +118,8 @@ func DirectSQL() thinkgo.HandlerFunc {
 				SetCache(key, suffix, jsonb, se.Cachetime)
 				thinkgo.Debug("Directsql setCache:[" + key + "] result to cache.")
 			}
-			//发送JSONP响应
-			if len(callback) > 0 {
-				//return ctx.JSONP(200, callback, *data)
-				ctx.SetHeader(thinkgo.HeaderContentType, thinkgo.MIMEApplicationJavaScriptCharsetUTF8)
-				/*err = ctx.Bytes(200, []byte(callback+"(")+jsonb+[]byte(");"))
-				if err != nil {
-					return err
-				}*/
-				//ctx.WriteHeader(200)
-				if err = ctx.Bytes(200, []byte(callback+"(")); err != nil {
-					return err
-				}
-				if err = ctx.Bytes(200, jsonb); err != nil {
-					return err
-				}
-				err = ctx.Bytes(200, []byte(");"))
-				return err
-			}
-			//正常有数据JSON响应
-			return ctx.JSONBlob(200, jsonb)
+			//发送JSON(P)响应
+			return sendJSON(ctx, callback, jsonb)
 
 			//一般选择SQL,嵌套选择暂时未实现跟一般选择一样,增强的插入后返回sysid ----OK
 		case ST_SELECT, ST_NESTEDSELECT:
@@ -186,22 +155,8 @@ func DirectSQL() thinkgo.HandlerFunc {
 				//如果OK则直接返回缓存
 				if ok, jsonb := GetCache(key, suffix); ok {
 					thinkgo.Debug("Directsql getCache:[" + key + "] result from cache.")
-					//发送JSONP响应
-					if len(callback) > 0 {
-						//return ctx.JSONP(200, callback, *data)
-						ctx.SetHeader(thinkgo.HeaderContentType, thinkgo.MIMEApplicationJavaScriptCharsetUTF8)
-						//ctx.WriteHeader(200)
-						if err = ctx.Bytes(200, []byte(callback+"(")); err != nil {
-							return err
-						}
-						if err = ctx.Bytes(200, jsonb); err != nil {
-							return err
-						}
-						err = ctx.Bytes(200, []byte(");"))
-						return err
-					}
-					//正常有数据JSON响应
-					return ctx.JSONBlob(200, jsonb)
+					//发送JSON(P)响应
+					return sendJSON(ctx, callback, jsonb)
 				}
 			}
 			//.3 参数验证并处理,－OK
@@ -224,7 +179,7 @@ func DirectSQL() thinkgo.HandlerFunc {
 			}
 			//结果集为空响应
 			if len(data) == 0 {
-				err := ctx.Bytes(200, []byte(`[]`))
+				err := ctx.JSONBlob(200, []byte(`[]`))
 				if err != nil {
 					return err
 				}
@@ -243,22 +198,8 @@ func DirectSQL() thinkgo.HandlerFunc {
 				SetCache(key, suffix, jsonb, se.Cachetime)
 				thinkgo.Debug("Directsql setCache:[" + key + "] result to cache.")
 			}
-			//发送JSONP响应
-			if len(callback) > 0 {
-				//return ctx.JSONP(200, callback, *data)
-				ctx.SetHeader(thinkgo.HeaderContentType, thinkgo.MIMEApplicationJavaScriptCharsetUTF8)
-				//ctx.WriteHeader(200)
-				if err = ctx.Bytes(200, []byte(callback+"(")); err != nil {
-					return err
-				}
-				if err = ctx.Bytes(200, jsonb); err != nil {
-					return err
-				}
-				err = ctx.Bytes(200, []byte(");"))
-				return err
-			}
-			//正常有数据JSON响应
-			return ctx.JSONBlob(200, jsonb)
+			//发送JSON(P)响应
+			return sendJSON(ctx, callback, jsonb)
 			//如果没有结果集则输出[]
 			/*if len(data) == 0 {
 				_, err := ctx.Write([]byte("[]"))
@@ -307,22 +248,8 @@ func DirectSQL() thinkgo.HandlerFunc {
 				//如果OK则直接返回缓存
 				if ok, jsonb := GetCache(key, suffix); ok {
 					thinkgo.Debug("GetCache:[" + key + " - " + suffix + "] result from cache.")
-					//发送JSONP响应
-					if len(callback) > 0 {
-						//return ctx.JSONP(200, callback, *data)
-						ctx.SetHeader(thinkgo.HeaderContentType, thinkgo.MIMEApplicationJavaScriptCharsetUTF8)
-						//ctx.WriteHeader(200)
-						if err = ctx.Bytes(200, []byte(callback+"(")); err != nil {
-							return err
-						}
-						if err = ctx.Bytes(200, jsonb); err != nil {
-							return err
-						}
-						err = ctx.Bytes(200, []byte(");"))
-						return err
-					}
-					//正常有数据JSON响应
-					return ctx.JSONBlob(200, jsonb)
+					//发送JSON(P)响应
+					return sendJSON(ctx, callback, jsonb)
 				}
 			}
 			//.3 参数验证并处理－OK
@@ -351,7 +278,7 @@ func DirectSQL() thinkgo.HandlerFunc {
 			}
 			//结果集为空响应
 			if len(data) == 0 {
-				err := ctx.Bytes(200, []byte(`[]`))
+				err := ctx.JSONBlob(200, []byte(`[]`))
 				if err != nil {
 					return err
 				}
@@ -370,22 +297,8 @@ func DirectSQL() thinkgo.HandlerFunc {
 				SetCache(key, suffix, jsonb, se.Cachetime)
 				thinkgo.Debug("Directsql setCache:[" + key + " - " + suffix + "] result to cache.")
 			}
-			//发送JSONP响应
-			if len(callback) > 0 {
-				//return ctx.JSONP(200, callback, *data)
-				ctx.SetHeader(thinkgo.HeaderContentType, thinkgo.MIMEApplicationJavaScriptCharsetUTF8)
-				//ctx.WriteHeader(200)
-				if err = ctx.Bytes(200, []byte(callback+"(")); err != nil {
-					return err
-				}
-				if err = ctx.Bytes(200, jsonb); err != nil {
-					return err
-				}
-				err = ctx.Bytes(200, []byte(");"))
-				return err
-			}
-			//正常有数据JSON响应
-			return ctx.JSONBlob(200, jsonb)
+			//发送JSON(P)响应
+			return sendJSON(ctx, callback, jsonb)
 
 		case ST_EXEC: //执行SQL(插入、删除、更新sql)
 			//.1.获取 Ajax post json 参数
@@ -538,4 +451,19 @@ func DirectSQLReloadModel() thinkgo.HandlerFunc {
 		}
 		return c.JSONMsg(200, 200, "Info: Reload the modelsql file ok!")
 	}
+}
+
+//发送JSON(P)响应
+func sendJSON(ctx *thinkgo.Context, callback string, b []byte) error {
+	//发送JSONP响应
+	if len(callback) > 0 {
+		callback = template.JSEscapeString(callback)
+		callbackContent := bytes.NewBufferString(" if(window." + callback + ")" + callback)
+		callbackContent.WriteString("(")
+		callbackContent.Write(b)
+		callbackContent.WriteString(");\r\n")
+		return ctx.Bytes(200, thinkgo.MIMEApplicationJavaScriptCharsetUTF8, callbackContent.Bytes())
+	}
+	//正常有数据JSON响应
+	return ctx.JSONBlob(200, b)
 }
