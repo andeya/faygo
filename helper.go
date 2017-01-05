@@ -135,47 +135,47 @@ func ContentTypeByExtension(ext string) string {
 }
 
 // SelfPath gets compiled executable file absolute path.
-// func SelfPath() string
+//  func SelfPath() string
 var SelfPath = utils.SelfPath
 
 // SelfDir gets compiled executable file directory
-// func SelfDir() string
+//  func SelfDir() string
 var SelfDir = utils.SelfDir
 
 // SelfChdir switch the working path to my own path.
-// func SelfChdir()
+//  func SelfChdir()
 var SelfChdir = utils.SelfChdir
 
 // FileExists reports whether the named file or directory exists.
-// func FileExists(name string) bool
+//  func FileExists(name string) bool
 var FileExists = utils.FileExists
 
 // SearchFile Search a file in paths.
 // this is often used in search config file in /etc ~/
-// func SearchFile(filename string, paths ...string) (fullpath string, err error)
+//  func SearchFile(filename string, paths ...string) (fullpath string, err error)
 var SearchFile = utils.SearchFile
 
 // GrepFile like command grep -E
 // for example: GrepFile(`^hello`, "hello.txt")
 // \n is striped while read
-// func GrepFile(patten string, filename string) (lines []string, err error)
+//  func GrepFile(patten string, filename string) (lines []string, err error)
 var GrepFile = utils.GrepFile
 
 // WalkDirs traverses the directory, return to the relative path.
 // You can specify the suffix.
-// func WalkDirs(targpath string, suffixes ...string) (dirlist []string)
+//  func WalkDirs(targpath string, suffixes ...string) (dirlist []string)
 var WalkDirs = utils.WalkDirs
 
 // SnakeString converts the accepted string to a snake string (XxYy to xx_yy)
-// func SnakeString(s string) string
+//  func SnakeString(s string) string
 var SnakeString = utils.SnakeString
 
 // CamelString converts the accepted string to a camel string (xx_yy to XxYy)
-// func CamelString(s string) string
+//  func CamelString(s string) string
 var CamelString = utils.CamelString
 
 // ObjectName gets the type name of the object
-// func ObjectName(i interface{}) string
+//  func ObjectName(i interface{}) string
 var ObjectName = utils.ObjectName
 
 // CleanPath is the URL version of path.Clean, it returns a canonical URL path
@@ -185,17 +185,15 @@ var ObjectName = utils.ObjectName
 // be done:
 // 1. Replace multiple slashes with a single slash.
 // 2. Eliminate each . path name element (the current directory).
-// 3. Eliminate each inner .. path name element (the parent directory)
-//    along with the non-.. element that precedes it.
-// 4. Eliminate .. elements that begin a rooted path:
-//    that is, replace "/.." by "/" at the beginning of a path.
+// 3. Eliminate each inner .. path name element (the parent directory) along with the non-.. element that precedes it.
+// 4. Eliminate .. elements that begin a rooted path: that is, replace "/.." by "/" at the beginning of a path.
 //
 // If the result of this process is an empty string, "/" is returned.
-// func CleanPath(p string) string
+//  func CleanPath(p string) string
 var CleanPath = utils.CleanPath
 
 // RandomBytes generate random []byte by specify chars.
-// func RandomBytes(length int, alphabets ...byte) []byte
+//  func RandomBytes(length int, alphabets ...byte) []byte
 var RandomBytes = utils.RandomBytes
 
 /**
