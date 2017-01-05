@@ -16,6 +16,7 @@ package thinkgo
 
 import (
 	"errors"
+	"mime"
 	"net/http"
 	"os"
 	"path"
@@ -115,7 +116,26 @@ func WrapDoc(handler Handler, note string, ret interface{}, params ...ParamInfo)
 }
 
 /**
- * define common middlewares.
+ * common utils
+ */
+
+// ContentTypeByExtension gets the content type from ext string.
+// MIME type is given in mime package.
+// It returns `application/octet-stream` incase MIME type is not
+// found.
+func ContentTypeByExtension(ext string) string {
+	if !strings.HasPrefix(ext, ".") {
+		ext = "." + ext
+	}
+	ctype := mime.TypeByExtension(ext)
+	if ctype != "" {
+		return ctype
+	}
+	return MIMEOctetStream
+}
+
+/**
+ * define internal middlewares.
  */
 
 // newIPFilter creates middleware that intercepts the specified IP prefix.

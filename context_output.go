@@ -24,7 +24,6 @@ import (
 	"fmt"
 	"html/template"
 	"io"
-	"mime"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -106,18 +105,6 @@ func (ctx *Context) IsServerError() bool {
 // SetHeader sets response header item string via given key.
 func (ctx *Context) SetHeader(key, val string) {
 	ctx.W.Header().Set(key, val)
-}
-
-// SetContentType sets the content type from ext string.
-// MIME type is given in mime package.
-func (ctx *Context) SetContentType(ext string) {
-	if !strings.HasPrefix(ext, ".") {
-		ext = "." + ext
-	}
-	ctype := mime.TypeByExtension(ext)
-	if ctype != "" {
-		ctx.W.Header().Set(HeaderContentType, ctype)
-	}
 }
 
 // SetCookie sets cookie value via given key.
