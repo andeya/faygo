@@ -23,7 +23,6 @@ import (
 	"encoding/xml"
 	"fmt"
 	"html/template"
-	"io"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -224,18 +223,14 @@ func (ctx *Context) Bytes(status int, contentType string, content []byte) error 
 	}
 	ctx.W.Header().Set(HeaderContentType, contentType)
 	if ctx.enableGzip && len(ctx.W.Header()[HeaderContentEncoding]) == 0 {
-		encoding := acceptencoder.ParseEncoding(ctx.R)
 		buf := &bytes.Buffer{}
-		if b, n, _ := acceptencoder.WriteBody(encoding, buf, content); b {
-			ctx.W.Header().Set(HeaderContentEncoding, n)
-			ctx.W.Header().Set(HeaderContentLength, strconv.Itoa(buf.Len()))
-			ctx.W.WriteHeader(status)
-			_, err := io.Copy(ctx.W, buf)
-			return err
+		ok, encoding, _ := acceptencoder.WriteBody(acceptencoder.ParseEncoding(ctx.R), buf, content)
+		if ok {
+			ctx.W.Header().Set(HeaderContentEncoding, encoding)
+			content = buf.Bytes()
 		}
-	} else {
-		ctx.W.Header().Set(HeaderContentLength, strconv.Itoa(len(content)))
 	}
+	ctx.W.Header().Set(HeaderContentLength, strconv.Itoa(len(content)))
 	ctx.W.WriteHeader(status)
 	_, err := ctx.W.Write(content)
 	return err
