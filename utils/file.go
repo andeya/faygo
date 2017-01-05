@@ -25,27 +25,27 @@ import (
 	"strings"
 )
 
-// SelfPath gets compiled executable file absolute path
+// SelfPath gets compiled executable file absolute path.
 func SelfPath() string {
 	path, _ := filepath.Abs(os.Args[0])
 	return path
 }
 
-// SelfDir gets compiled executable file directory
+// SelfDir gets compiled executable file directory.
 func SelfDir() string {
 	return filepath.Dir(SelfPath())
 }
 
-// 转相对路径
+// RelPath gets relative path.
 func RelPath(targpath string) string {
 	basepath, _ := filepath.Abs("./")
 	rel, _ := filepath.Rel(basepath, targpath)
 	return strings.Replace(rel, `\`, `/`, -1)
 }
 
-//切换工作路径到自身所在目录下
 var curpath = SelfDir()
 
+// SelfChdir switch the working path to my own path.
 func SelfChdir() {
 	if err := os.Chdir(curpath); err != nil {
 		log.Fatal(err)
@@ -118,7 +118,8 @@ func GrepFile(patten string, filename string) (lines []string, err error) {
 	return lines, nil
 }
 
-// 遍历目录，可指定后缀，返回相对路径
+// WalkDirs traverses the directory, return to the relative path.
+// You can specify the suffix.
 func WalkDirs(targpath string, suffixes ...string) (dirlist []string) {
 	if !filepath.IsAbs(targpath) {
 		targpath, _ = filepath.Abs(targpath)

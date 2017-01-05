@@ -21,8 +21,8 @@ import (
 	"os"
 	"time"
 
+	"github.com/henrylee2cn/thinkgo/errors"
 	"github.com/henrylee2cn/thinkgo/logging"
-	"github.com/henrylee2cn/thinkgo/utils/errors"
 	"github.com/rsc/letsencrypt"
 	// "github.com/facebookgo/grace/gracehttp"
 )
