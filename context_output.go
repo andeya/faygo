@@ -222,23 +222,19 @@ func (ctx *Context) Bytes(status int, contentType string, content []byte) error 
 		ctx.W.multiCommitted()
 		return nil
 	}
-	if len(ctx.W.Header()[HeaderContentType]) == 0 {
-		ctx.W.Header().Set(HeaderContentType, contentType)
-	}
-	if len(ctx.W.Header()[HeaderContentEncoding]) == 0 {
-		if ctx.enableGzip {
-			encoding := acceptencoder.ParseEncoding(ctx.R)
-			buf := &bytes.Buffer{}
-			if b, n, _ := acceptencoder.WriteBody(encoding, buf, content); b {
-				ctx.W.Header().Set(HeaderContentEncoding, n)
-				ctx.W.WriteHeader(status)
-				_, err := io.Copy(ctx.W, buf)
-				return err
-			}
+	ctx.W.Header().Set(HeaderContentType, contentType)
+	if ctx.enableGzip && len(ctx.W.Header()[HeaderContentEncoding]) == 0 {
+		encoding := acceptencoder.ParseEncoding(ctx.R)
+		buf := &bytes.Buffer{}
+		if b, n, _ := acceptencoder.WriteBody(encoding, buf, content); b {
+			ctx.W.Header().Set(HeaderContentEncoding, n)
+			ctx.W.Header().Set(HeaderContentLength, strconv.Itoa(buf.Len()))
+			ctx.W.WriteHeader(status)
+			_, err := io.Copy(ctx.W, buf)
+			return err
 		}
-		if len(ctx.W.Header()[HeaderContentLength]) == 0 {
-			ctx.W.Header().Set(HeaderContentLength, strconv.Itoa(len(content)))
-		}
+	} else {
+		ctx.W.Header().Set(HeaderContentLength, strconv.Itoa(len(content)))
 	}
 	ctx.W.WriteHeader(status)
 	_, err := ctx.W.Write(content)
