@@ -102,7 +102,9 @@ response:
 - 提供XSRF跨站请求伪造安全过滤
 - 简单整洁的配置文件，且自动补填默认值方便设置
 
-## 操作或中间件
+## 操作和中间件
+
+操作和中间件是相同的，都是实现了Handler接口！
 
 - 函数类型
 ```go
@@ -159,7 +161,8 @@ func (p *Param) Doc() thinkgo.Doc {
 
 ## 过滤函数
 
-过滤函数必须是HandlerFunc类型
+过滤函数必须是HandlerFunc类型！
+
 ```go
 func Root2Index(ctx *thinkgo.Context) error {
     // 不允许直接访问`/index`

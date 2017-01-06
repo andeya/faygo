@@ -104,9 +104,9 @@ response:
 - Nice and easy to use configuration file, automatically write default values
 
 
-## Handler or middleware
+## Handler and middleware
 
-Handler and middleware are the same, are Handler interface!
+Handler and middleware are the same, both implemente Handler interface!
 
 - function type
 ```go
@@ -163,7 +163,8 @@ func (p *Param) Doc() thinkgo.Doc {
 
 ## Filter function
 
-The filter function must be HandleFunc type
+The filter function must be HandleFunc type!
+
 ```go
 func Root2Index(ctx *thinkgo.Context) error {
     // Direct access to `/index` is not allowed
