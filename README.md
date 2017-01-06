@@ -30,7 +30,7 @@ go get -u -v github.com/henrylee2cn/thinkgo
 ```
 
 ### Simple example
-```
+```go
 package main
 
 import (
@@ -102,6 +102,125 @@ response:
 - Supports XSRF security filtering
 - Supports near-LRU memory caching (mainly used for static file cache)
 - Nice and easy to use configuration file, automatically write default values
+
+
+## Handler or middleware
+
+Handler and middleware are the same, are Handler interface!
+
+- function type
+```go
+// Page handler doesn't contains API doc description
+func Page() thinkgo.HandlerFunc {
+    return func(ctx *thinkgo.Context) error {
+        return ctx.String(200, "thinkgo")
+    }
+}
+
+// Page2 handler contains API doc description
+var Page2 = thinkgo.WrapDoc(Page(), "test page2 notes", "test")
+```
+
+- struct type
+```go
+// Param binds and validates the request parameters by Tags
+type Param struct {
+    Id    int    `param:"<in:path> <required> <desc:ID> <range: 0:10>"`
+    Title string `param:"<in:query>"`
+}
+
+// Serve implemente Handler interface
+func (p *Param) Serve(ctx *thinkgo.Context) error {
+    return ctx.JSON(200,
+        thinkgo.Map{
+            "Struct Params":    p,
+            "Additional Param": ctx.PathParam("additional"),
+        }, true)
+}
+
+// Doc implemente API Doc interface (optional)
+func (p *Param) Doc() thinkgo.Doc {
+    return thinkgo.Doc{
+        // Add the API notes to the API doc
+        Note: "param desc",
+        // declare the response content format to the API doc
+        Return: thinkgo.JSONMsg{
+            Code: 1,
+            Info: "success",
+        },
+        // additional request parameter declarations to the API doc (optional)
+        Params: []thinkgo.ParamInfo{
+            {
+                Name:  "additional",
+                In:    "path",
+                Model: "a",
+                Desc:  "defined by the `Doc()` method",
+            },
+        },
+    }
+}
+```
+
+## Filter function
+
+The filter function must be HandleFunc type
+```go
+func Root2Index(ctx *thinkgo.Context) error {
+    // Direct access to `/index` is not allowed
+    if ctx.Path() == "/index" {
+        ctx.Stop()
+        return nil
+    }
+    if ctx.Path() == "/" {
+        ctx.ModifyPath("/index")
+    }
+    return nil
+}
+```
+
+## Route registration
+
+- tree style
+```go
+// New application object, params: name, version
+var app1 = thinkgo.New("myapp1", "1.0")
+
+// router
+app1.Filter(Root2Index).
+    Route(
+        app1.NewNamedGET("test page", "/page", Page()),
+        app1.NewNamedGET("test page2", "/page2", Page2),
+        app1.NewGroup("home",
+            app1.NewNamedGET("test param", "/param", &Param{
+                // sets the default value in the API documentation for the request parameters (optional)
+                Id:    1,
+                Title: "test param",
+            }),
+        ),
+    )
+
+app1.Run()
+```
+
+- chain style
+```go
+// New application object, params: name, version
+var app2 = thinkgo.New("myapp2", "1.0")
+
+// router
+app2.Filter(Root2Index)
+app2.NamedGET("test page", "/page", Page())
+app2.NamedGET("test page2", "/page2", Page2)
+app2.Group("home")
+{
+    app2.NamedGET("test param", "/param", &Param{
+        // sets the default value in the API documentation for the request parameters(optional)
+        Id:    1,
+        Title: "test param",
+    })
+}
+app2.Run()
+```
 
 ## Configuration
 

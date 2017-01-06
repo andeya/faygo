@@ -30,7 +30,7 @@ go get -u -v github.com/henrylee2cn/thinkgo
 ```
 
 ### 简单示例
-```
+```go
 package main
 
 import (
@@ -102,8 +102,121 @@ response:
 - 提供XSRF跨站请求伪造安全过滤
 - 简单整洁的配置文件，且自动补填默认值方便设置
 
+## 操作或中间件
 
+- 函数类型
+```go
+// 不含API文档描述
+func Page() thinkgo.HandlerFunc {
+    return func(ctx *thinkgo.Context) error {
+        return ctx.String(200, "thinkgo")
+    }
+}
 
+// 含API文档描述
+var Page2 = thinkgo.WrapDoc(Page(), "测试页2的注意事项", "文本")
+```
+
+- 结构体类型
+```go
+// Param操作通过Tag绑定并验证请求参数
+type Param struct {
+    Id    int    `param:"<in:path> <required> <desc:ID> <range: 0:10>"`
+    Title string `param:"<in:query>"`
+}
+
+// Serve实现Handler接口
+func (p *Param) Serve(ctx *thinkgo.Context) error {
+    return ctx.JSON(200,
+        thinkgo.Map{
+            "Struct Params":    p,
+            "Additional Param": ctx.PathParam("additional"),
+        }, true)
+}
+
+// Doc实现API文档接口（可选）
+func (p *Param) Doc() thinkgo.Doc {
+    return thinkgo.Doc{
+        // 向API文档声明接口注意事项
+        Note: "param desc",
+        // 向API文档声明响应内容格式
+        Return: thinkgo.JSONMsg{
+            Code: 1,
+            Info: "success",
+        },
+        // 向API文档增加额外的请求参数声明（可选）
+        Params: []thinkgo.ParamInfo{
+            {
+                Name:  "additional",
+                In:    "path",
+                Model: "a",
+                Desc:  "defined by the `Doc()` method",
+            },
+        },
+    }
+}
+```
+
+## 过滤函数
+
+过滤函数必须是HandlerFunc类型
+```go
+func Root2Index(ctx *thinkgo.Context) error {
+    // 不允许直接访问`/index`
+    if ctx.Path() == "/index" {
+        ctx.Stop()
+        return nil
+    }
+    if ctx.Path() == "/" {
+        ctx.ModifyPath("/index")
+    }
+    return nil
+}
+```
+
+## 路由注册
+
+- 树状
+```go
+// 新建应用实例，参数：名称、版本
+var app1 = thinkgo.New("myapp1", "1.0")
+
+// 路由
+app1.Filter(Root2Index).
+    Route(
+        app1.NewNamedGET("测试页1", "/page", Page()),
+        app1.NewNamedGET("测试页2", "/page2", Page2),
+        app1.NewGroup("home",
+            app1.NewNamedGET("test param", "/param", &Param{
+                // 为绑定的参数设定API文档中缺省值（可选）
+                Id:    1,
+                Title: "test param",
+            }),
+        ),
+    )
+
+app1.Run()
+```
+
+- 链状
+```go
+// 新建应用实例，参数：名称、版本
+var app2 = thinkgo.New("myapp2", "1.0")
+
+// 路由
+app2.Filter(Root2Index)
+app2.NamedGET("test page", "/page", Page())
+app2.NamedGET("test page2", "/page2", Page2)
+app2.Group("home")
+{
+    app2.NamedGET("test param", "/param", &Param{
+        // 为绑定的参数设定API文档中缺省值（可选）
+        Id:    1,
+        Title: "test param",
+    })
+}
+app2.Run()
+```
 
 ## 配置文件说明
 
