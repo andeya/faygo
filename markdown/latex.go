@@ -34,11 +34,12 @@ func LatexRenderer(flags int) Renderer {
 	return &Latex{}
 }
 
+// GetFlags returns flags
 func (options *Latex) GetFlags() int {
 	return 0
 }
 
-// render code chunks using verbatim, or listings if we have a language
+// BlockCode render code chunks using verbatim, or listings if we have a language
 func (options *Latex) BlockCode(out *bytes.Buffer, text []byte, lang string) {
 	if lang == "" {
 		out.WriteString("\n\\begin{verbatim}\n")
@@ -55,10 +56,12 @@ func (options *Latex) BlockCode(out *bytes.Buffer, text []byte, lang string) {
 	}
 }
 
+// TitleBlock TODO: this
 func (options *Latex) TitleBlock(out *bytes.Buffer, text []byte) {
 
 }
 
+// BlockQuote quotation
 func (options *Latex) BlockQuote(out *bytes.Buffer, text []byte) {
 	out.WriteString("\n\\begin{quotation}\n")
 	out.Write(text)
@@ -72,6 +75,7 @@ func (options *Latex) BlockHtml(out *bytes.Buffer, text []byte) {
 	out.WriteString("\n\\end{verbatim}\n")
 }
 
+// Header writes header
 func (options *Latex) Header(out *bytes.Buffer, text func() bool, level int, id string) {
 	marker := out.Len()
 
@@ -96,10 +100,12 @@ func (options *Latex) Header(out *bytes.Buffer, text func() bool, level int, id 
 	out.WriteString("}\n")
 }
 
+// HRule writes HRule
 func (options *Latex) HRule(out *bytes.Buffer) {
 	out.WriteString("\n\\HRule\n")
 }
 
+// List writes list
 func (options *Latex) List(out *bytes.Buffer, text func() bool, flags int) {
 	marker := out.Len()
 	if flags&LIST_TYPE_ORDERED != 0 {
@@ -118,11 +124,13 @@ func (options *Latex) List(out *bytes.Buffer, text func() bool, flags int) {
 	}
 }
 
+// ListItem writes item
 func (options *Latex) ListItem(out *bytes.Buffer, text []byte, flags int) {
 	out.WriteString("\n\\item ")
 	out.Write(text)
 }
 
+// Paragraph writes paragraph
 func (options *Latex) Paragraph(out *bytes.Buffer, text func() bool) {
 	marker := out.Len()
 	out.WriteString("\n")
@@ -133,6 +141,7 @@ func (options *Latex) Paragraph(out *bytes.Buffer, text func() bool) {
 	out.WriteString("\n")
 }
 
+// Table writes table
 func (options *Latex) Table(out *bytes.Buffer, header []byte, body []byte, columnData []int) {
 	out.WriteString("\n\\begin{tabular}{")
 	for _, elt := range columnData {
@@ -152,6 +161,7 @@ func (options *Latex) Table(out *bytes.Buffer, header []byte, body []byte, colum
 	out.WriteString("\n\\end{tabular}\n")
 }
 
+// TableRow writes table row
 func (options *Latex) TableRow(out *bytes.Buffer, text []byte) {
 	if out.Len() > 0 {
 		out.WriteString(" \\\\\n")
@@ -159,6 +169,7 @@ func (options *Latex) TableRow(out *bytes.Buffer, text []byte) {
 	out.Write(text)
 }
 
+// TableHeaderCell writes table header cell
 func (options *Latex) TableHeaderCell(out *bytes.Buffer, text []byte, align int) {
 	if out.Len() > 0 {
 		out.WriteString(" & ")
@@ -166,6 +177,7 @@ func (options *Latex) TableHeaderCell(out *bytes.Buffer, text []byte, align int)
 	out.Write(text)
 }
 
+// TableCell writes table cell
 func (options *Latex) TableCell(out *bytes.Buffer, text []byte, align int) {
 	if out.Len() > 0 {
 		out.WriteString(" & ")
@@ -173,15 +185,17 @@ func (options *Latex) TableCell(out *bytes.Buffer, text []byte, align int) {
 	out.Write(text)
 }
 
-// TODO: this
+// Footnotes TODO: this
 func (options *Latex) Footnotes(out *bytes.Buffer, text func() bool) {
 
 }
 
+// FootnoteItem TODO: this
 func (options *Latex) FootnoteItem(out *bytes.Buffer, name, text []byte, flags int) {
 
 }
 
+// AutoLink writes link
 func (options *Latex) AutoLink(out *bytes.Buffer, link []byte, kind int) {
 	out.WriteString("\\href{")
 	if kind == LINK_TYPE_EMAIL {
@@ -193,24 +207,28 @@ func (options *Latex) AutoLink(out *bytes.Buffer, link []byte, kind int) {
 	out.WriteString("}")
 }
 
+// CodeSpan writes span
 func (options *Latex) CodeSpan(out *bytes.Buffer, text []byte) {
 	out.WriteString("\\texttt{")
 	escapeSpecialChars(out, text)
 	out.WriteString("}")
 }
 
+// DoubleEmphasis writes double emphasis
 func (options *Latex) DoubleEmphasis(out *bytes.Buffer, text []byte) {
 	out.WriteString("\\textbf{")
 	out.Write(text)
 	out.WriteString("}")
 }
 
+// Emphasis writes emphasis
 func (options *Latex) Emphasis(out *bytes.Buffer, text []byte) {
 	out.WriteString("\\textit{")
 	out.Write(text)
 	out.WriteString("}")
 }
 
+// Image writes image
 func (options *Latex) Image(out *bytes.Buffer, link []byte, title []byte, alt []byte) {
 	if bytes.HasPrefix(link, []byte("http://")) || bytes.HasPrefix(link, []byte("https://")) {
 		// treat it like a link
@@ -226,10 +244,12 @@ func (options *Latex) Image(out *bytes.Buffer, link []byte, title []byte, alt []
 	}
 }
 
+// LineBreak writes line break
 func (options *Latex) LineBreak(out *bytes.Buffer) {
 	out.WriteString(" \\\\\n")
 }
 
+// Link writes link
 func (options *Latex) Link(out *bytes.Buffer, link []byte, title []byte, content []byte) {
 	out.WriteString("\\href{")
 	out.Write(link)
@@ -238,22 +258,25 @@ func (options *Latex) Link(out *bytes.Buffer, link []byte, title []byte, content
 	out.WriteString("}")
 }
 
+// RawHtmlTag TODO: this
 func (options *Latex) RawHtmlTag(out *bytes.Buffer, tag []byte) {
 }
 
+// TripleEmphasis writes triple emphasis
 func (options *Latex) TripleEmphasis(out *bytes.Buffer, text []byte) {
 	out.WriteString("\\textbf{\\textit{")
 	out.Write(text)
 	out.WriteString("}}")
 }
 
+// StrikeThrough writes strike through
 func (options *Latex) StrikeThrough(out *bytes.Buffer, text []byte) {
 	out.WriteString("\\sout{")
 	out.Write(text)
 	out.WriteString("}")
 }
 
-// TODO: this
+// FootnoteRef TODO: this
 func (options *Latex) FootnoteRef(out *bytes.Buffer, ref []byte, id int) {
 
 }
@@ -288,16 +311,17 @@ func escapeSpecialChars(out *bytes.Buffer, text []byte) {
 	}
 }
 
+// Entity TODO: convert this into a unicode character or something
 func (options *Latex) Entity(out *bytes.Buffer, entity []byte) {
-	// TODO: convert this into a unicode character or something
 	out.Write(entity)
 }
 
+// NormalText escape special chars
 func (options *Latex) NormalText(out *bytes.Buffer, text []byte) {
 	escapeSpecialChars(out, text)
 }
 
-// header and footer
+// DocumentHeader header
 func (options *Latex) DocumentHeader(out *bytes.Buffer) {
 	out.WriteString("\\documentclass{article}\n")
 	out.WriteString("\n")
@@ -327,6 +351,7 @@ func (options *Latex) DocumentHeader(out *bytes.Buffer) {
 	out.WriteString("\\begin{document}\n")
 }
 
+// DocumentFooter footer
 func (options *Latex) DocumentFooter(out *bytes.Buffer) {
 	out.WriteString("\n\\end{document}\n")
 }
