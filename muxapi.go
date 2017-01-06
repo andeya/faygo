@@ -445,9 +445,25 @@ func (mux *MuxAPI) Children() []*MuxAPI {
 func (mux *MuxAPI) Progeny() []*MuxAPI {
 	nodes := []*MuxAPI{}
 	for _, child := range mux.children {
-		nodes = append(nodes, child.Progeny()...)
+		child.family(&nodes)
 	}
 	return nodes
+}
+
+// Family returns an ordered list of tree nodes.
+func (mux *MuxAPI) Family() []*MuxAPI {
+	nodes := []*MuxAPI{mux}
+	for _, child := range mux.children {
+		child.family(&nodes)
+	}
+	return nodes
+}
+
+func (mux *MuxAPI) family(nodes *[]*MuxAPI) {
+	*nodes = append(*nodes, mux)
+	for _, child := range mux.children {
+		child.family(nodes)
+	}
 }
 
 // HandlerProgeny returns an ordered list of subordinate nodes used to register router.
