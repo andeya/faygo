@@ -15,6 +15,7 @@ Thinkgo is a Golang Web framework that handler is middleware, supports intellige
 ## Latest version
 
 ### Version
+
 v1.0
 
 ### Requirements
@@ -30,6 +31,7 @@ go get -u -v github.com/henrylee2cn/thinkgo
 ```
 
 ### Simple example
+
 ```go
 package main
 
@@ -83,6 +85,7 @@ response:
     }
 */
 ```
+
 [All samples](https://github.com/henrylee2cn/thinkgo/raw/master/samples)
 
 ## Features
@@ -109,6 +112,7 @@ response:
 Handler and middleware are the same, both implemente Handler interface!
 
 - function type
+
 ```go
 // Page handler doesn't contains API doc description
 func Page() thinkgo.HandlerFunc {
@@ -122,6 +126,7 @@ var Page2 = thinkgo.WrapDoc(Page(), "test page2 notes", "test")
 ```
 
 - struct type
+
 ```go
 // Param binds and validates the request parameters by Tags
 type Param struct {
@@ -182,6 +187,7 @@ func Root2Index(ctx *thinkgo.Context) error {
 ## Route registration
 
 - tree style
+
 ```go
 // New application object, params: name, version
 var app1 = thinkgo.New("myapp1", "1.0")
@@ -204,6 +210,7 @@ app1.Run()
 ```
 
 - chain style
+
 ```go
 // New application object, params: name, version
 var app2 = thinkgo.New("myapp2", "1.0")
@@ -348,6 +355,7 @@ float32 |  []float32 |
 float64 |  []float64 |
 
 ## Expansion package
+
 - [barcode](https://github.com/henrylee2cn/thinkgo/raw/master/ext/barcode):             `github.com/henrylee2cn/thinkgo/ext/barcode`
 - [Bit unit conversion](https://github.com/henrylee2cn/thinkgo/raw/master/ext/bitconv): `github.com/henrylee2cn/thinkgo/ext/bitconv`
 - [gorm(DB ORM)](https://github.com/henrylee2cn/thinkgo/raw/master/ext/db/gorm):        `github.com/henrylee2cn/thinkgo/ext/db/gorm`
@@ -364,4 +372,5 @@ float64 |  []float64 |
 
 
 ## License
+
 Thinkgo is under Apache v2 License. See the [LICENSE](https://github.com/henrylee2cn/thinkgo/raw/master/LICENSE) file for the full license text.

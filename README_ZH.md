@@ -3,6 +3,7 @@
 ![Thinkgo Favicon](https://github.com/henrylee2cn/thinkgo/raw/master/doc/thinkgo_96x96.png)
 
 ## 概述
+
 Thinkgo以全新的架构实现，它面向Handler接口开发，是支持智能参数映射与校验、支持自动化API文档的Go语言web框架。
 
 官方QQ群：Go-Web 编程 42730308    [![Go-Web 编程群](http://pub.idqqimg.com/wpa/images/group.png)](http://jq.qq.com/?_wv=1027&k=fzi4p1)
@@ -16,9 +17,11 @@ Thinkgo以全新的架构实现，它面向Handler接口开发，是支持智能
 ## 最新版本
 
 ### 版本号
+
 v1.0
 
 ### 安装要求
+
 Go Version ≥1.6
 
 ## 快速使用
@@ -30,6 +33,7 @@ go get -u -v github.com/henrylee2cn/thinkgo
 ```
 
 ### 简单示例
+
 ```go
 package main
 
@@ -83,6 +87,7 @@ response:
     }
 */
 ```
+
 [示例库](https://github.com/henrylee2cn/thinkgo/raw/master/samples)
 
 ## 框架特性
@@ -107,6 +112,7 @@ response:
 操作和中间件是相同的，都是实现了Handler接口！
 
 - 函数类型
+
 ```go
 // 不含API文档描述
 func Page() thinkgo.HandlerFunc {
@@ -120,6 +126,7 @@ var Page2 = thinkgo.WrapDoc(Page(), "测试页2的注意事项", "文本")
 ```
 
 - 结构体类型
+
 ```go
 // Param操作通过Tag绑定并验证请求参数
 type Param struct {
@@ -180,6 +187,7 @@ func Root2Index(ctx *thinkgo.Context) error {
 ## 路由注册
 
 - 树状
+
 ```go
 // 新建应用实例，参数：名称、版本
 var app1 = thinkgo.New("myapp1", "1.0")
@@ -202,6 +210,7 @@ app1.Run()
 ```
 
 - 链状
+
 ```go
 // 新建应用实例，参数：名称、版本
 var app2 = thinkgo.New("myapp2", "1.0")
@@ -346,6 +355,7 @@ float32 |  []float32 |
 float64 |  []float64 |
 
 ## 扩展包
+
 - [各种条码](https://github.com/henrylee2cn/thinkgo/raw/master/ext/barcode):       `github.com/henrylee2cn/thinkgo/ext/barcode`
 - [比特单位](https://github.com/henrylee2cn/thinkgo/raw/master/ext/bitconv):       `github.com/henrylee2cn/thinkgo/ext/bitconv`
 - [gorm数据库引擎](https://github.com/henrylee2cn/thinkgo/raw/master/ext/db/gorm): `github.com/henrylee2cn/thinkgo/ext/db/gorm`
@@ -362,4 +372,5 @@ float64 |  []float64 |
 
 
 ## 开源协议
+
 Thinkgo 项目采用商业应用友好的 [Apache2.0](https://github.com/henrylee2cn/thinkgo/raw/master/LICENSE) 协议发布。
