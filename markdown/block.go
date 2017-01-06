@@ -260,9 +260,8 @@ func (p *parser) isUnderlinedHeader(data []byte) int {
 		i = skipChar(data, i, ' ')
 		if data[i] == '\n' {
 			return 1
-		} else {
-			return 0
 		}
+		return 0
 	}
 
 	// test of level 2 header
@@ -271,9 +270,8 @@ func (p *parser) isUnderlinedHeader(data []byte) int {
 		i = skipChar(data, i, ' ')
 		if data[i] == '\n' {
 			return 2
-		} else {
-			return 0
 		}
+		return 0
 	}
 
 	return 0

@@ -112,6 +112,7 @@ func HtmlRenderer(flags int, title string, css string) Renderer {
 	return HtmlRendererWithParameters(flags, title, css, HtmlRendererParameters{})
 }
 
+// HtmlRendererWithParameters render with parameters
 func HtmlRendererWithParameters(flags int, title string,
 	css string, renderParameters HtmlRendererParameters) Renderer {
 	// configure the rendering engine
@@ -188,10 +189,12 @@ func entityEscapeWithSkip(out *bytes.Buffer, src []byte, skipRanges [][]int) {
 	attrEscape(out, src[end:])
 }
 
+// GetFlags returns flags
 func (options *Html) GetFlags() int {
 	return options.flags
 }
 
+// TitleBlock writes title
 func (options *Html) TitleBlock(out *bytes.Buffer, text []byte) {
 	text = bytes.TrimPrefix(text, []byte("% "))
 	text = bytes.Replace(text, []byte("\n% "), []byte("\n"), -1)
@@ -200,6 +203,7 @@ func (options *Html) TitleBlock(out *bytes.Buffer, text []byte) {
 	out.WriteString("\n</h1>")
 }
 
+// Header writes header
 func (options *Html) Header(out *bytes.Buffer, text func() bool, level int, id string) {
 	marker := out.Len()
 	doubleSpace(out)
@@ -238,6 +242,7 @@ func (options *Html) Header(out *bytes.Buffer, text func() bool, level int, id s
 	out.WriteString(fmt.Sprintf("</h%d>\n", level))
 }
 
+// BlockHtml writes html
 func (options *Html) BlockHtml(out *bytes.Buffer, text []byte) {
 	if options.flags&HTML_SKIP_HTML != 0 {
 		return
@@ -248,6 +253,7 @@ func (options *Html) BlockHtml(out *bytes.Buffer, text []byte) {
 	out.WriteByte('\n')
 }
 
+// HRule writes HRule
 func (options *Html) HRule(out *bytes.Buffer) {
 	doubleSpace(out)
 	out.WriteString("<hr")
@@ -255,6 +261,7 @@ func (options *Html) HRule(out *bytes.Buffer) {
 	out.WriteByte('\n')
 }
 
+// BlockCode render code chunks using verbatim, or listings if we have a language
 func (options *Html) BlockCode(out *bytes.Buffer, text []byte, lang string) {
 	doubleSpace(out)
 
@@ -286,6 +293,7 @@ func (options *Html) BlockCode(out *bytes.Buffer, text []byte, lang string) {
 	out.WriteString("</code></pre>\n")
 }
 
+// BlockQuote quotation
 func (options *Html) BlockQuote(out *bytes.Buffer, text []byte) {
 	doubleSpace(out)
 	out.WriteString("<blockquote>\n")
@@ -293,6 +301,7 @@ func (options *Html) BlockQuote(out *bytes.Buffer, text []byte) {
 	out.WriteString("</blockquote>\n")
 }
 
+// Table writes table
 func (options *Html) Table(out *bytes.Buffer, header []byte, body []byte, columnData []int) {
 	doubleSpace(out)
 	out.WriteString("<table>\n<thead>\n")
@@ -302,6 +311,7 @@ func (options *Html) Table(out *bytes.Buffer, header []byte, body []byte, column
 	out.WriteString("</tbody>\n</table>\n")
 }
 
+// TableRow writes table row
 func (options *Html) TableRow(out *bytes.Buffer, text []byte) {
 	doubleSpace(out)
 	out.WriteString("<tr>\n")
@@ -309,6 +319,7 @@ func (options *Html) TableRow(out *bytes.Buffer, text []byte) {
 	out.WriteString("\n</tr>\n")
 }
 
+// TableHeaderCell writes table header cell
 func (options *Html) TableHeaderCell(out *bytes.Buffer, text []byte, align int) {
 	doubleSpace(out)
 	switch align {
@@ -326,6 +337,7 @@ func (options *Html) TableHeaderCell(out *bytes.Buffer, text []byte, align int) 
 	out.WriteString("</th>")
 }
 
+// TableCell writes table cell
 func (options *Html) TableCell(out *bytes.Buffer, text []byte, align int) {
 	doubleSpace(out)
 	switch align {
@@ -343,6 +355,7 @@ func (options *Html) TableCell(out *bytes.Buffer, text []byte, align int) {
 	out.WriteString("</td>")
 }
 
+// Footnotes writes foot notes
 func (options *Html) Footnotes(out *bytes.Buffer, text func() bool) {
 	out.WriteString("<div class=\"footnotes\">\n")
 	options.HRule(out)
@@ -350,6 +363,7 @@ func (options *Html) Footnotes(out *bytes.Buffer, text func() bool) {
 	out.WriteString("</div>\n")
 }
 
+// FootnoteItem writes foot note item
 func (options *Html) FootnoteItem(out *bytes.Buffer, name, text []byte, flags int) {
 	if flags&LIST_ITEM_CONTAINS_BLOCK != 0 || flags&LIST_ITEM_BEGINNING_OF_LIST != 0 {
 		doubleSpace(out)
@@ -373,6 +387,7 @@ func (options *Html) FootnoteItem(out *bytes.Buffer, name, text []byte, flags in
 	out.WriteString("</li>\n")
 }
 
+// List writes list
 func (options *Html) List(out *bytes.Buffer, text func() bool, flags int) {
 	marker := out.Len()
 	doubleSpace(out)
@@ -397,6 +412,7 @@ func (options *Html) List(out *bytes.Buffer, text func() bool, flags int) {
 	}
 }
 
+// ListItem writes list item
 func (options *Html) ListItem(out *bytes.Buffer, text []byte, flags int) {
 	if (flags&LIST_ITEM_CONTAINS_BLOCK != 0 && flags&LIST_TYPE_DEFINITION == 0) ||
 		flags&LIST_ITEM_BEGINNING_OF_LIST != 0 {
@@ -419,6 +435,7 @@ func (options *Html) ListItem(out *bytes.Buffer, text []byte, flags int) {
 	}
 }
 
+// Paragraph writes paragraph
 func (options *Html) Paragraph(out *bytes.Buffer, text func() bool) {
 	marker := out.Len()
 	doubleSpace(out)
@@ -431,6 +448,7 @@ func (options *Html) Paragraph(out *bytes.Buffer, text func() bool) {
 	out.WriteString("</p>\n")
 }
 
+// AutoLink writes link
 func (options *Html) AutoLink(out *bytes.Buffer, link []byte, kind int) {
 	skipRanges := htmlEntity.FindAllIndex(link, -1)
 	if options.flags&HTML_SAFELINK != 0 && !isSafeLink(link) && kind != LINK_TYPE_EMAIL {
@@ -483,18 +501,21 @@ func (options *Html) AutoLink(out *bytes.Buffer, link []byte, kind int) {
 	out.WriteString("</a>")
 }
 
+// CodeSpan writes code span
 func (options *Html) CodeSpan(out *bytes.Buffer, text []byte) {
 	out.WriteString("<code>")
 	attrEscape(out, text)
 	out.WriteString("</code>")
 }
 
+// DoubleEmphasis writes double emphasis
 func (options *Html) DoubleEmphasis(out *bytes.Buffer, text []byte) {
 	out.WriteString("<strong>")
 	out.Write(text)
 	out.WriteString("</strong>")
 }
 
+// Emphasis writes emphasis
 func (options *Html) Emphasis(out *bytes.Buffer, text []byte) {
 	if len(text) == 0 {
 		return
@@ -513,6 +534,7 @@ func (options *Html) maybeWriteAbsolutePrefix(out *bytes.Buffer, link []byte) {
 	}
 }
 
+// Image writes image
 func (options *Html) Image(out *bytes.Buffer, link []byte, title []byte, alt []byte) {
 	if options.flags&HTML_SKIP_IMAGES != 0 {
 		return
@@ -534,12 +556,14 @@ func (options *Html) Image(out *bytes.Buffer, link []byte, title []byte, alt []b
 	out.WriteString(options.closeTag)
 }
 
+// LineBreak writes line break
 func (options *Html) LineBreak(out *bytes.Buffer) {
 	out.WriteString("<br")
 	out.WriteString(options.closeTag)
 	out.WriteByte('\n')
 }
 
+// Link writes link
 func (options *Html) Link(out *bytes.Buffer, link []byte, title []byte, content []byte) {
 	if options.flags&HTML_SKIP_LINKS != 0 {
 		// write the link text out but don't link it, just mark it with typewriter font
@@ -586,6 +610,7 @@ func (options *Html) Link(out *bytes.Buffer, link []byte, title []byte, content 
 	return
 }
 
+// RawHtmlTag raw html tag
 func (options *Html) RawHtmlTag(out *bytes.Buffer, text []byte) {
 	if options.flags&HTML_SKIP_HTML != 0 {
 		return
@@ -602,18 +627,21 @@ func (options *Html) RawHtmlTag(out *bytes.Buffer, text []byte) {
 	out.Write(text)
 }
 
+// TripleEmphasis triple emphasis
 func (options *Html) TripleEmphasis(out *bytes.Buffer, text []byte) {
 	out.WriteString("<strong><em>")
 	out.Write(text)
 	out.WriteString("</em></strong>")
 }
 
+// StrikeThrough strike through
 func (options *Html) StrikeThrough(out *bytes.Buffer, text []byte) {
 	out.WriteString("<del>")
 	out.Write(text)
 	out.WriteString("</del>")
 }
 
+// FootnoteRef foot note ref
 func (options *Html) FootnoteRef(out *bytes.Buffer, ref []byte, id int) {
 	slug := slugify(ref)
 	out.WriteString(`<sup class="footnote-ref" id="`)
@@ -629,10 +657,12 @@ func (options *Html) FootnoteRef(out *bytes.Buffer, ref []byte, id int) {
 	out.WriteString(`</a></sup>`)
 }
 
+// Entity entity
 func (options *Html) Entity(out *bytes.Buffer, entity []byte) {
 	out.Write(entity)
 }
 
+// NormalText normal text
 func (options *Html) NormalText(out *bytes.Buffer, text []byte) {
 	if options.flags&HTML_USE_SMARTYPANTS != 0 {
 		options.Smartypants(out, text)
@@ -641,6 +671,7 @@ func (options *Html) NormalText(out *bytes.Buffer, text []byte) {
 	}
 }
 
+// Smartypants smarty pants
 func (options *Html) Smartypants(out *bytes.Buffer, text []byte) {
 	smrt := smartypantsData{false, false}
 
@@ -670,6 +701,7 @@ func (options *Html) Smartypants(out *bytes.Buffer, text []byte) {
 	}
 }
 
+// DocumentHeader writes document header
 func (options *Html) DocumentHeader(out *bytes.Buffer) {
 	if options.flags&HTML_COMPLETE_PAGE == 0 {
 		return
@@ -710,6 +742,7 @@ func (options *Html) DocumentHeader(out *bytes.Buffer) {
 	options.tocMarker = out.Len()
 }
 
+// DocumentFooter writes document footer
 func (options *Html) DocumentFooter(out *bytes.Buffer) {
 	// finalize and insert the table of contents
 	if options.flags&HTML_TOC != 0 {
@@ -752,6 +785,7 @@ func (options *Html) DocumentFooter(out *bytes.Buffer) {
 
 }
 
+// TocHeaderWithAnchor header with anchor
 func (options *Html) TocHeaderWithAnchor(text []byte, level int, anchor string) {
 	for level > options.currentLevel {
 		switch {
@@ -793,10 +827,12 @@ func (options *Html) TocHeaderWithAnchor(text []byte, level int, anchor string) 
 	options.toc.WriteString("</a></li>\n")
 }
 
+// TocHeader header
 func (options *Html) TocHeader(text []byte, level int) {
 	options.TocHeaderWithAnchor(text, level, "")
 }
 
+// TocFinalize finalize
 func (options *Html) TocFinalize() {
 	for options.currentLevel > 1 {
 		options.toc.WriteString("</ul></li>\n")

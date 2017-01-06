@@ -14,6 +14,7 @@
 
 package apiware
 
+// constant
 const (
 	ValidationErrorValueNotSet = (1<<16 + iota)
 	ValidationErrorValueTooSmall
@@ -37,6 +38,7 @@ func NewValidationError(id int, field string) error {
 	return &ValidationError{id, field}
 }
 
+// Error implements error interface
 func (e *ValidationError) Error() string {
 	kindStr := ""
 	switch e.kind {
@@ -56,20 +58,24 @@ func (e *ValidationError) Error() string {
 	return e.field + kindStr
 }
 
+// Kind returns error kind
 func (e *ValidationError) Kind() int {
 	return e.kind
 }
 
+// Field returns error field
 func (e *ValidationError) Field() string {
 	return e.field
 }
 
+// Error a formatted error type
 type Error struct {
 	Api    string `json:"api"`
 	Param  string `json:"param"`
 	Reason string `json:"reason"`
 }
 
+// NewError creates *Error
 func NewError(api string, param string, reason string) *Error {
 	return &Error{
 		Api:    api,
@@ -80,6 +86,7 @@ func NewError(api string, param string, reason string) *Error {
 
 var _ error = new(Error)
 
+// Error implements error interface
 func (e *Error) Error() string {
 	return "[apiware] " + e.Api + " | " + e.Param + " | " + e.Reason
 }

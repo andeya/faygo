@@ -418,6 +418,7 @@ func (ctx *Context) FormParamAll() url.Values {
 }
 
 const (
+	// TAG_PARAM param tag
 	TAG_PARAM = apiware.TAG_PARAM
 )
 

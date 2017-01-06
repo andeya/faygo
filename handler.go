@@ -104,6 +104,7 @@ func (h HandlerFunc) Serve(ctx *Context) error {
 	return h(ctx)
 }
 
+// common errors
 var (
 	ErrNotStructPtr   = errors.New("handler must be a structure type or a structure pointer type")
 	ErrNoParamHandler = errors.New("handler does not define any parameter tags")

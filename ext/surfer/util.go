@@ -27,7 +27,7 @@ import (
 	"golang.org/x/net/html/charset"
 )
 
-// 采用surf内核下载时，可以尝试自动转码为utf8
+// AutoToUTF8 采用surf内核下载时，可以尝试自动转码为utf8
 // 采用phantomjs内核时，无需转码（已是utf8）
 func AutoToUTF8(resp *http.Response) error {
 	destReader, err := charset.NewReader(resp.Body, resp.Header.Get("Content-Type"))
@@ -40,21 +40,21 @@ func AutoToUTF8(resp *http.Response) error {
 	return err
 }
 
-// 读取完整响应流正文
+// BodyBytes 读取完整响应流正文
 func BodyBytes(resp *http.Response) ([]byte, error) {
 	body, err := ioutil.ReadAll(resp.Body)
 	resp.Body.Close()
 	return body, err
 }
 
-// 返回编码后的url.URL指针、及解析错误
+// UrlEncode 返回编码后的url.URL指针、及解析错误
 func UrlEncode(urlStr string) (*url.URL, error) {
 	urlObj, err := url.Parse(urlStr)
 	urlObj.RawQuery = urlObj.Query().Encode()
 	return urlObj, err
 }
 
-// The GetWDPath gets the work directory path.
+// GetWDPath gets the work directory path.
 func GetWDPath() string {
 	wd := os.Getenv("GOPATH")
 	if wd == "" {
@@ -63,7 +63,7 @@ func GetWDPath() string {
 	return wd
 }
 
-// The IsDirExists judges path is directory or not.
+// IsDirExists judges path is directory or not.
 func IsDirExists(path string) bool {
 	fi, err := os.Stat(path)
 
@@ -76,7 +76,7 @@ func IsDirExists(path string) bool {
 	panic("util isDirExists not reached")
 }
 
-// The IsFileExists judges path is file or not.
+// IsFileExists judges path is file or not.
 func IsFileExists(path string) bool {
 	fi, err := os.Stat(path)
 
@@ -89,7 +89,7 @@ func IsFileExists(path string) bool {
 	panic("util isFileExists not reached")
 }
 
-// 遍历目录，可指定后缀
+// WalkDir 遍历目录，可指定后缀
 func WalkDir(targpath string, suffixes ...string) (dirlist []string) {
 	if !filepath.IsAbs(targpath) {
 		targpath, _ = filepath.Abs(targpath)
@@ -121,12 +121,13 @@ func WalkDir(targpath string, suffixes ...string) (dirlist []string) {
 	return
 }
 
-// 封装Response.Body
+// Body 封装Response.Body
 type Body struct {
 	io.ReadCloser
 	io.Reader
 }
 
+// Read 实现Reader接口
 func (b *Body) Read(p []byte) (int, error) {
 	return b.Reader.Read(p)
 }

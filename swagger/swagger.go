@@ -25,6 +25,7 @@ import (
 const Version = "2.0"
 
 type (
+	// Swagger object
 	Swagger struct {
 		Version             string                            `json:"swagger"`
 		Info                *Info                             `json:"info"`
@@ -37,6 +38,7 @@ type (
 		Definitions         map[string]*Definition            `json:"definitions,omitempty"`
 		ExternalDocs        map[string]string                 `json:"externalDocs,omitempty"`
 	}
+	// Info object
 	Info struct {
 		Title          string   `json:"title"`
 		ApiVersion     string   `json:"version"`
@@ -45,17 +47,21 @@ type (
 		TermsOfService string   `json:"termsOfService"`
 		License        *License `json:"license,omitempty"`
 	}
+	// Contact object
 	Contact struct {
 		Email string `json:"email,omitempty"`
 	}
+	// License object
 	License struct {
 		Name string `json:"name"`
 		Url  string `json:"url"`
 	}
+	// Tag object
 	Tag struct {
 		Name        string `json:"name"`
 		Description string `json:"description"`
 	}
+	// Opera object
 	Opera struct {
 		Tags        []string              `json:"tags"`
 		Summary     string                `json:"summary"`
@@ -67,6 +73,7 @@ type (
 		Responses   map[string]*Resp      `json:"responses,omitempty"` // {"httpcode":resp}
 		Security    []map[string][]string `json:"security,omitempty"`
 	}
+	// Parameter object
 	Parameter struct {
 		In               string      `json:"in"` // the position of the parameter
 		Name             string      `json:"name"`
@@ -79,12 +86,14 @@ type (
 		Format           string      `json:"format,omitempty"`           // "int64"
 		Default          interface{} `json:"default,omitempty"`
 	}
+	// Items object
 	Items struct {
 		Ref     string      `json:"$ref,omitempty"`
 		Type    string      `json:"type"`           // "string"
 		Enum    interface{} `json:"enum,omitempty"` // slice
 		Default interface{} `json:"default,omitempty"`
 	}
+	// Schema object
 	Schema struct {
 		Ref                  string            `json:"$ref,omitempty"`
 		Type                 string            `json:"type,omitempty"` // "array"|"integer"|"object"
@@ -92,15 +101,18 @@ type (
 		Description          string            `json:"description,omitempty"`
 		AdditionalProperties map[string]string `json:"additionalProperties,omitempty"`
 	}
+	// Resp object
 	Resp struct {
 		Schema      *Schema `json:"schema,omitempty"`
 		Description string  `json:"description,omitempty"`
 	}
+	// Definition object
 	Definition struct {
 		Type       string               `json:"type,omitempty"` // "object"
 		Properties map[string]*Property `json:"properties,omitempty"`
 		Xml        *Xml                 `json:"xml,omitempty"`
 	}
+	// Property object
 	Property struct {
 		Type        string      `json:"type,omitempty"`   // "array"|"integer"|"object"
 		Format      string      `json:"format,omitempty"` // "int64"
@@ -109,12 +121,14 @@ type (
 		Example     interface{} `json:"example,omitempty"`
 		Default     interface{} `json:"default,omitempty"`
 	}
+	// Xml object
 	Xml struct {
 		Name    string `json:"name"`
 		Wrapped bool   `json:"wrapped,omitempty"`
 	}
 )
 
+// CommonMIMETypes common MIME types
 var CommonMIMETypes = []string{
 	"application/json",
 	"application/javascript",
@@ -166,7 +180,7 @@ var mapping2 = map[string]string{
 	"string":  "string",
 }
 
-// Slice parameter information
+// SliceInfo slice parameter information
 func SliceInfo(value interface{}) (subtyp string, first interface{}, count int) {
 	subtyp = fmt.Sprintf("%T", value)
 	idx := strings.Index(subtyp, "]")
@@ -189,7 +203,7 @@ func SliceInfo(value interface{}) (subtyp string, first interface{}, count int) 
 	return
 }
 
-// The type of the parameter value passed in
+// ParamType type of the parameter value passed in
 func ParamType(value interface{}) string {
 	if value == nil {
 		return ""
@@ -208,6 +222,7 @@ func ParamType(value interface{}) string {
 	return mapping[rv.Kind()]
 }
 
+// CreateProperties creates properties
 func CreateProperties(obj interface{}) map[string]*Property {
 	t := reflect.TypeOf(obj)
 	v := reflect.ValueOf(obj)

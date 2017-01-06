@@ -27,21 +27,23 @@ import (
 	"time"
 )
 
-// 基于Phantomjs的下载器实现，作为surfer的补充
-// 效率较surfer会慢很多，但是因为模拟浏览器，破防性更好
-// 支持UserAgent/TryTimes/RetryPause/自定义js
 type (
+	// Phantom 基于Phantomjs的下载器实现，作为surfer的补充
+	// 效率较surfer会慢很多，但是因为模拟浏览器，破防性更好
+	// 支持UserAgent/TryTimes/RetryPause/自定义js
 	Phantom struct {
 		PhantomjsFile string            //Phantomjs完整文件名
 		TempJsDir     string            //临时js存放目录
 		jsFileMap     map[string]string //已存在的js文件
 	}
+	// Response 用于解析Phantomjs的响应内容
 	Response struct {
 		Cookies []string
 		Body    string
 	}
 )
 
+// NewPhantom 创建一个Phantomjs下载器
 func NewPhantom(phantomjsFile, tempJsDir string) Surfer {
 	phantom := &Phantom{
 		PhantomjsFile: phantomjsFile,
@@ -64,8 +66,8 @@ func NewPhantom(phantomjsFile, tempJsDir string) Surfer {
 	return phantom
 }
 
-// 实现surfer下载器接口
-func (self *Phantom) Download(req *Request) (resp *http.Response, err error) {
+// Download 实现surfer下载器接口
+func (phantom *Phantom) Download(req *Request) (resp *http.Response, err error) {
 	err = req.prepare()
 	if err != nil {
 		return resp, err
@@ -82,7 +84,7 @@ func (self *Phantom) Download(req *Request) (resp *http.Response, err error) {
 	resp = req.writeback(resp)
 
 	var args = []string{
-		self.jsFileMap["js"],
+		phantom.jsFileMap["js"],
 		req.Url,
 		req.Header.Get("Cookie"),
 		encoding,
@@ -92,7 +94,7 @@ func (self *Phantom) Download(req *Request) (resp *http.Response, err error) {
 	}
 
 	for i := 0; i < req.TryTimes; i++ {
-		cmd := exec.Command(self.PhantomjsFile, args...)
+		cmd := exec.Command(phantom.PhantomjsFile, args...)
 		if resp.Body, err = cmd.StdoutPipe(); err != nil {
 			time.Sleep(req.RetryPause)
 			continue
@@ -133,13 +135,13 @@ func (self *Phantom) Download(req *Request) (resp *http.Response, err error) {
 	return resp, err
 }
 
-//销毁js临时文件
-func (self *Phantom) DestroyJsFiles() {
-	p, _ := filepath.Split(self.TempJsDir)
+// DestroyJsFiles 销毁js临时文件
+func (phantom *Phantom) DestroyJsFiles() {
+	p, _ := filepath.Split(phantom.TempJsDir)
 	if p == "" {
 		return
 	}
-	for _, filename := range self.jsFileMap {
+	for _, filename := range phantom.jsFileMap {
 		os.Remove(filename)
 	}
 	if len(WalkDir(p)) == 1 {
@@ -147,13 +149,13 @@ func (self *Phantom) DestroyJsFiles() {
 	}
 }
 
-func (self *Phantom) createJsFile(fileName, jsCode string) {
-	fullFileName := filepath.Join(self.TempJsDir, fileName)
+func (phantom *Phantom) createJsFile(fileName, jsCode string) {
+	fullFileName := filepath.Join(phantom.TempJsDir, fileName)
 	// 创建并写入文件
 	f, _ := os.Create(fullFileName)
 	f.Write([]byte(jsCode))
 	f.Close()
-	self.jsFileMap[fileName] = fullFileName
+	phantom.jsFileMap[fileName] = fullFileName
 }
 
 /*

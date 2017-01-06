@@ -21,6 +21,7 @@ type DBConfig struct {
 	StructTag    string `ini:"struct_tag"`   // default is 'db'
 }
 
+// default constant
 const (
 	DBCONFIG_FILE  = thinkgo.CONFIG_DIR + "sqlx.ini"
 	DATABASE_DIR   = "database/"
@@ -81,10 +82,9 @@ func loadDBConfig() error {
 		}
 		dbConfigs[DEFAULTDB_NAME] = defaultConfig
 		return cfg.SaveTo(DBCONFIG_FILE)
-	} else {
-		if !hadDefaultConfig {
-			*defaultConfig = DBConfig{}
-		}
+	}
+	if !hadDefaultConfig {
+		*defaultConfig = DBConfig{}
 	}
 	return nil
 }

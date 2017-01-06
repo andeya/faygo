@@ -68,6 +68,7 @@ func (options *Latex) BlockQuote(out *bytes.Buffer, text []byte) {
 	out.WriteString("\n\\end{quotation}\n")
 }
 
+// BlockHtml writes html
 func (options *Latex) BlockHtml(out *bytes.Buffer, text []byte) {
 	// a pretty lame thing to do...
 	out.WriteString("\n\\begin{verbatim}\n")
@@ -207,7 +208,7 @@ func (options *Latex) AutoLink(out *bytes.Buffer, link []byte, kind int) {
 	out.WriteString("}")
 }
 
-// CodeSpan writes span
+// CodeSpan writes code span
 func (options *Latex) CodeSpan(out *bytes.Buffer, text []byte) {
 	out.WriteString("\\texttt{")
 	escapeSpecialChars(out, text)

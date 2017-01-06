@@ -27,6 +27,7 @@ type DBConfig struct {
 	ShowExecTime bool   `ini:"show_exec_time"`
 }
 
+// default constant
 const (
 	DBCONFIG_FILE  = thinkgo.CONFIG_DIR + "xorm.ini"
 	DATABASE_DIR   = "database/"
@@ -94,10 +95,9 @@ func loadDBConfig() error {
 		}
 		dbConfigs[DEFAULTDB_NAME] = defaultConfig
 		return cfg.SaveTo(DBCONFIG_FILE)
-	} else {
-		if !hadDefaultConfig {
-			*defaultConfig = DBConfig{}
-		}
+	}
+	if !hadDefaultConfig {
+		*defaultConfig = DBConfig{}
 	}
 	return nil
 }

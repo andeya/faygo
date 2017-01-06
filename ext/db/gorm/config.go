@@ -19,6 +19,7 @@ type DBConfig struct {
 	ShowSql      bool   `ini:"show_sql"`
 }
 
+// default constant
 const (
 	DBCONFIG_FILE  = thinkgo.CONFIG_DIR + "gorm.ini"
 	DATABASE_DIR   = "database/"
@@ -78,10 +79,9 @@ func loadDBConfig() error {
 		}
 		dbConfigs[DEFAULTDB_NAME] = defaultConfig
 		return cfg.SaveTo(DBCONFIG_FILE)
-	} else {
-		if !hadDefaultConfig {
-			*defaultConfig = DBConfig{}
-		}
+	}
+	if !hadDefaultConfig {
+		*defaultConfig = DBConfig{}
 	}
 	return nil
 }

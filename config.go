@@ -159,6 +159,7 @@ type (
 	}
 )
 
+// some default config
 const (
 	// RUNMODE_DEV                 = "dev"
 	// RUNMODE_PROD                = "prod"
@@ -304,6 +305,7 @@ func newConfig(filename string) Config {
 	return background
 }
 
+// Comb combs APIdoc config
 func (conf *APIdocConfig) Comb() {
 	ipPrefixMap := map[string]bool{}
 	for _, ipPrefix := range conf.Whitelist {

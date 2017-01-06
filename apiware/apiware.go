@@ -21,6 +21,7 @@ import (
 )
 
 type (
+	// Apiware binds request paramters
 	Apiware struct {
 		ParamNameMapper
 		Pathdecoder
@@ -31,7 +32,7 @@ type (
 	Pathdecoder func(urlPath, pattern string) (pathParams KV)
 )
 
-// Create a new apiware engine.
+// New creates a new apiware engine.
 // Parse and store the struct object, requires a struct pointer,
 // if `paramNameMapper` is nil, `paramNameMapper=toSnake`,
 // if `bodydecoder` is nil, `bodydecoder=bodyJONS`,
@@ -43,7 +44,7 @@ func New(pathdecoder Pathdecoder, bodydecoder Bodydecoder, paramNameMapper Param
 	}
 }
 
-// Check whether structs meet the requirements of apiware, and register them.
+// Register checks whether structs meet the requirements of apiware, and register them.
 // note: requires a structure pointer.
 func (a *Apiware) Register(structPointers ...interface{}) error {
 	var errStr string

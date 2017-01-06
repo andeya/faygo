@@ -13,6 +13,7 @@ import (
 
 type color int
 
+// color values
 const (
 	ColorBlack = iota + 30
 	ColorRed
@@ -84,10 +85,12 @@ func ConvertColors(colors []int, bold bool) []string {
 	return converted
 }
 
+// ColorSeq adds color identifier
 func ColorSeq(color color) string {
 	return fmt.Sprintf("\033[%dm", int(color))
 }
 
+// ColorSeqBold adds blod color identifier
 func ColorSeqBold(color color) string {
 	return fmt.Sprintf("\033[%d;1m", int(color))
 }

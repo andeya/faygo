@@ -41,11 +41,13 @@ const (
 		EXTENSION_DEFINITION_LISTS
 )
 
+// GithubForRender github render
 type GithubForRender struct {
 	Tpl string
 	Map map[string]interface{}
 }
 
+// GithubMarkdown renders markdown to github style
 func GithubMarkdown(in []byte, hasCatalog bool) ([]byte, error) {
 	flg := githubCommonHTMLFlags
 	if hasCatalog {

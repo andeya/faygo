@@ -35,7 +35,7 @@ const (
 	Windows int = iota
 	// Linux based operating system.
 	Linux
-	// Macintosh/OS X operating system.
+	// Macintosh /OS X operating system.
 	Macintosh
 )
 
@@ -216,7 +216,7 @@ var Database = UATable{
 	},
 }
 
-// 全部UserAgent
+// UserAgents all User-Agent
 var UserAgents = map[string][]string{}
 
 func init() {
@@ -247,7 +247,7 @@ func init() {
 	UserAgents["common"][0], UserAgents["common"][idx] = UserAgents["common"][idx], UserAgents["common"][0]
 }
 
-// Create generates and returns a complete user agent string.
+// CreateReal creates generates and returns a complete user agent string.
 func CreateReal() string {
 	return createFromDetails("Surfer", "1.0", osName(), osVersion(), []string{runtime.Version()})
 }
@@ -305,11 +305,10 @@ func Format(bname, bver string) string {
 		format, ok := data.Formats[majVer]
 		if ok {
 			return format
-		} else {
-			top := TopVersion(bname)
-			majVer = strings.Split(top, ".")[0]
-			return data.Formats[majVer]
 		}
+		top := TopVersion(bname)
+		majVer = strings.Split(top, ".")[0]
+		return data.Formats[majVer]
 	}
 
 	return Database["default"].Formats["1"]
