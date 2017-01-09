@@ -36,8 +36,9 @@ go get -u -v github.com/henrylee2cn/thinkgo
 package main
 
 import (
-    "github.com/henrylee2cn/thinkgo"
+    // "mime/multipart"
     "time"
+    "github.com/henrylee2cn/thinkgo"
 )
 
 type Index struct {
