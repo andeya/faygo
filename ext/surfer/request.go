@@ -18,9 +18,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"log"
 	"math/rand"
-	"mime/multipart"
 	"net/http"
 	"net/url"
 	"strings"
@@ -43,17 +41,15 @@ type Request struct {
 	// url (必须填写)
 	Url string
 	url *url.URL
-	// GET POST POST-M HEAD (默认为GET)
+	// GET POST HEAD (默认为GET)
 	Method string
 	// http header
 	Header http.Header
 	// 是否使用cookies，在Spider的EnableCookie设置
 	EnableCookie bool
-	// POST values
-	Values url.Values
-	// POST files
-	Files []PostFile
-	body  io.Reader
+	// request body interface
+	Body body
+	body io.Reader
 	// dial tcp: i/o timeout
 	DialTimeout time.Duration
 	// WSARecv tcp: i/o timeout
@@ -74,13 +70,6 @@ type Request struct {
 	// 1为PhantomJS下载器，特点破防力强，速度慢，低并发
 	DownloaderID int
 	client       *http.Client
-}
-
-// PostFile post form file
-type PostFile struct {
-	Fieldname string
-	Filename  string
-	Bytes     []byte
 }
 
 func (r *Request) prepare() error {
@@ -129,46 +118,27 @@ func (r *Request) prepare() error {
 	} else if len(r.Header["User-Agent"]) == 0 {
 		r.Header.Set("User-Agent", UserAgents["common"][commonUserAgentIndex])
 	}
-
-	r.Method = strings.ToUpper(r.Method)
-	switch r.Method {
-	case "POST", "PUT", "PATCH", "DELETE":
-		if len(r.Files) > 0 {
-			pr, pw := io.Pipe()
-			bodyWriter := multipart.NewWriter(pw)
-			go func() {
-				for _, postfile := range r.Files {
-					fileWriter, err := bodyWriter.CreateFormFile(postfile.Fieldname, postfile.Filename)
-					if err != nil {
-						log.Println("[E] Surfer: Multipart:", err)
-					}
-					_, err = fileWriter.Write(postfile.Bytes)
-					if err != nil {
-						log.Println("[E] Surfer: Multipart:", err)
-					}
-				}
-				for k, v := range r.Values {
-					for _, vv := range v {
-						bodyWriter.WriteField(k, vv)
-					}
-				}
-				bodyWriter.Close()
-				pw.Close()
-			}()
-			r.Header.Set("Content-Type", bodyWriter.FormDataContentType())
-			r.body = ioutil.NopCloser(pr)
-		} else {
-			r.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-			r.body = strings.NewReader(r.Values.Encode())
-		}
-
-	default:
-		if len(r.Method) == 0 {
-			r.Method = DefaultMethod
-		}
+	if len(r.Method) == 0 {
+		r.Method = DefaultMethod
+	} else {
+		r.Method = strings.ToUpper(r.Method)
 	}
-
+	r.body = nil
+	if r.Body != nil {
+		return r.Body.SetBody(r)
+	}
 	return nil
+}
+
+// ReadBody returns body bytes
+func (r *Request) ReadBody() (b []byte, err error) {
+	if r.url == nil {
+		r.prepare()
+	}
+	if r.body != nil {
+		b, err = ioutil.ReadAll(r.body)
+	}
+	return b, err
 }
 
 // 回写Request内容
@@ -183,6 +153,9 @@ func (r *Request) writeback(resp *http.Response) *http.Response {
 	resp.Request.Method = r.Method
 	resp.Request.Header = r.Header
 	resp.Request.Host = r.url.Host
+
+	// reset url
+	r.url = nil
 
 	return resp
 }

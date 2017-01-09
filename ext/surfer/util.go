@@ -32,7 +32,7 @@ import (
 func AutoToUTF8(resp *http.Response) error {
 	destReader, err := charset.NewReader(resp.Body, resp.Header.Get("Content-Type"))
 	if err == nil {
-		resp.Body = &Body{
+		resp.Body = &RespBody{
 			ReadCloser: resp.Body,
 			Reader:     destReader,
 		}
@@ -121,13 +121,13 @@ func WalkDir(targpath string, suffixes ...string) (dirlist []string) {
 	return
 }
 
-// Body 封装Response.Body
-type Body struct {
+// RespBody 封装Response.Body
+type RespBody struct {
 	io.ReadCloser
 	io.Reader
 }
 
 // Read 实现Reader接口
-func (b *Body) Read(p []byte) (int, error) {
+func (b *RespBody) Read(p []byte) (int, error) {
 	return b.Reader.Read(p)
 }

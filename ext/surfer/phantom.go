@@ -81,6 +81,8 @@ func (phantom *Phantom) Download(req *Request) (resp *http.Response, err error) 
 
 	req.Header.Del("Content-Type")
 
+	var b, _ = req.ReadBody()
+
 	resp = req.writeback(resp)
 
 	var args = []string{
@@ -89,7 +91,7 @@ func (phantom *Phantom) Download(req *Request) (resp *http.Response, err error) 
 		req.Header.Get("Cookie"),
 		encoding,
 		req.Header.Get("User-Agent"),
-		req.Values.Encode(),
+		string(b),
 		strings.ToLower(req.Method),
 	}
 
