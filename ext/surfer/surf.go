@@ -28,24 +28,26 @@ import (
 	"time"
 )
 
-// Default is the default Download implementation.
+// Surf is the default Download implementation.
 type Surf struct {
 	cookieJar *cookiejar.Jar
 }
 
+// New 创建一个Surf下载器
 func New() Surfer {
 	s := new(Surf)
 	s.cookieJar, _ = cookiejar.New(nil)
 	return s
 }
 
-func (self *Surf) Download(param *Request) (*http.Response, error) {
+// Download 实现surfer下载器接口
+func (surf *Surf) Download(param *Request) (*http.Response, error) {
 	err := param.prepare()
 	if err != nil {
 		return nil, err
 	}
-	param.client = self.buildClient(param)
-	resp, err := self.httpRequest(param)
+	param.client = surf.buildClient(param)
+	resp, err := surf.httpRequest(param)
 
 	if err == nil {
 		switch resp.Header.Get("Content-Encoding") {
@@ -72,13 +74,13 @@ func (self *Surf) Download(param *Request) (*http.Response, error) {
 }
 
 // buildClient creates, configures, and returns a *http.Client type.
-func (self *Surf) buildClient(req *Request) *http.Client {
+func (surf *Surf) buildClient(req *Request) *http.Client {
 	client := &http.Client{
 		CheckRedirect: req.checkRedirect,
 	}
 
 	if req.EnableCookie {
-		client.Jar = self.cookieJar
+		client.Jar = surf.cookieJar
 	}
 
 	transport := &http.Transport{
@@ -107,7 +109,7 @@ func (self *Surf) buildClient(req *Request) *http.Client {
 }
 
 // send uses the given *http.Request to make an HTTP request.
-func (self *Surf) httpRequest(param *Request) (resp *http.Response, err error) {
+func (surf *Surf) httpRequest(param *Request) (resp *http.Response, err error) {
 	req, err := http.NewRequest(param.Method, param.Url, param.body)
 	if err != nil {
 		return nil, err

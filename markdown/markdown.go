@@ -9,7 +9,7 @@
 
 //
 //
-// Markdown parsing and processing
+// Package Markdown parsing and processing
 //
 //
 
@@ -25,6 +25,7 @@ import (
 	"unicode/utf8"
 )
 
+// version
 const VERSION = "1.5"
 
 // These are the supported markdown parsing extensions.
@@ -302,7 +303,7 @@ func MarkdownBasic(input []byte) []byte {
 	return MarkdownOptions(input, renderer, Options{Extensions: 0})
 }
 
-// Call Markdown with most useful extensions enabled
+// MarkdownOptions call Markdown with most useful extensions enabled
 // MarkdownCommon is a convenience function for simple rendering.
 // It processes markdown input with common extensions enabled, including:
 //

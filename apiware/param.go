@@ -23,19 +23,20 @@ import (
 	"strings"
 )
 
+// some define
 const (
-	TAG_PARAM        = "param"    //request param tag name
-	TAG_IGNORE_PARAM = "-"        //ignore request param tag value
-	KEY_IN           = "in"       //position of param
-	KEY_NAME         = "name"     //specify request param`s name
-	KEY_REQUIRED     = "required" //request param is required or not
-	KEY_DESC         = "desc"     //request param description
-	KEY_LEN          = "len"      //length range of param's value
-	KEY_RANGE        = "range"    //numerical range of param's value
-	KEY_NONZERO      = "nonzero"  //param`s value can not be zero
-	KEY_REGEXP       = "regexp"   //verify the value of the param with a regular expression(param value can not be null)
-	KEY_MAXMB        = "maxmb"    //when request Content-Type is multipart/form-data, the max memory for body.(multi-param, whichever is greater)
-	KEY_ERR          = "err"      //the custom error for binding or validating
+	TAG_PARAM        = "param"    // request param tag name
+	TAG_IGNORE_PARAM = "-"        // ignore request param tag value
+	KEY_IN           = "in"       // position of param
+	KEY_NAME         = "name"     // specify request param`s name
+	KEY_REQUIRED     = "required" // request param is required or not
+	KEY_DESC         = "desc"     // request param description
+	KEY_LEN          = "len"      // length range of param's value
+	KEY_RANGE        = "range"    // numerical range of param's value
+	KEY_NONZERO      = "nonzero"  // param`s value can not be zero
+	KEY_REGEXP       = "regexp"   // verify the value of the param with a regular expression(param value can not be null)
+	KEY_MAXMB        = "maxmb"    // when request Content-Type is multipart/form-data, the max memory for body.(multi-param, whichever is greater)
+	KEY_ERR          = "err"      // the custom error for binding or validating
 
 	MB                 = 1 << 20 // 1MB
 	defaultMaxMemory   = 32 * MB // 32 MB
@@ -186,7 +187,7 @@ func ParseTags(tag string) map[string]string {
 // 	return values
 // }
 
-// use the struct field to define a request parameter model
+// Param use the struct field to define a request parameter model
 type Param struct {
 	apiName    string // ParamsAPI name
 	name       string // param name
@@ -212,7 +213,7 @@ const (
 )
 
 var (
-	// values for tag 'in'
+	// TagInValues is values for tag 'in'
 	TagInValues = map[string]bool{
 		"path":     true,
 		"query":    true,

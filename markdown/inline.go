@@ -943,9 +943,8 @@ func isMailtoAutoLink(data []byte) int {
 		case '>':
 			if nb == 1 {
 				return i + 1
-			} else {
-				return 0
 			}
+			return 0
 		default:
 			return 0
 		}
@@ -1008,9 +1007,8 @@ func helperFindEmphChar(data []byte, c byte) int {
 			if data[i] != '[' && data[i] != '(' { // not a link
 				if tmpI > 0 {
 					return tmpI
-				} else {
-					continue
 				}
+				continue
 			}
 			cc := data[i]
 			i++
@@ -1131,17 +1129,15 @@ func helperTripleEmphasis(p *parser, out *bytes.Buffer, data []byte, offset int,
 			length = helperEmphasis(p, out, origData[offset-2:], c)
 			if length == 0 {
 				return 0
-			} else {
-				return length - 2
 			}
+			return length - 2
 		default:
 			// single symbol found, hand over to emph2
 			length = helperDoubleEmphasis(p, out, origData[offset-1:], c)
 			if length == 0 {
 				return 0
-			} else {
-				return length - 1
 			}
+			return length - 1
 		}
 	}
 	return 0

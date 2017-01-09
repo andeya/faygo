@@ -21,7 +21,7 @@ import (
 	"strings"
 )
 
-// Type conversions for request params.
+// ConvertAssign type conversions for request params.
 //
 // ConvertAssign copies to dest the value in src, converting it if possible.
 // An error is returned if the copy would result in loss of information.

@@ -36,8 +36,9 @@ go get -u -v github.com/henrylee2cn/thinkgo
 package main
 
 import (
-    "github.com/henrylee2cn/thinkgo"
+    // "mime/multipart"
     "time"
+    "github.com/henrylee2cn/thinkgo"
 )
 
 type Index struct {
@@ -105,6 +106,10 @@ response:
 - Supports XSRF security filtering
 - Supports near-LRU memory caching (mainly used for static file cache)
 - Nice and easy to use configuration file, automatically write default values
+
+- `struct Handler` multi-usage
+
+![thinkgo handler multi-usage](https://github.com/henrylee2cn/thinkgo/raw/master/doc/MultiUsage.png)
 
 
 ## Handler and middleware

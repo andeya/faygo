@@ -67,22 +67,18 @@ func newMuxAPI(frame *Framework, name string, methodset Methodset, pattern strin
 	return muxapi
 }
 
-/*
- * Methods parses out the list of methods.
- *
- * List of common methods:
- * CONNECT
- * DELETE
- * GET
- * HEAD
- * OPTIONS
- * PATCH
- * POST
- * PUT
- * TRACE
- *
- * "*"——CONNECT/DELETE/GET/HEAD/OPTIONS/PATCH/POST/PUT/TRACE
- */
+// Methods parses out the list of methods.
+// List of common methods:
+//  CONNECT
+//  DELETE
+//  GET
+//  HEAD
+//  OPTIONS
+//  PATCH
+//  POST
+//  PUT
+//  TRACE
+//  "*"——CONNECT/DELETE/GET/HEAD/OPTIONS/PATCH/POST/PUT/TRACE
 func (m *Methodset) Methods() []string {
 	s := strings.ToUpper(string(*m))
 	if strings.Contains(s, "*") {

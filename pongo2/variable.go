@@ -336,7 +336,7 @@ func (vr *variableResolver) resolve(ctx *ExecutionContext) (*Value, error) {
 
 			// If an implicit ExecCtx is needed
 			if t.NumIn() > 0 && t.In(0) == typeOfExecCtxPtr {
-				 currArgs = append([]functionCallArgument{executionCtxEval{}}, currArgs...)
+				currArgs = append([]functionCallArgument{executionCtxEval{}}, currArgs...)
 			}
 
 			// Input arguments

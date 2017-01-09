@@ -83,28 +83,28 @@ func NewParamsAPI(
 	if v.Kind() != reflect.Struct {
 		return nil, NewError(name, "*", "the binding object must be a struct pointer")
 	}
-	var m = &ParamsAPI{
+	var paramsAPI = &ParamsAPI{
 		name:             name,
 		params:           []*Param{},
 		structType:       v.Type(),
 		rawStructPointer: structPointer,
 	}
 	if paramNameMapper != nil {
-		m.paramNameMapper = paramNameMapper
+		paramsAPI.paramNameMapper = paramNameMapper
 	} else {
-		m.paramNameMapper = toSnake
+		paramsAPI.paramNameMapper = toSnake
 	}
 	if bodydecoder != nil {
-		m.bodydecoder = bodydecoder
+		paramsAPI.bodydecoder = bodydecoder
 	} else {
-		m.bodydecoder = bodyJONS
+		paramsAPI.bodydecoder = bodyJONS
 	}
-	err := m.addFields([]int{}, m.structType, v)
+	err := paramsAPI.addFields([]int{}, paramsAPI.structType, v)
 	if err != nil {
 		return nil, err
 	}
-	defaultSchema.set(m)
-	return m, nil
+	defaultSchema.set(paramsAPI)
+	return paramsAPI, nil
 }
 
 // Register is similar to a `NewParamsAPI`, but only return error.
@@ -120,7 +120,7 @@ func Register(
 	return err
 }
 
-func (m *ParamsAPI) addFields(parentIndexPath []int, t reflect.Type, v reflect.Value) error {
+func (paramsAPI *ParamsAPI) addFields(parentIndexPath []int, t reflect.Type, v reflect.Value) error {
 	var err error
 	var maxMemoryMB int64
 	var hasFormData, hasBody bool
@@ -134,7 +134,7 @@ func (m *ParamsAPI) addFields(parentIndexPath []int, t reflect.Type, v reflect.V
 		tag, ok := field.Tag.Lookup(TAG_PARAM)
 		if !ok {
 			if field.Anonymous && field.Type.Kind() == reflect.Struct {
-				if err = m.addFields(indexPath, field.Type, v.Field(i)); err != nil {
+				if err = paramsAPI.addFields(indexPath, field.Type, v.Field(i)); err != nil {
 					return err
 				}
 			}
@@ -222,7 +222,7 @@ func (m *ParamsAPI) addFields(parentIndexPath []int, t reflect.Type, v reflect.V
 		}
 
 		fd := &Param{
-			apiName:   m.name,
+			apiName:   paramsAPI.name,
 			indexPath: indexPath,
 			tags:      parsedTags,
 			rawTag:    field.Tag,
@@ -236,7 +236,7 @@ func (m *ParamsAPI) addFields(parentIndexPath []int, t reflect.Type, v reflect.V
 		// fmt.Printf("%#v\n", fd.tags)
 
 		if fd.name, ok = parsedTags[KEY_NAME]; !ok {
-			fd.name = m.paramNameMapper(field.Name)
+			fd.name = paramsAPI.paramNameMapper(field.Name)
 		}
 
 		fd.isFile = paramTypeString == fileTypeString || paramTypeString == filesTypeString || paramTypeString == fileTypeString2 || paramTypeString == filesTypeString2
@@ -247,40 +247,40 @@ func (m *ParamsAPI) addFields(parentIndexPath []int, t reflect.Type, v reflect.V
 		// 	return NewError( t.String(),field.Name, "the initial value failed validation:"+err.Error())
 		// }
 
-		m.params = append(m.params, fd)
+		paramsAPI.params = append(paramsAPI.params, fd)
 	}
 	if maxMemoryMB > 0 {
-		m.maxMemory = maxMemoryMB * MB
+		paramsAPI.maxMemory = maxMemoryMB * MB
 	} else {
-		m.maxMemory = defaultMaxMemory
+		paramsAPI.maxMemory = defaultMaxMemory
 	}
 	return nil
 }
 
 // GetParamsAPI gets the `*ParamsAPI` object according to the type name
 func GetParamsAPI(paramsAPIName string) (*ParamsAPI, error) {
-	m, ok := defaultSchema.get(paramsAPIName)
+	paramsAPI, ok := defaultSchema.get(paramsAPIName)
 	if !ok {
 		return nil, errors.New("struct `" + paramsAPIName + "` is not registered")
 	}
-	return m, nil
+	return paramsAPI, nil
 }
 
 // SetParamsAPI caches `*ParamsAPI`
-func SetParamsAPI(m *ParamsAPI) {
-	defaultSchema.set(m)
+func SetParamsAPI(paramsAPI *ParamsAPI) {
+	defaultSchema.set(paramsAPI)
 }
 
 func (schema *Schema) get(paramsAPIName string) (*ParamsAPI, bool) {
 	schema.RLock()
 	defer schema.RUnlock()
-	m, ok := schema.lib[paramsAPIName]
-	return m, ok
+	paramsAPI, ok := schema.lib[paramsAPIName]
+	return paramsAPI, ok
 }
 
-func (schema *Schema) set(m *ParamsAPI) {
+func (schema *Schema) set(paramsAPI *ParamsAPI) {
 	schema.Lock()
-	schema.lib[m.name] = m
+	schema.lib[paramsAPI.name] = paramsAPI
 	defer schema.Unlock()
 }
 

@@ -18,15 +18,14 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"log"
 	"math/rand"
-	"mime/multipart"
 	"net/http"
 	"net/url"
 	"strings"
 	"time"
 )
 
+// constant
 const (
 	SurfID             = 0               // Surf下载器标识符
 	PhomtomJsID        = 1               // PhomtomJs下载器标识符
@@ -42,17 +41,15 @@ type Request struct {
 	// url (必须填写)
 	Url string
 	url *url.URL
-	// GET POST POST-M HEAD (默认为GET)
+	// GET POST HEAD (默认为GET)
 	Method string
 	// http header
 	Header http.Header
 	// 是否使用cookies，在Spider的EnableCookie设置
 	EnableCookie bool
-	// POST values
-	Values url.Values
-	// POST files
-	Files []PostFile
-	body  io.Reader
+	// request body interface
+	Body body
+	body io.Reader
 	// dial tcp: i/o timeout
 	DialTimeout time.Duration
 	// WSARecv tcp: i/o timeout
@@ -75,103 +72,77 @@ type Request struct {
 	client       *http.Client
 }
 
-// PostFile post form file
-type PostFile struct {
-	Fieldname string
-	Filename  string
-	Bytes     []byte
-}
-
-func (self *Request) prepare() error {
+func (r *Request) prepare() error {
 	var err error
-	self.url, err = UrlEncode(self.Url)
+	r.url, err = UrlEncode(r.Url)
 	if err != nil {
 		return err
 	}
-	self.Url = self.url.String()
-	if self.Proxy != "" {
-		if self.proxy, err = url.Parse(self.Proxy); err != nil {
+	r.Url = r.url.String()
+	if r.Proxy != "" {
+		if r.proxy, err = url.Parse(r.Proxy); err != nil {
 			return err
 		}
 	}
-	if self.DialTimeout < 0 {
-		self.DialTimeout = 0
-	} else if self.DialTimeout == 0 {
-		self.DialTimeout = DefaultDialTimeout
+	if r.DialTimeout < 0 {
+		r.DialTimeout = 0
+	} else if r.DialTimeout == 0 {
+		r.DialTimeout = DefaultDialTimeout
 	}
 
-	if self.ConnTimeout < 0 {
-		self.ConnTimeout = 0
-	} else if self.ConnTimeout == 0 {
-		self.ConnTimeout = DefaultConnTimeout
+	if r.ConnTimeout < 0 {
+		r.ConnTimeout = 0
+	} else if r.ConnTimeout == 0 {
+		r.ConnTimeout = DefaultConnTimeout
 	}
 
-	if self.TryTimes == 0 {
-		self.TryTimes = DefaultTryTimes
+	if r.TryTimes == 0 {
+		r.TryTimes = DefaultTryTimes
 	}
 
-	if self.RetryPause <= 0 {
-		self.RetryPause = DefaultRetryPause
+	if r.RetryPause <= 0 {
+		r.RetryPause = DefaultRetryPause
 	}
 
-	if self.DownloaderID != PhomtomJsID {
-		self.DownloaderID = SurfID
+	if r.DownloaderID != PhomtomJsID {
+		r.DownloaderID = SurfID
 	}
 
-	if self.Header == nil {
-		self.Header = make(http.Header)
+	if r.Header == nil {
+		r.Header = make(http.Header)
 	}
 	var commonUserAgentIndex int
-	if !self.EnableCookie {
+	if !r.EnableCookie {
 		commonUserAgentIndex = rand.Intn(len(UserAgents["common"]))
-		self.Header.Set("User-Agent", UserAgents["common"][commonUserAgentIndex])
-	} else if len(self.Header["User-Agent"]) == 0 {
-		self.Header.Set("User-Agent", UserAgents["common"][commonUserAgentIndex])
+		r.Header.Set("User-Agent", UserAgents["common"][commonUserAgentIndex])
+	} else if len(r.Header["User-Agent"]) == 0 {
+		r.Header.Set("User-Agent", UserAgents["common"][commonUserAgentIndex])
 	}
-
-	self.Method = strings.ToUpper(self.Method)
-	switch self.Method {
-	case "POST", "PUT", "PATCH", "DELETE":
-		if len(self.Files) > 0 {
-			pr, pw := io.Pipe()
-			bodyWriter := multipart.NewWriter(pw)
-			go func() {
-				for _, postfile := range self.Files {
-					fileWriter, err := bodyWriter.CreateFormFile(postfile.Fieldname, postfile.Filename)
-					if err != nil {
-						log.Println("[E] Surfer: Multipart:", err)
-					}
-					_, err = fileWriter.Write(postfile.Bytes)
-					if err != nil {
-						log.Println("[E] Surfer: Multipart:", err)
-					}
-				}
-				for k, v := range self.Values {
-					for _, vv := range v {
-						bodyWriter.WriteField(k, vv)
-					}
-				}
-				bodyWriter.Close()
-				pw.Close()
-			}()
-			self.Header.Set("Content-Type", bodyWriter.FormDataContentType())
-			self.body = ioutil.NopCloser(pr)
-		} else {
-			self.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-			self.body = strings.NewReader(self.Values.Encode())
-		}
-
-	default:
-		if len(self.Method) == 0 {
-			self.Method = DefaultMethod
-		}
+	if len(r.Method) == 0 {
+		r.Method = DefaultMethod
+	} else {
+		r.Method = strings.ToUpper(r.Method)
 	}
-
+	r.body = nil
+	if r.Body != nil {
+		return r.Body.SetBody(r)
+	}
 	return nil
 }
 
+// ReadBody returns body bytes
+func (r *Request) ReadBody() (b []byte, err error) {
+	if r.url == nil {
+		r.prepare()
+	}
+	if r.body != nil {
+		b, err = ioutil.ReadAll(r.body)
+	}
+	return b, err
+}
+
 // 回写Request内容
-func (self *Request) writeback(resp *http.Response) *http.Response {
+func (r *Request) writeback(resp *http.Response) *http.Response {
 	if resp == nil {
 		resp = new(http.Response)
 		resp.Request = new(http.Request)
@@ -179,9 +150,12 @@ func (self *Request) writeback(resp *http.Response) *http.Response {
 		resp.Request = new(http.Request)
 	}
 
-	resp.Request.Method = self.Method
-	resp.Request.Header = self.Header
-	resp.Request.Host = self.url.Host
+	resp.Request.Method = r.Method
+	resp.Request.Header = r.Header
+	resp.Request.Host = r.url.Host
+
+	// reset url
+	r.url = nil
 
 	return resp
 }
@@ -189,15 +163,15 @@ func (self *Request) writeback(resp *http.Response) *http.Response {
 // checkRedirect is used as the value to http.Client.CheckRedirect
 // when redirectTimes equal 0, redirect times is ∞
 // when redirectTimes less than 0, not allow redirects
-func (self *Request) checkRedirect(req *http.Request, via []*http.Request) error {
-	if self.RedirectTimes == 0 {
+func (r *Request) checkRedirect(req *http.Request, via []*http.Request) error {
+	if r.RedirectTimes == 0 {
 		return nil
 	}
-	if len(via) >= self.RedirectTimes {
-		if self.RedirectTimes < 0 {
+	if len(via) >= r.RedirectTimes {
+		if r.RedirectTimes < 0 {
 			return fmt.Errorf("not allow redirects.")
 		}
-		return fmt.Errorf("stopped after %v redirects.", self.RedirectTimes)
+		return fmt.Errorf("stopped after %v redirects.", r.RedirectTimes)
 	}
 	return nil
 }
