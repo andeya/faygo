@@ -107,6 +107,10 @@ response:
 - Supports near-LRU memory caching (mainly used for static file cache)
 - Nice and easy to use configuration file, automatically write default values
 
+- struct handler multi-usage
+
+![thinkgo handler multi-usage](https://github.com/henrylee2cn/thinkgo/raw/master/doc/MultiUsage.png)
+
 
 ## Handler and middleware
 
