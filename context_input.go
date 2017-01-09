@@ -91,16 +91,9 @@ func (ctx *Context) Site() string {
 	return ctx.Scheme() + "://" + ctx.Host()
 }
 
-// HostWithPort returns a host:port string for this request,
-// such as "example.com" or "example.com:8080".
-func (ctx *Context) HostWithPort() string {
-	if ctx.R.Host != "" {
-		if strings.Contains(ctx.R.Host, ":") {
-			return ctx.R.Host
-		}
-		return ctx.R.Host + ":80"
-	}
-	return "localhost:80"
+// SiteWithPort returns base site url as scheme://host:8080 type.
+func (ctx *Context) SiteWithPort() string {
+	return ctx.Scheme() + "://" + ctx.HostWithPort()
 }
 
 // Host returns host name.
@@ -111,6 +104,18 @@ func (ctx *Context) Host() string {
 		hostParts := strings.Split(ctx.R.Host, ":")
 		if len(hostParts) > 0 {
 			return hostParts[0]
+		}
+		return ctx.R.Host
+	}
+	return "localhost"
+}
+
+// HostWithPort returns a host:port string for this request,
+// such as "example.com" or "example.com:8080".
+func (ctx *Context) HostWithPort() string {
+	if ctx.R.Host != "" {
+		if strings.Contains(ctx.R.Host, ":") {
+			return ctx.R.Host
 		}
 		return ctx.R.Host
 	}
