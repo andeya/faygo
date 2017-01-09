@@ -108,7 +108,7 @@ response:
 - 提供XSRF跨站请求伪造安全过滤
 - 简单整洁的配置文件，且自动补填默认值方便设置
 
-- struct handler 多重用途合一
+- `struct Handler` 的多用途合一
 
 ![thinkgo struct handler 多重用途合一](https://github.com/henrylee2cn/thinkgo/raw/master/doc/MultiUsage.png)
 
