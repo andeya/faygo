@@ -16,6 +16,11 @@
 			</parameters>
 		</cmd>
 	</sql>
+	<sql type="select" id="tpldemo" desc="查询SQL">
+		<cmd in="" out="">
+			<![CDATA[ select * from sys_user  ]]>
+		</cmd>
+	</sql>
 	<!-- JSON参数示例：{'name':'李四','start':1,'limted':20 } -->
 	<sql type="pagingselect" id="paging" desc="服务端分页查询,第一个cmd=总页数SQL,第二个cmd=分页的查询数据sql">
 		<cmd in="" out="total">

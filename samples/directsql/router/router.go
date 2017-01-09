@@ -23,4 +23,10 @@ func Route(frame *thinkgo.Framework) {
 	frame.NamedAPI("DirectSQL", "POST", "/bos/*path", directsql.DirectSQL())
 	frame.NamedGET("DirectSQL ModelSql Reload", "/bom/reloadall", directsql.DirectSQLReloadAll())
 	frame.NamedGET("DirectSQL ModelSql Reload", "/bom/reload/*path", directsql.DirectSQLReloadModel())
+	frame.NamedStaticFS("render ", "/tpl", thinkgo.RenderFS(
+		"./view",
+		".tpl", // "*"
+		thinkgo.Map{"title": "tpl page"},
+	))
+
 }

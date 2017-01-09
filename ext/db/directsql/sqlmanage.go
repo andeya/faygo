@@ -152,6 +152,9 @@ func (ms *TModels) loadTModels() {
 		thinkgo.Error(err.Error())
 		return
 	}
+	//是否缓存与缓存时间
+	ms.cached = cfg.Section("").Key("cached").MustBool(false)
+	ms.cachetime = cfg.Section("").Key("cachetime").MustInt(30)
 
 	//读取ModelSQL文件的根目录
 	roots, err := cfg.GetSection("roots")
