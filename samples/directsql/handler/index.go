@@ -16,3 +16,8 @@ func Index() thinkgo.HandlerFunc {
 		return c.Render(200, "view/index.html", nil)
 	}
 }
+func Pongo2() thinkgo.HandlerFunc {
+	return func(c *thinkgo.Context) error {
+		return c.Render(200, "view/pongo2.tpl", nil)
+	}
+}

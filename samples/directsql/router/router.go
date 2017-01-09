@@ -19,14 +19,15 @@ func Route(frame *thinkgo.Framework) {
 	thinkgo.SetStatic("./static", false, false)
 	// Home page
 	frame.NamedAPI("Home", "GET", "/", handler.Index())
+	frame.NamedAPI("Pongo2", "GET", "/pongo2", handler.Pongo2())
 	// bos 执行SQL定义的路由
 	frame.NamedAPI("DirectSQL", "POST", "/bos/*path", directsql.DirectSQL())
 	frame.NamedGET("DirectSQL ModelSql Reload", "/bom/reloadall", directsql.DirectSQLReloadAll())
 	frame.NamedGET("DirectSQL ModelSql Reload", "/bom/reload/*path", directsql.DirectSQLReloadModel())
-	frame.NamedStaticFS("render ", "/tpl", thinkgo.RenderFS(
+	/*frame.NamedStaticFS("render ", "/tpl", thinkgo.RenderFS(
 		"./view",
 		".tpl", // "*"
 		thinkgo.Map{"title": "tpl page"},
-	))
+	))*/
 
 }
