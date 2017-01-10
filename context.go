@@ -339,19 +339,10 @@ func (ctx *Context) doFilter() bool {
 
 // doHandler calls the first handler only, it's like Next with negative pos, used only on Router&MemoryRouter
 func (ctx *Context) doHandler(handlerChain HandlerChain, pathParams PathParams) {
-	ctx.posReset()
 	ctx.pathParams = pathParams
-	count := len(handlerChain)
-	chain := make(HandlerChain, count)
-	for i, h := range handlerChain {
-		if h2, ok := h.(*apiHandler); ok {
-			chain[i] = h2.new()
-		} else {
-			chain[i] = h
-		}
-	}
-	ctx.handlerChain = chain
-	ctx.handlerChainLen = int16(count)
+	ctx.handlerChain = handlerChain
+	ctx.handlerChainLen = int16(len(handlerChain))
+	ctx.posReset()
 	if !ctx.prepare() {
 		return
 	}
@@ -391,6 +382,7 @@ func (ctx *Context) Next() {
 	if ctx.pos < ctx.handlerChainLen {
 		switch h := ctx.handlerChain[ctx.pos].(type) {
 		case *apiHandler:
+			h = h.new()
 			err := h.bind(ctx.R, ctx.pathParams)
 			defer h.reset()
 			if err != nil {
