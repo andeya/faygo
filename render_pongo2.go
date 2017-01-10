@@ -159,23 +159,31 @@ func (render *Render) fromCache(fname string, data Map, withInfo bool) ([]byte, 
 	var b bytes.Buffer
 	err = tpl.ExecuteWriter(data2, &b)
 	if withInfo {
-		return b.Bytes(), newNowFileInfo(fileInfo), err
+		return b.Bytes(), newNowFileInfo(fileInfo, int64(b.Len())), err
 	}
 	return b.Bytes(), nil, err
 }
 
 type nowFileInfo struct {
 	os.FileInfo
+	size    int64
 	modTime time.Time
 }
 
+// Size returns the size in bytes for regular files; system-dependent for others
+func (info *nowFileInfo) Size() int64 {
+	return info.size
+}
+
+// Mode returns file mode bits
 func (info *nowFileInfo) ModTime() time.Time {
 	return info.modTime
 }
 
-func newNowFileInfo(info os.FileInfo) os.FileInfo {
+func newNowFileInfo(info os.FileInfo, size int64) os.FileInfo {
 	return &nowFileInfo{
 		FileInfo: info,
+		size:     size,
 		modTime:  time.Now(),
 	}
 }
@@ -204,5 +212,5 @@ func (render *Render) renderForFS(filename string, data Map) ([]byte, os.FileInf
 		return nil, nil, err
 	}
 	fbytes, err = render.RenderFromBytes(fbytes, data)
-	return fbytes, newNowFileInfo(fileInfo), err
+	return fbytes, newNowFileInfo(fileInfo, int64(len(fbytes))), err
 }

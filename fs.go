@@ -259,6 +259,7 @@ func DirFS(root string, nocompressAndNocache ...bool) FileSystem {
 // RenderFS creates a file system with auto-rendering.
 // param `suffix` is used to specify the extension to be rendered, `*` for all extensions.
 func RenderFS(root string, suffix string, tplVar Map) FileSystem {
+	mime.AddExtensionType(path.Ext(suffix), "text/html")
 	return FS(&renderFS{
 		dir:    root,
 		suffix: suffix,
