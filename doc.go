@@ -77,7 +77,7 @@ StructHandler tag value description:
     param |    in    | only one |     formData  | (position of param) e.g. "request body: a=123&b={formData}"
     param |    in    | only one |     body      | (position of param) request body can be any content
     param |    in    | only one |     header    | (position of param) request header info
-    param |    in    | only one |     cookie    | (position of param) request cookie info, support: `http.Cookie`,`fasthttp.Cookie`,`string`,`[]byte`
+    param |    in    | only one |     cookie    | (position of param) request cookie info, support: `*http.Cookie`,`http.Cookie`,`string`,`[]byte`
     param |   name   |    no    |   (e.g.`id`)   | specify request param`s name
     param | required |    no    |               | request param is required
     param |   desc   |    no    |   (e.g.`id`)   | request param description
@@ -88,13 +88,13 @@ StructHandler tag value description:
     param |  regexp  |    no    | (e.g.`^\\w+$`) | verify the value of the param with a regular expression(param value can not be null)
     param |   err    |    no    |(e.g.`incorrect password format`)| the custom error for binding or validating
 
-NOTES:
+    NOTES:
         1. the binding object must be a struct pointer
         2. in addition to `*multipart.FileHeader`, the binding struct's field can not be a pointer
         3. `regexp` or `param` tag is only usable when `param:"type(xxx)"` is exist
         4. if the `param` tag is not exist, anonymous field will be parsed
-        5. when the param's position(`in`) is `formData` and the field's type is `multipart.FileHeader`, the param receives file uploaded
-        6. if param's position(`in`) is `cookie`, field's type must be `http.Cookie`
+        5. when the param's position(`in`) is `formData` and the field's type is `*multipart.FileHeader`, `multipart.FileHeader`, `[]*multipart.FileHeader` or `[]multipart.FileHeader`, the param receives file uploaded
+        6. if param's position(`in`) is `cookie`, field's type must be `*http.Cookie` or `http.Cookie`
         7. param tags `in(formData)` and `in(body)` can not exist at the same time
         8. there should not be more than one `in(body)` param tag
 
@@ -105,8 +105,8 @@ List of supported param value types:
     byte    |  []byte    | [][]uint8
     uint8   |  []uint8   | *multipart.FileHeader (only for `formData` param)
     bool    |  []bool    | []*multipart.FileHeader (only for `formData` param)
-    int     |  []int     | http.Cookie (only for `net/http`'s `cookie` param)
-    int8    |  []int8    | fasthttp.Cookie (only for `fasthttp`'s `cookie` param)
+    int     |  []int     | *http.Cookie (only for `net/http`'s `cookie` param)
+    int8    |  []int8    | http.Cookie (only for `net/http`'s `cookie` param)
     int16   |  []int16   | struct (struct type only for `body` param or as an anonymous field to extend params)
     int32   |  []int32   |
     int64   |  []int64   |

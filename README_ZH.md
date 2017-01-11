@@ -318,7 +318,7 @@ param |    in    | 有且只有一个 |     query     | （参数位置）如URL
 param |    in    | 有且只有一个 |     formData  | （参数位置）请求表单，如 `a=123&b={formData}`
 param |    in    | 有且只有一个 |     body      | （参数位置）请求Body
 param |    in    | 有且只有一个 |     header    | （参数位置）请求头
-param |    in    | 有且只有一个 |     cookie    | （参数位置）请求cookie，支持：`http.Cookie`、`fasthttp.Cookie`、`string`、`[]byte`等
+param |    in    | 有且只有一个 |     cookie    | （参数位置）请求cookie，支持：`*http.Cookie`、`http.Cookie`、`string`、`[]byte`等
 param |   name   |      否      |     (如`id`)   | 自定义参数名
 param | required |      否      |   required    | 参数是否必须
 param |   desc   |      否      |     (如`id`)   | 参数描述
@@ -334,8 +334,8 @@ param |   err    |      否      |(如`密码格式错误`)| 自定义参数绑�
 * 除`*multipart.FileHeader`外，绑定的结构体字段类型不能为指针类型
 * 只有在`param:"type(xxx)"`存在时，`regexp` 和 `param` 标签才有效
 * 若`param`标签不存在，将尝试解析匿名字段
-* 当结构体标签`in`为`formData`且字段类型为`multipart.FileHeader`时，该参数接收文件类型
-* 当结构体标签`in`为`cookie`，字段类型必须为`http.Cookie`
+* 当结构体标签`in`为`formData`且字段类型为`*multipart.FileHeader`、`multipart.FileHeader`、`[]*multipart.FileHeader`或`[]multipart.FileHeader`时，该参数接收文件类型
+* 当结构体标签`in`为`cookie`，字段类型必须为`*http.Cookie`或`http.Cookie`
 * 标签`in(formData)`和`in(body)`不能同时出现在同一结构体
 * 不能存在多个`in(body)`标签
 
@@ -347,8 +347,8 @@ string  |  []string  | [][]byte
 byte    |  []byte    | [][]uint8
 uint8   |  []uint8   | *multipart.FileHeader (仅`formData`参数使用)
 bool    |  []bool    | []*multipart.FileHeader (仅`formData`参数使用)
-int     |  []int     | http.Cookie (仅`net/http`下的`cookie`参数使用)
-int8    |  []int8    | fasthttp.Cookie (仅`fasthttp`下的`cookie`参数使用)
+int     |  []int     | *http.Cookie (仅`net/http`下的`cookie`参数使用)
+int8    |  []int8    | http.Cookie (仅`net/http`下的`cookie`参数使用)
 int16   |  []int16   | struct (`body`参数使用或用于匿名字段扩展参数)
 int32   |  []int32   |
 int64   |  []int64   |

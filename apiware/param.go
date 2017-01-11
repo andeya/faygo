@@ -201,11 +201,12 @@ type Param struct {
 }
 
 const (
-	fileTypeString   = "*multipart.FileHeader"
-	fileTypeString2  = "multipart.FileHeader"
-	filesTypeString  = "[]*multipart.FileHeader"
-	filesTypeString2 = "[]multipart.FileHeader"
-	cookieTypeString = "http.Cookie"
+	fileTypeString    = "*multipart.FileHeader"
+	fileTypeString2   = "multipart.FileHeader"
+	filesTypeString   = "[]*multipart.FileHeader"
+	filesTypeString2  = "[]multipart.FileHeader"
+	cookieTypeString  = "*http.Cookie"
+	cookieTypeString2 = "http.Cookie"
 	// fasthttpCookieTypeString = "fasthttp.Cookie"
 	stringTypeString = "string"
 	bytesTypeString  = "[]byte"

@@ -14,7 +14,7 @@ type Param struct {
 	Title        string                `param:"<in:query> <nonzero>"`
 	Paragraph    []string              `param:"<in:query> <name:p> <len: 1:10> <regexp: ^[\\w]*$>"`
 	Picture      *multipart.FileHeader `param:"<in:formData> <name:pic> <maxmb:30>"`
-	Cookie       http.Cookie           `param:"<in:cookie> <name:thinkgo>"`
+	Cookie       *http.Cookie          `param:"<in:cookie> <name:thinkgo>"`
 	CookieString string                `param:"<in:cookie> <name:thinkgo>"`
 }
 
@@ -32,7 +32,9 @@ func (p *Param) Serve(ctx *thinkgo.Context) error {
 	})
 
 	info, err := ctx.SaveFile("pic", false)
-	ctx.Log().Infof("ctx.SaveFile: filename %s  url %s, size %d, err %v", p.Picture.Filename, info.Url, info.Size, err)
+	if err == nil {
+		ctx.Log().Infof("ctx.SaveFile: filename %s  url %s, size %d", p.Picture.Filename, info.Url, info.Size)
+	}
 	return ctx.JSON(200,
 		thinkgo.Map{
 			"Struct Params":    p,

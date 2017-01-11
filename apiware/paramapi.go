@@ -144,7 +144,7 @@ func (paramsAPI *ParamsAPI) addFields(parentIndexPath []int, t reflect.Type, v r
 		if tag == TAG_IGNORE_PARAM {
 			continue
 		}
-		if field.Type.Kind() == reflect.Ptr && field.Type.String() != fileTypeString {
+		if field.Type.Kind() == reflect.Ptr && field.Type.String() != fileTypeString && field.Type.String() != cookieTypeString {
 			return NewError(t.String(), field.Name, "field can not be a pointer")
 		}
 
@@ -162,7 +162,7 @@ func (paramsAPI *ParamsAPI) addFields(parentIndexPath []int, t reflect.Type, v r
 			if paramPosition != "formData" {
 				return NewError(t.String(), field.Name, "when field type is `"+paramTypeString+"`, tag `in` value must be `formData`")
 			}
-		case cookieTypeString /*, fasthttpCookieTypeString*/ :
+		case cookieTypeString, cookieTypeString2 /*, fasthttpCookieTypeString*/ :
 			if paramPosition != "cookie" {
 				return NewError(t.String(), field.Name, "when field type is `"+paramTypeString+"`, tag `in` value must be `cookie`")
 			}
@@ -538,6 +538,8 @@ func (paramsAPI *ParamsAPI) BindFields(
 			if c != nil {
 				switch value.Type().String() {
 				case cookieTypeString:
+					value.Set(reflect.ValueOf(c))
+				case cookieTypeString2:
 					value.Set(reflect.ValueOf(c).Elem())
 				default:
 					if err = convertAssign(value, []string{c.Value}); err != nil {
