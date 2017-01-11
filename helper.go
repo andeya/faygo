@@ -142,6 +142,10 @@ var SelfPath = utils.SelfPath
 //  func SelfDir() string
 var SelfDir = utils.SelfDir
 
+// RelPath gets relative path.
+//  func RelPath() string
+var RelPath = utils.RelPath
+
 // SelfChdir switch the working path to my own path.
 //  func SelfChdir()
 var SelfChdir = utils.SelfChdir
