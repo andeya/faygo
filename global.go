@@ -447,3 +447,13 @@ func Debug(args ...interface{}) {
 func Debugf(format string, args ...interface{}) {
 	global.bizlog.Debugf(format, args...)
 }
+
+// Print logs a message using CRITICAL as log level, only with time prefix.
+func Print(args ...interface{}) {
+	global.syslog.Critical(args...)
+}
+
+// Printf logs a message using CRITICAL as log level, only with time prefix.
+func Printf(format string, args ...interface{}) {
+	global.syslog.Criticalf(format, args...)
+}
