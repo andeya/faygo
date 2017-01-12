@@ -240,7 +240,12 @@ func (paramsAPI *ParamsAPI) addFields(parentIndexPath []int, t reflect.Type, v r
 		}
 
 		fd.isFile = paramTypeString == fileTypeString || paramTypeString == filesTypeString || paramTypeString == fileTypeString2 || paramTypeString == filesTypeString2
+
 		_, fd.isRequired = parsedTags[KEY_REQUIRED]
+		_, hasNonzero := parsedTags[KEY_NONZERO]
+		if !fd.isRequired && (hasNonzero || len(parsedTags[KEY_RANGE]) > 0) {
+			fd.isRequired = true
+		}
 
 		// err = fd.validate(v)
 		// if err != nil {
