@@ -26,13 +26,34 @@ Go Version ≥1.6
 
 ## 快速使用
 
-### 框架下载
+- 方式一 源码下载
 
 ```sh
 go get -u -v github.com/henrylee2cn/thinkgo
 ```
 
-### 简单示例
+- 方式二 部署工具 （[Go to think](https://github.com/henrylee2cn/think)）
+
+```sh
+go get -u -v github.com/henrylee2cn/think
+```
+
+```
+        think command [arguments]
+
+The commands are:
+        new        创建、编译和运行（监控文件变化）一个新的thinkgo项目
+        run        编译和运行（监控文件变化）任意一个已存在的golang项目
+
+think new appname [apptpl]
+        appname    指定新thinkgo项目的创建目录
+        apptpl     指定一个thinkgo项目模板（可选）
+
+think run [appname]
+        appname    指定待运行的golang项目路径（可选）
+```
+
+## 简单示例
 
 ```go
 package main

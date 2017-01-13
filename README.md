@@ -24,13 +24,34 @@ Go Version ≥1.6
 
 ## Quick Start
 
-### Download and install
+- Way 1: download source
 
 ```sh
 go get -u -v github.com/henrylee2cn/thinkgo
 ```
 
-### Simple example
+- Way 2: deployment tools ([Go to think](https://github.com/henrylee2cn/think))
+
+```sh
+go get -u -v github.com/henrylee2cn/think
+```
+
+```
+        think command [arguments]
+
+The commands are:
+        new        create, compile and run (monitor changes) a new thinkgo project
+        run        compile and run (monitor changes) an any existing go project
+
+think new appname [apptpl]
+        appname    specifies the path of the new thinkgo project
+        apptpl     optionally, specifies the thinkgo project template type
+
+think run [appname]
+        appname    optionally, specifies the path of the new project
+```
+
+## Simple example
 
 ```go
 package main
