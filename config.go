@@ -199,7 +199,7 @@ var globalConfig = func() GlobalConfig {
 		Log: LogConfig{
 			ConsoleEnable: true,
 			ConsoleLevel:  "debug",
-			FileEnable:    true,
+			FileEnable:    false,
 			FileLevel:     "debug",
 		},
 	}

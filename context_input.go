@@ -331,7 +331,7 @@ func (ctx *Context) Param(key string) string {
 	if len(value) > 0 {
 		return value
 	}
-	if cookie, err := ctx.R.Cookie(key); err != nil {
+	if cookie, _ := ctx.R.Cookie(key); cookie != nil {
 		return cookie.Value
 	}
 	return value

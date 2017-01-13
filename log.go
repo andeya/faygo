@@ -16,6 +16,7 @@ package thinkgo
 
 import (
 	"log"
+	"os"
 	"strings"
 
 	"github.com/henrylee2cn/thinkgo/logging"
@@ -38,13 +39,17 @@ var (
 )
 
 func (global *GlobalVariables) initLogger() {
-	fileBackend = func() *logging.FileBackend {
-		fileBackend, err := logging.NewDefaultFileBackend(global.logDir+"thinkgo.log", global.config.Log.AsyncLen)
-		if err != nil {
-			panic(err)
-		}
-		return fileBackend
-	}()
+	if global.config.Log.FileEnable {
+		fileBackend = func() *logging.FileBackend {
+			fileBackend, err := logging.NewDefaultFileBackend(global.logDir+"thinkgo.log", global.config.Log.AsyncLen)
+			if err != nil {
+				panic(err)
+			}
+			return fileBackend
+		}()
+	} else {
+		os.MkdirAll(global.logDir, 0777)
+	}
 	consoleFormat := logging.MustStringFormatter("[%{time:01/02 15:04:05}] %{message}")
 	consoleBackendLevel := logging.AddModuleLevel(logging.NewBackendFormatter(consoleLogBackend, consoleFormat))
 	level, err := logging.LogLevel(global.config.Log.ConsoleLevel)

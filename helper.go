@@ -89,6 +89,26 @@ func SyncINI(structPointer interface{}, callback func() error, filename ...strin
 	return nil
 }
 
+// RemoveUseless when there's not frame instance, remove files: config, log, static and upload .
+func RemoveUseless() {
+	var files []string
+	filepath.Walk(CONFIG_DIR, func(retpath string, f os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		files = append(files, retpath)
+		return err
+	})
+	confile := filepath.Join(CONFIG_DIR, GLOBAL_CONFIG_FILE)
+	if len(files) == 1 || len(files) == 2 && files[1] == confile {
+		os.Remove(confile)
+		os.Remove(CONFIG_DIR)
+		os.Remove(LogDir())
+		os.Remove(StaticDir())
+		os.Remove(UploadDir())
+	}
+}
+
 /**
  * WrapDoc add a document notes to handler
  */
