@@ -53,6 +53,28 @@ think run [appname]
         appname    指定待运行的golang项目路径（可选）
 ```
 
+## 框架特性
+
+- 面向Handler接口开发（func or struct），中间件与操作完全等同可任意拼接路由操作链
+- 支持用struct Handler在Tag标签定义请求参数信息及其校验信息
+- 支持自动构建API文档（swagger2.0）
+- 支持HTTP/HTTP2、HTTPS(tls/letsencrypt)、UNIX多种Server类型
+- 支持多实例运行，且配置信息相互独立
+- 支持同一实例监听多Server类型、多端口
+- 基于高性能路由httprouter进行二次开发，支持链式与树形两种路由信息注册风格
+- 强大的文件路由功能，支持自定义文件系统，框架提供快捷的DirFS、RenderFS、MarkdownFS等
+- 提供近似LRU的文件缓存功能
+- 跨平台的彩色日志系统，且同时支持console和file两种输出形式（可以同时使用）
+- 提供Session管理功能
+- 支持Gzip全局配置
+- 提供XSRF跨站请求伪造安全过滤
+- 简单整洁的配置文件，且自动补填默认值方便设置
+
+- `struct Handler` 的多用途合一
+
+![thinkgo struct handler 多重用途合一](https://github.com/henrylee2cn/thinkgo/raw/master/doc/MultiUsage.png)
+
+
 ## 简单示例
 
 ```go
@@ -111,27 +133,6 @@ response:
 ```
 
 [示例库](https://github.com/henrylee2cn/thinkgo/raw/master/samples)
-
-## 框架特性
-
-- 面向Handler接口开发（func or struct），中间件与操作完全等同可任意拼接路由操作链
-- 支持用struct Handler在Tag标签定义请求参数信息及其校验信息
-- 支持自动构建API文档（swagger2.0）
-- 支持HTTP/HTTP2、HTTPS(tls/letsencrypt)、UNIX多种Server类型
-- 支持多实例运行，且配置信息相互独立
-- 支持同一实例监听多Server类型、多端口
-- 基于高性能路由httprouter进行二次开发，支持链式与树形两种路由信息注册风格
-- 强大的文件路由功能，支持自定义文件系统，框架提供快捷的DirFS、RenderFS、MarkdownFS等
-- 提供近似LRU的文件缓存功能
-- 跨平台的彩色日志系统，且同时支持console和file两种输出形式（可以同时使用）
-- 提供Session管理功能
-- 支持Gzip全局配置
-- 提供XSRF跨站请求伪造安全过滤
-- 简单整洁的配置文件，且自动补填默认值方便设置
-
-- `struct Handler` 的多用途合一
-
-![thinkgo struct handler 多重用途合一](https://github.com/henrylee2cn/thinkgo/raw/master/doc/MultiUsage.png)
 
 ## 操作和中间件
 

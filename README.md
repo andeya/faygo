@@ -51,6 +51,29 @@ think run [appname]
         appname    optionally, specifies the path of the new project
 ```
 
+## Features
+
+- Handler interface oriented development (func or struct)
+- Middleware and handler exactly the same, they together constitute the handler chain
+- Supports the use of struct (implemented handler) tag tags to define request parameter information and its validation information
+- The API documentation (swagger2.0) is automatically built by the handler
+- Supports HTTP/HTTP2, HTTPS (tls/letsencrypt), UNIX and other Server types
+- Multi-instance is supported, and these configurations information are independent of each other
+- Supports the same instance to monitor multi-server and multi-port
+- Based on the high-performance `httprouter` to redevelope, and provides chain or tree style to register router
+- Powerful file router supports for custom file systems, framework has provided DirFS, RenderFS, MarkdownFS and so on
+- Supports cross-platform color log system, and has two output interface (console and file)
+- Supports session management
+- Supports global gzip compression configuration
+- Supports XSRF security filtering
+- Supports near-LRU memory caching (mainly used for static file cache)
+- Nice and easy to use configuration file, automatically write default values
+
+- `struct Handler` multi-usage
+
+![thinkgo handler multi-usage](https://github.com/henrylee2cn/thinkgo/raw/master/doc/MultiUsage.png)
+
+
 ## Simple example
 
 ```go
@@ -109,29 +132,6 @@ response:
 ```
 
 [All samples](https://github.com/henrylee2cn/thinkgo/raw/master/samples)
-
-## Features
-
-- Handler interface oriented development (func or struct)
-- Middleware and handler exactly the same, they together constitute the handler chain
-- Supports the use of struct (implemented handler) tag tags to define request parameter information and its validation information
-- The API documentation (swagger2.0) is automatically built by the handler
-- Supports HTTP/HTTP2, HTTPS (tls/letsencrypt), UNIX and other Server types
-- Multi-instance is supported, and these configurations information are independent of each other
-- Supports the same instance to monitor multi-server and multi-port
-- Based on the high-performance `httprouter` to redevelope, and provides chain or tree style to register router
-- Powerful file router supports for custom file systems, framework has provided DirFS, RenderFS, MarkdownFS and so on
-- Supports cross-platform color log system, and has two output interface (console and file)
-- Supports session management
-- Supports global gzip compression configuration
-- Supports XSRF security filtering
-- Supports near-LRU memory caching (mainly used for static file cache)
-- Nice and easy to use configuration file, automatically write default values
-
-- `struct Handler` multi-usage
-
-![thinkgo handler multi-usage](https://github.com/henrylee2cn/thinkgo/raw/master/doc/MultiUsage.png)
-
 
 ## Handler and middleware
 
