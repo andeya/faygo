@@ -436,7 +436,7 @@ func (frame *Framework) presetSystemMuxes() {
 			hadUpload = true
 		}
 		if strings.Contains(child.pattern, "/static/") {
-			hadUpload = true
+			hadStatic = true
 		}
 	}
 	// When does not have a custom route, the route is automatically created.
