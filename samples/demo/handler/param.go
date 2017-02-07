@@ -23,13 +23,12 @@ var once sync.Once
 // Implement the handler interface
 func (p *Param) Serve(ctx *thinkgo.Context) error {
 	ctx.Log().Info(ctx.R.Host)
-	// name, id := ctx.GetSession("name"), ctx.GetSession("id")
 	once.Do(func() {
-		println("SetSession...")
+		println("Set session...")
 		ctx.SetSession("name", "henry")
-		ctx.SetSession("id", 123)
 		ctx.SetCookie("thinkgo", "henrylee")
 	})
+	ctx.Log().Infof("Get session name=%v", ctx.GetSession("name"))
 
 	info, err := ctx.SaveFile("pic", false)
 	if err == nil {
@@ -40,7 +39,7 @@ func (p *Param) Serve(ctx *thinkgo.Context) error {
 			"Struct Params":    p,
 			"Additional Param": ctx.PathParam("additional"),
 		}, true)
-	// return ctx.String(200, "name: %v\nid: %d", name, id)
+	// return ctx.String(200, "name=%v", name)
 }
 
 // Doc returns the API's note, result or parameters information.
