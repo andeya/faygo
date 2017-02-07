@@ -196,7 +196,7 @@ func (ctx *Context) checkXSRFCookie() bool {
 // StartSession starts session and load old session data info this controller.
 func (ctx *Context) StartSession() (session.Store, error) {
 	if !ctx.enableSession {
-		return nil, errors.New("session function is disable.")
+		return nil, errors.New("before using the session, must set config `session::enable = true`...")
 	}
 	if ctx.CruSession != nil {
 		return ctx.CruSession, nil
@@ -210,6 +210,7 @@ func (ctx *Context) StartSession() (session.Store, error) {
 func (ctx *Context) SetSession(key interface{}, value interface{}) {
 	if ctx.CruSession == nil {
 		if _, err := ctx.StartSession(); err != nil {
+			ctx.Log().Warning(err.Error())
 			return
 		}
 	}
@@ -220,6 +221,7 @@ func (ctx *Context) SetSession(key interface{}, value interface{}) {
 func (ctx *Context) GetSession(key interface{}) interface{} {
 	if ctx.CruSession == nil {
 		if _, err := ctx.StartSession(); err != nil {
+			ctx.Log().Warning(err.Error())
 			return nil
 		}
 	}
@@ -230,6 +232,7 @@ func (ctx *Context) GetSession(key interface{}) interface{} {
 func (ctx *Context) DelSession(key interface{}) {
 	if ctx.CruSession == nil {
 		if _, err := ctx.StartSession(); err != nil {
+			ctx.Log().Warning(err.Error())
 			return
 		}
 	}
@@ -241,6 +244,7 @@ func (ctx *Context) DelSession(key interface{}) {
 func (ctx *Context) SessionRegenerateID() {
 	if ctx.CruSession == nil {
 		if _, err := ctx.StartSession(); err != nil {
+			ctx.Log().Warning(err.Error())
 			return
 		}
 	}
@@ -252,6 +256,7 @@ func (ctx *Context) SessionRegenerateID() {
 func (ctx *Context) DestroySession() {
 	if ctx.CruSession == nil {
 		if _, err := ctx.StartSession(); err != nil {
+			ctx.Log().Warning(err.Error())
 			return
 		}
 	}
