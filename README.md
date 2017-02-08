@@ -257,7 +257,7 @@ app2.Group("home")
 app2.Run()
 ```
 
-## shutdown and reboot
+## Shutdown and reboot
 
 - shutdown gracefully
 
