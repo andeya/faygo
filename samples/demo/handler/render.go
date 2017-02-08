@@ -2,6 +2,7 @@ package handler
 
 import (
 	"github.com/henrylee2cn/thinkgo"
+	"time"
 )
 
 type Render struct {

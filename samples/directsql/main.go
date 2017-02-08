@@ -11,7 +11,6 @@ func main() {
 	{
 		directsql := thinkgo.New("directsqldemo", "1.0")
 		router.Route(directsql)
-		// go directsql.Run()
 	}
 	thinkgo.Run()
 }

@@ -22,7 +22,7 @@ v1.0
 
 ### 安装要求
 
-Go Version ≥1.6
+Go Version ≥1.8
 
 ## 快速使用
 
@@ -69,6 +69,7 @@ think run [appname]
 - 支持Gzip全局配置
 - 提供XSRF跨站请求伪造安全过滤
 - 简单整洁的配置文件，且自动补填默认值方便设置
+- 支持平滑关闭与重启
 
 - `struct Handler` 的多用途合一
 
@@ -255,6 +256,20 @@ app2.Group("home")
     })
 }
 app2.Run()
+```
+
+## 平滑关闭与重启
+
+- 平滑关闭
+
+```sh
+kill [pid]
+```
+
+- 平滑重启
+
+```sh
+kill -USR2 [pid]
 ```
 
 ## 配置文件说明

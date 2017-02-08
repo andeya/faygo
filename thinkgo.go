@@ -16,6 +16,7 @@ package thinkgo
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"net/http"
 	"runtime"
@@ -58,7 +59,6 @@ type Framework struct {
 	filter         HandlerChain
 	servers        []*Server
 	running        bool
-	runOnce        sync.Once
 	buildOnce      sync.Once
 	lock           sync.RWMutex
 	sessionManager *session.Manager
@@ -167,29 +167,25 @@ func (frame *Framework) NameWithVersion() string {
 	return frame.name + "_" + frame.version
 }
 
-// Run starts web services.
-func (frame *Framework) Run() {
-	global.framesLock.Lock()
-	frame.lock.Lock()
-	frame.running = true
-	frame.lock.Unlock()
-	global.framesLock.Unlock()
-	frame.run()
-}
+// // Run starts web services.
+// func (frame *Framework) Run() {
+// 	global.framesLock.Lock()
+// 	frame.lock.Lock()
+// 	frame.running = true
+// 	frame.lock.Unlock()
+// 	global.framesLock.Unlock()
+// 	frame.run()
+// }
 
 func (frame *Framework) run() {
-	frame.runOnce.Do(func() {
-		frame.lock.Lock()
-		frame.build()
-		frame.running = true
-		last := len(frame.servers) - 1
-		for i := 0; i < last; i++ {
-			go frame.servers[i].run()
-		}
-		server := frame.servers[last]
-		frame.lock.Unlock()
-		server.run()
-	})
+	frame.lock.Lock()
+	frame.build()
+	frame.running = true
+	count := len(frame.servers)
+	for i := 0; i < count; i++ {
+		go frame.servers[i].run()
+	}
+	frame.lock.Unlock()
 }
 
 func (frame *Framework) build() {
@@ -260,27 +256,38 @@ func (frame *Framework) Running() bool {
 	return frame.running
 }
 
-// CloseLog closes loggers.
-func (frame *Framework) CloseLog() {
-	frame.bizlog.Close()
-	frame.syslog.Close()
-}
-
-// Close closes the frame service.
-// TODO: close listener
-func (frame *Framework) Close() {
+// shutdown closes the frame service gracefully.
+func (frame *Framework) shutdown(ctxTimeout context.Context) {
 	frame.lock.Lock()
 	defer frame.lock.Unlock()
-	if frame.running {
-		frame.runOnce = sync.Once{}
-		frame.running = false
-		frame.CloseLog()
+	if !frame.running {
+		return
 	}
+	count := new(sync.WaitGroup)
+	for _, server := range frame.servers {
+		count.Add(1)
+		go func(srv *Server) {
+			ctxCancel, _ := context.WithCancel(ctxTimeout)
+			if err := srv.Shutdown(ctxCancel); err != nil {
+				Error(err.Error())
+			}
+			count.Done()
+		}(server)
+	}
+	count.Wait()
+	frame.running = false
+	frame.CloseLog()
 }
 
 // Log returns the logger used by the user bissness.
 func (frame *Framework) Log() *logging.Logger {
 	return frame.bizlog
+}
+
+// CloseLog closes loggers.
+func (frame *Framework) CloseLog() {
+	frame.bizlog.Close()
+	frame.syslog.Close()
 }
 
 // MuxAPIsForRouter get an ordered list of nodes used to register router.

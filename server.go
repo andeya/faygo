@@ -22,6 +22,7 @@ import (
 	"time"
 
 	"github.com/henrylee2cn/thinkgo/errors"
+	"github.com/henrylee2cn/thinkgo/gracenet"
 	"github.com/henrylee2cn/thinkgo/logging"
 	"github.com/rsc/letsencrypt"
 	// "github.com/facebookgo/grace/gracehttp"
@@ -31,6 +32,7 @@ import (
 type Server struct {
 	nameWithVersion string
 	netType         string
+	net             string
 	tlsCertFile     string
 	tlsKeyFile      string
 	letsencryptFile string
@@ -43,12 +45,16 @@ func (server *Server) run() {
 	var err error
 	switch server.netType {
 	case NETTYPE_NORMAL:
+		server.net = "tcp"
 		err = server.listenAndServe()
 	case NETTYPE_TLS:
+		server.net = "tcp"
 		err = server.listenAndServeTLS()
 	case NETTYPE_LETSENCRYPT:
+		server.net = "tcp"
 		err = server.listenAndServeLETSENCRYPT()
 	case NETTYPE_UNIX:
+		server.net = "unix"
 		err = server.listenAndServeUNIX()
 	default:
 		server.log.Fatal("Please set a valid config item net_type, refer to the following:\nnormal | tls | letsencrypt | unix\n")
@@ -63,9 +69,18 @@ func (server *Server) run() {
 // Accepted connections are configured to enable TCP keep-alives.
 // If srv.Addr is blank, ":http" is used, listenAndServe always returns a non-nil error.
 func (server *Server) listenAndServe() error {
-	server.log.Criticalf("[%s] listen and serve HTTP/HTTP2 on %v", server.nameWithVersion, server.Addr)
-	err := server.ListenAndServe()
+	if server.Addr == "" {
+		server.Addr = ":http"
+	}
+	ln, err := server.listen()
 	if err != nil {
+		return errors.New("[server.listenAndServe()] " + err.Error())
+	}
+
+	server.log.Criticalf("\x1b[46m[SYS]\x1b[0m listen and serve HTTP/HTTP2 on %v", server.Addr)
+
+	err = server.Server.Serve(ln)
+	if realServeError(err) != nil {
 		return errors.New("[server.listenAndServe()] " + err.Error())
 	}
 	return nil
@@ -84,9 +99,31 @@ func (server *Server) listenAndServe() error {
 //
 // If server.Addr is blank, ":https" is used, listenAndServeTLS always returns a non-nil error.
 func (server *Server) listenAndServeTLS() error {
-	server.log.Criticalf("[%s] listen and serve HTTPS(TLS)/HTTP2 on %v", server.nameWithVersion, server.Addr)
-	err := server.ListenAndServeTLS(server.tlsCertFile, server.tlsKeyFile)
+	if server.Addr == "" {
+		server.Addr = ":https"
+	}
+
+	var cert tls.Certificate
+	cert, err := tls.LoadX509KeyPair(server.tlsCertFile, server.tlsKeyFile)
 	if err != nil {
+		return err
+	}
+
+	server.TLSConfig = &tls.Config{
+		Certificates:             []tls.Certificate{cert},
+		NextProtos:               []string{"http/1.1", "h2"},
+		PreferServerCipherSuites: true,
+	}
+
+	ln, err := server.listen()
+	if err != nil {
+		return errors.New("[server.listenAndServeTLS()] " + err.Error())
+	}
+
+	server.log.Criticalf("\x1b[46m[SYS]\x1b[0m listen and serve HTTPS(TLS)/HTTP2 on %v", server.Addr)
+
+	err = server.Server.Serve(ln)
+	if realServeError(err) != nil {
 		return errors.New("[server.listenAndServeTLS()] " + err.Error())
 	}
 	return nil
@@ -99,35 +136,35 @@ func (server *Server) listenAndServeLETSENCRYPT() error {
 		server.Addr = ":https"
 	}
 
-	ln, err := net.Listen("tcp4", server.Addr)
-	if err != nil {
-		return errors.New("[server.listenAndServeLETSENCRYPT()] " + err.Error())
-	}
-
 	var m letsencrypt.Manager
 	if server.letsencryptFile != "" {
-		if err = m.CacheFile(server.letsencryptFile); err != nil {
+		if err := m.CacheFile(server.letsencryptFile); err != nil {
 			return errors.New("[server.listenAndServeLETSENCRYPT()] " + err.Error())
 		}
 	}
 
-	tlsConfig := &tls.Config{GetCertificate: m.GetCertificate}
-	tlsListener := tls.NewListener(tcpKeepAliveListener{ln.(*net.TCPListener)}, tlsConfig)
-	server.log.Criticalf("[%s] listen and serve HTTPS(SSL)/HTTP2 on %v", server.nameWithVersion, server.Addr)
+	server.TLSConfig = &tls.Config{GetCertificate: m.GetCertificate}
 
-	err = server.Serve(tlsListener)
+	ln, err := server.listen()
 	if err != nil {
+		return errors.New("[server.listenAndServeLETSENCRYPT()] " + err.Error())
+	}
+
+	server.log.Criticalf("\x1b[46m[SYS]\x1b[0m listen and serve HTTPS(SSL)/HTTP2 on %v", server.Addr)
+
+	err = server.Serve(ln)
+	if realServeError(err) != nil {
 		return errors.New("[server.listenAndServeLETSENCRYPT()] " + err.Error())
 	}
 	return nil
 }
 
 var (
-	errPortAlreadyUsed = errors.New("Port is already used")
-	errRemoveUnix      = errors.New("Unexpected error when trying to remove unix socket file. Addr: %s | Trace: %s")
-	errChmod           = errors.New("Cannot chmod %#o for %q: %s")
-	errCertKeyMissing  = errors.New("You should provide certFile and keyFile for TLS/SSL")
-	errParseTLS        = errors.New("Couldn't load TLS, certFile=%q, keyFile=%q. Trace: %s")
+	errPortAlreadyUsed = errors.New("[server.listenAndServeUNIX()] Port is already used")
+	errRemoveUnix      = errors.New("[server.listenAndServeUNIX()] Unexpected error when trying to remove unix socket file. Addr: %s | Trace: %s")
+	errChmod           = errors.New("[server.listenAndServeUNIX()] Cannot chmod %#o for %q: %s")
+	// errCertKeyMissing  = errors.New("[server.listenAndServeUNIX()] You should provide certFile and keyFile for TLS/SSL")
+	// errParseTLS        = errors.New("Couldn't load TLS, certFile=%q, keyFile=%q. Trace: %s")
 )
 
 // listenAndServeUNIX announces on the Unix domain socket laddr and listens a Unix service.
@@ -136,21 +173,36 @@ func (server *Server) listenAndServeUNIX() error {
 		return errRemoveUnix.Format(server.Addr, errOs.Error())
 	}
 
-	ln, err := net.Listen("unix", server.Addr)
+	if err := os.Chmod(server.Addr, server.unixFileMode); err != nil {
+		return errChmod.Format(server.unixFileMode, server.Addr, err.Error())
+	}
+
+	ln, err := server.listen()
 	if err != nil {
 		return errPortAlreadyUsed.AppendErr(err)
 	}
 
-	if err = os.Chmod(server.Addr, server.unixFileMode); err != nil {
-		return errChmod.Format(server.unixFileMode, server.Addr, err.Error())
-	}
-	server.log.Criticalf("[%s] listen and serve HTTP(UNIX)/HTTP2 on %v", server.nameWithVersion, server.Addr)
+	server.log.Criticalf("\x1b[46m[SYS]\x1b[0m listen and serve HTTP(UNIX)/HTTP2 on %v", server.Addr)
 
-	err = server.Serve(tcpKeepAliveListener{ln.(*net.TCPListener)})
-	if err != nil {
+	err = server.Serve(ln)
+	if realServeError(err) != nil {
 		return errors.New("[server.listenAndServeUNIX()] " + err.Error())
 	}
 	return nil
+}
+
+var grace = new(gracenet.Net)
+
+func (server *Server) listen() (net.Listener, error) {
+	ln, err := grace.Listen(server.net, server.Addr)
+	if err != nil {
+		return nil, err
+	}
+	ln = tcpKeepAliveListener{ln.(*net.TCPListener)}
+	if server.TLSConfig != nil {
+		return tls.NewListener(ln, server.TLSConfig), nil
+	}
+	return ln, nil
 }
 
 // tcpKeepAliveListener sets TCP keep-alive timeouts on accepted
@@ -169,4 +221,11 @@ func (ln tcpKeepAliveListener) Accept() (c net.Conn, err error) {
 	tc.SetKeepAlive(true)
 	tc.SetKeepAlivePeriod(3 * time.Minute)
 	return tc, nil
+}
+
+func realServeError(err error) error {
+	if err != nil && err == http.ErrServerClosed {
+		return nil
+	}
+	return err
 }

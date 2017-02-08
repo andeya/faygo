@@ -15,6 +15,7 @@
 package thinkgo
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -70,6 +71,11 @@ type (
 
 		syslog *logging.Logger
 		bizlog *logging.Logger
+
+		// finalizer is called after the services shutdown.
+		finalizer func(context.Context) error
+
+		graceOnce sync.Once
 	}
 	// PresetStatic is the system default static file routing information
 	PresetStatic struct {
@@ -201,31 +207,16 @@ func GetFrame(name string, version ...string) (*Framework, bool) {
 // Run starts all web services.
 func Run() {
 	global.framesLock.Lock()
-	count := len(global.frames)
-	if count == 0 {
-		global.framesLock.Unlock()
-		return
-	}
-	var last = -1
-	for i := count - 1; i >= 0; i-- {
-		if !global.frames[i].Running() {
-			last = i
-			break
-		}
-	}
-	if last == -1 {
-		global.framesLock.Unlock()
-		return
-	}
-	for _, frame := range global.frames[:last] {
+	for _, frame := range global.frames {
 		if !frame.Running() {
 			go frame.run()
 			time.Sleep(time.Second)
 		}
 	}
-	frame := global.frames[last]
 	global.framesLock.Unlock()
-	frame.run()
+	global.graceOnce.Do(func() {
+		graceSignal()
+	})
 }
 
 // Running returns whether the frame service is running.
@@ -237,14 +228,42 @@ func Running(name string, version ...string) bool {
 	return frame.Running()
 }
 
-// Close closes all the frame services.
-// TODO: close listeners
-func Close() {
+// SetFinalizer sets the function which is called after the services shutdown.
+func SetFinalizer(finalizer func(context.Context) error) {
+	global.finalizer = finalizer
+}
+
+const (
+	// SHUTDOWN_TIMEOUT the time-out period for closing the service
+	SHUTDOWN_TIMEOUT = 1 * time.Minute
+)
+
+// Shutdown closes all the frame services gracefully.
+func Shutdown(timeout ...time.Duration) {
+	Print("\x1b[46m[SYS]\x1b[0m shutting down servers...")
 	global.framesLock.Lock()
 	defer global.framesLock.Unlock()
-	for _, frame := range global.frames {
-		frame.Close()
+	var d = SHUTDOWN_TIMEOUT
+	if len(timeout) > 0 {
+		d = timeout[0]
 	}
+	// shut down gracefully, but wait no longer than d before halting
+	ctxTimeout, _ := context.WithTimeout(context.Background(), d)
+	count := new(sync.WaitGroup)
+	for _, frame := range global.frames {
+		count.Add(1)
+		go func(fm *Framework) {
+			fm.shutdown(ctxTimeout)
+			count.Done()
+		}(frame)
+	}
+	count.Wait()
+	if global.finalizer != nil {
+		if err := global.finalizer(ctxTimeout); err != nil {
+			Error(err.Error())
+		}
+	}
+	Print("\x1b[46m[SYS]\x1b[0m servers gracefully stopped.")
 	CloseLog()
 }
 

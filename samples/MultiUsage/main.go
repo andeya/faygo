@@ -65,7 +65,7 @@ func main() {
 		Age:  30,
 	})
 	// Start the service
-	app.Run()
+	thinkgo.Run()
 
 	// PS: By visiting /apidoc to test.
 }

@@ -20,7 +20,7 @@ v1.0
 
 ### Requirements
 
-Go Version ≥1.6
+Go Version ≥1.8
 
 ## Quick Start
 
@@ -68,6 +68,7 @@ think run [appname]
 - Supports XSRF security filtering
 - Supports near-LRU memory caching (mainly used for static file cache)
 - Nice and easy to use configuration file, automatically write default values
+- Supports shutdown and reboot gracefully
 
 - `struct Handler` multi-usage
 
@@ -112,7 +113,7 @@ func main() {
   // )
 
   // Start the service
-  app.Run()
+  thinkgo.Run()
 }
 
 /*
@@ -254,6 +255,20 @@ app2.Group("home")
     })
 }
 app2.Run()
+```
+
+## shutdown and reboot
+
+- shutdown gracefully
+
+```sh
+kill [pid]
+```
+
+- reboot gracefully
+
+```sh
+kill -USR2 [pid]
 ```
 
 ## Configuration
