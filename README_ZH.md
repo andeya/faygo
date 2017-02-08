@@ -114,7 +114,7 @@ func main() {
   // )
 
   // Start the service
-  app.Run()
+  thinkgo.Run()
 }
 
 /*
@@ -233,8 +233,6 @@ app1.Filter(Root2Index).
             }),
         ),
     )
-
-app1.Run()
 ```
 
 - 链状
@@ -255,7 +253,6 @@ app2.Group("home")
         Title: "test param",
     })
 }
-app2.Run()
 ```
 
 ## 平滑关闭与重启

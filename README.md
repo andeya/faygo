@@ -232,8 +232,6 @@ app1.Filter(Root2Index).
             }),
         ),
     )
-
-app1.Run()
 ```
 
 - chain style
@@ -254,7 +252,6 @@ app2.Group("home")
         Title: "test param",
     })
 }
-app2.Run()
 ```
 
 ## Shutdown and reboot
