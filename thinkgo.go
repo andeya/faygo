@@ -22,6 +22,7 @@ import (
 	"runtime"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/henrylee2cn/thinkgo/logging"
@@ -257,19 +258,21 @@ func (frame *Framework) Running() bool {
 }
 
 // shutdown closes the frame service gracefully.
-func (frame *Framework) shutdown(ctxTimeout context.Context) {
+func (frame *Framework) shutdown(ctxTimeout context.Context) (graceful bool) {
 	frame.lock.Lock()
 	defer frame.lock.Unlock()
 	if !frame.running {
-		return
+		return true
 	}
+	var flag int32 = 1
 	count := new(sync.WaitGroup)
 	for _, server := range frame.servers {
 		count.Add(1)
 		go func(srv *Server) {
 			ctxCancel, _ := context.WithCancel(ctxTimeout)
 			if err := srv.Shutdown(ctxCancel); err != nil {
-				Error(err.Error())
+				atomic.StoreInt32(&flag, 0)
+				frame.Log().Error("[shutdown]", err.Error())
 			}
 			count.Done()
 		}(server)
@@ -277,6 +280,7 @@ func (frame *Framework) shutdown(ctxTimeout context.Context) {
 	count.Wait()
 	frame.running = false
 	frame.CloseLog()
+	return flag == 1
 }
 
 // Log returns the logger used by the user bissness.

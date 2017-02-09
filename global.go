@@ -23,6 +23,7 @@ import (
 	"reflect"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/henrylee2cn/thinkgo/acceptencoder"
@@ -243,27 +244,36 @@ func Shutdown(timeout ...time.Duration) {
 	Print("\x1b[46m[SYS]\x1b[0m shutting down servers...")
 	global.framesLock.Lock()
 	defer global.framesLock.Unlock()
+	// shut down gracefully, but wait no longer than d before halting
 	var d = SHUTDOWN_TIMEOUT
 	if len(timeout) > 0 {
 		d = timeout[0]
 	}
-	// shut down gracefully, but wait no longer than d before halting
 	ctxTimeout, _ := context.WithTimeout(context.Background(), d)
 	count := new(sync.WaitGroup)
+	var flag int32 = 1
 	for _, frame := range global.frames {
 		count.Add(1)
 		go func(fm *Framework) {
-			fm.shutdown(ctxTimeout)
+			graceful := fm.shutdown(ctxTimeout)
+			if !graceful {
+				atomic.StoreInt32(&flag, 0)
+			}
 			count.Done()
 		}(frame)
 	}
 	count.Wait()
 	if global.finalizer != nil {
 		if err := global.finalizer(ctxTimeout); err != nil {
-			Error(err.Error())
+			flag = 0
+			Error("[finalizer]", err.Error())
 		}
 	}
-	Print("\x1b[46m[SYS]\x1b[0m servers gracefully stopped.")
+	if flag == 1 {
+		Print("\x1b[46m[SYS]\x1b[0m servers are shutted down gracefully.")
+	} else {
+		Print("\x1b[46m[SYS]\x1b[0m servers are shutted down, but not gracefully.")
+	}
 	CloseLog()
 }
 

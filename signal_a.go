@@ -21,6 +21,7 @@ import (
 	"os"
 	"os/signal"
 	"sync"
+	"sync/atomic"
 	"syscall"
 	"time"
 )
@@ -43,33 +44,10 @@ func graceSignal() {
 func reboot(timeout ...time.Duration) {
 	Print("\x1b[46m[SYS]\x1b[0m rebooting servers...")
 	defer CloseLog()
-
-	ppid := os.Getppid()
-
 	global.framesLock.Lock()
 	defer global.framesLock.Unlock()
 
-	// Shut down all the frame services gracefully.
-	var d = SHUTDOWN_TIMEOUT
-	if len(timeout) > 0 {
-		d = timeout[0]
-	}
-	// Shut down gracefully, but wait no longer than d before halting
-	ctxTimeout, _ := context.WithTimeout(context.Background(), d)
-	count := new(sync.WaitGroup)
-	for _, frame := range global.frames {
-		count.Add(1)
-		go func() {
-			frame.shutdown(ctxTimeout)
-			count.Done()
-		}()
-	}
-	count.Wait()
-	if global.finalizer != nil {
-		if err := global.finalizer(ctxTimeout); err != nil {
-			Error(err.Error())
-		}
-	}
+	ppid := os.Getppid()
 
 	// Starts a new process passing it the active listeners. It
 	// doesn't fork, but starts a new process using the same environment and
@@ -78,16 +56,48 @@ func reboot(timeout ...time.Duration) {
 	_, err := grace.StartProcess()
 	if err != nil {
 		Error(err.Error())
+		Print("\x1b[46m[SYS]\x1b[0m reboot servers failed, so close parent.")
 		return
+	}
+
+	// Shut down gracefully, but wait no longer than d before halting
+	var d = SHUTDOWN_TIMEOUT
+	if len(timeout) > 0 {
+		d = timeout[0]
+	}
+	ctxTimeout, _ := context.WithTimeout(context.Background(), d)
+	count := new(sync.WaitGroup)
+	var flag int32 = 1
+	for _, frame := range global.frames {
+		count.Add(1)
+		go func(fm *Framework) {
+			graceful := fm.shutdown(ctxTimeout)
+			if !graceful {
+				atomic.StoreInt32(&flag, 0)
+			}
+			count.Done()
+		}(frame)
+	}
+	count.Wait()
+	if global.finalizer != nil {
+		if err := global.finalizer(ctxTimeout); err != nil {
+			flag = 0
+			Error("[finalizer]", err.Error())
+		}
 	}
 
 	// Close the parent if we inherited and it wasn't init that started us.
 	if ppid != 1 {
 		if err := syscall.Kill(ppid, syscall.SIGTERM); err != nil {
 			Error("failed to close parent: %s", err.Error())
+			Print("\x1b[46m[SYS]\x1b[0m servers reboot failed, so close parent.")
 			return
 		}
 	}
 
-	Print("\x1b[46m[SYS]\x1b[0m servers gracefully rebooted.")
+	if flag == 1 {
+		Print("\x1b[46m[SYS]\x1b[0m servers are rebooted gracefully.")
+	} else {
+		Print("\x1b[46m[SYS]\x1b[0m servers are rebooted, but not gracefully.")
+	}
 }

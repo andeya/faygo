@@ -2,7 +2,7 @@ package handler
 
 import (
 	"github.com/henrylee2cn/thinkgo"
-	"time"
+	// "time"
 )
 
 type Render struct {
@@ -23,6 +23,7 @@ func init() {
 
 func Index() thinkgo.HandlerFunc {
 	return func(ctx *thinkgo.Context) error {
+		// time.Sleep(10e9)
 		return ctx.Render(200, "../../_syso/index.html", thinkgo.Map{
 			"TITLE":   "thinkgo",
 			"VERSION": thinkgo.VERSION,
