@@ -163,8 +163,6 @@ var (
 	errPortAlreadyUsed = errors.New("[server.listenAndServeUNIX()] Port is already used")
 	errRemoveUnix      = errors.New("[server.listenAndServeUNIX()] Unexpected error when trying to remove unix socket file. Addr: %s | Trace: %s")
 	errChmod           = errors.New("[server.listenAndServeUNIX()] Cannot chmod %#o for %q: %s")
-	// errCertKeyMissing  = errors.New("[server.listenAndServeUNIX()] You should provide certFile and keyFile for TLS/SSL")
-	// errParseTLS        = errors.New("Couldn't load TLS, certFile=%q, keyFile=%q. Trace: %s")
 )
 
 // listenAndServeUNIX announces on the Unix domain socket laddr and listens a Unix service.

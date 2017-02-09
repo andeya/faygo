@@ -19,6 +19,7 @@ package thinkgo
 import (
 	"os"
 	"os/signal"
+	"time"
 )
 
 func graceSignal() {
@@ -28,4 +29,10 @@ func graceSignal() {
 	<-stopChan // wait for SIGINT
 	Shutdown()
 	signal.Stop(stopChan)
+}
+
+// Reboot all the frame services gracefully.
+// Notes: Windows system are not supported!
+func Reboot(timeout ...time.Duration) {
+	Print("\x1b[46m[SYS]\x1b[0m the windows system doesn't support reboot! call Shutdown() is recommended.")
 }

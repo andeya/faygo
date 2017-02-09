@@ -36,12 +36,13 @@ func graceSignal() {
 		Shutdown()
 		return
 	case syscall.SIGUSR2:
-		reboot()
+		Reboot()
 	}
 }
 
-// reboot all the frame services gracefully.
-func reboot(timeout ...time.Duration) {
+// Reboot all the frame services gracefully.
+// Notes: Windows system are not supported!
+func Reboot(timeout ...time.Duration) {
 	Print("\x1b[46m[SYS]\x1b[0m rebooting servers...")
 	defer CloseLog()
 	global.framesLock.Lock()
