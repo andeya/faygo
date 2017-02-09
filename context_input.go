@@ -322,13 +322,13 @@ func (ctx *Context) BizParam(key string) string {
 }
 
 // BindBizParam data from ctx.BizParam(key) to dest
-// like /?id=123&isok=true&ft=1.2&ol[0]=1&ol[1]=2&ul[]=str&ul[]=array&user.Name=abc
-// var id int  ctx.BindBizParam(&id, "id")  id ==123
-// var isok bool  ctx.BindBizParam(&isok, "isok")  isok ==true
-// var ft float64  ctx.BindBizParam(&ft, "ft")  ft ==1.2
-// ol := make([]int, 0, 2)  ctx.BindBizParam(&ol, "ol")  ol ==[1 2]
-// ul := make([]string, 0, 2)  ctx.BindBizParam(&ul, "ul")  ul ==[str array]
-// user struct{Name}  ctx.BindBizParam(&user, "user")  user == {Name:"abc"}
+//  like /?id=123&isok=true&ft=1.2&ol[0]=1&ol[1]=2&ul[]=str&ul[]=array&user.Name=abc
+//  var id int  ctx.BindBizParam(&id, "id")  id ==123
+//  var isok bool  ctx.BindBizParam(&isok, "isok")  isok ==true
+//  var ft float64  ctx.BindBizParam(&ft, "ft")  ft ==1.2
+//  ol := make([]int, 0, 2)  ctx.BindBizParam(&ol, "ol")  ol ==[1 2]
+//  ul := make([]string, 0, 2)  ctx.BindBizParam(&ul, "ul")  ul ==[str array]
+//  user struct{Name}  ctx.BindBizParam(&user, "user")  user == {Name:"abc"}
 func (ctx *Context) BindBizParam(dest interface{}, key string) error {
 	return apiware.ConvertAssign(reflect.ValueOf(dest), ctx.BizParam(key))
 }
