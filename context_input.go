@@ -86,83 +86,40 @@ func (ctx *Context) Scheme() string {
 	return "https"
 }
 
-// Site returns base site url as scheme://host type.
+// Site returns base site url as `scheme://domain:port` type.
 func (ctx *Context) Site() string {
-	return ctx.Scheme() + "://" + ctx.Host()
+	return ctx.Scheme() + "://" + ctx.R.Host
 }
 
-// SiteWithPort returns base site url as scheme://host:8080 type.
-func (ctx *Context) SiteWithPort() string {
-	return ctx.Scheme() + "://" + ctx.HostWithPort()
-}
-
-// Host returns host name.
-// `host` is `subDomain.domain`.
-// if no host info in request, return localhost.
+// Host returns a host:port string for this request,
+// such as "www.example.com" or "www.example.com:8080".
 func (ctx *Context) Host() string {
-	if ctx.R.Host != "" {
-		hostParts := strings.Split(ctx.R.Host, ":")
-		if len(hostParts) > 0 {
-			return hostParts[0]
-		}
-		return ctx.R.Host
-	}
-	return "localhost"
+	return ctx.R.Host
 }
 
-// HostWithPort returns a host:port string for this request,
-// such as "example.com" or "example.com:8080".
-func (ctx *Context) HostWithPort() string {
-	if ctx.R.Host != "" {
-		if strings.Contains(ctx.R.Host, ":") {
-			return ctx.R.Host
-		}
-		return ctx.R.Host
-	}
-	return "localhost"
-}
-
-// Domain returns domain name.
-// `host` is `subDomain.domain`.
-// if aa.bb.domain.com, returns aa.bb .
-// if no host info in request, return localhost.
+// Domain returns domain as `www.example.com` style.
 func (ctx *Context) Domain() string {
-	parts := strings.Split(ctx.Host(), ".")
-	if len(parts) >= 3 {
-		return strings.Join(parts[len(parts)-2:], ".")
-	}
-	return "localhost"
+	return strings.Split(ctx.R.Host, ":")[0]
 }
 
-// SubDomain returns sub domain string.
-// `host` is `subDomain.domain`.
-// if aa.bb.domain.com, returns aa.bb .
-func (ctx *Context) SubDomain() string {
-	parts := strings.Split(ctx.Host(), ".")
-	if len(parts) >= 3 {
-		return strings.Join(parts[:len(parts)-2], ".")
-	}
-	return ""
-}
-
-// Port returns host port for this request.
-// when error or empty, return 80.
+// Port returns the port number of request.
 func (ctx *Context) Port() int {
 	parts := strings.Split(ctx.R.Host, ":")
-	if len(parts) == 2 {
-		port, _ := strconv.Atoi(parts[1])
-		return port
+	if len(parts) == 1 {
+		return 80
 	}
-	return 80
+	port, _ := strconv.Atoi(parts[1])
+	return port
 }
 
 // IP gets just the ip from the most direct one client.
 func (ctx *Context) IP() string {
-	var ip = strings.Split(ctx.R.RemoteAddr, ":")
-	if len(ip) > 0 {
-		if ip[0] != "[" {
-			return ip[0]
-		}
+	ip := strings.Split(ctx.R.RemoteAddr, ":")[0]
+	if len(ip) == 0 {
+		return ""
+	}
+	if ip[0] != '[' {
+		return ip
 	}
 	return "127.0.0.1"
 }
@@ -177,8 +134,14 @@ func (ctx *Context) RealIP() string {
 	}
 	ips := ctx.Proxy()
 	if len(ips) > 0 && ips[0] != "" {
-		rip := strings.Split(ips[0], ":")
-		return rip[0]
+		ip = strings.Split(ips[0], ":")[0]
+		if len(ip) == 0 {
+			return ""
+		}
+		if ip[0] != '[' {
+			return ip
+		}
+		return "127.0.0.1"
 	}
 	return ctx.IP()
 }
