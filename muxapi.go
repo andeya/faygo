@@ -26,6 +26,7 @@ type (
 	// MuxAPI the visible api for the serveMux, in order to prepare for routing.
 	MuxAPI struct {
 		name       string
+		domain     string
 		pattern    string
 		path       string
 		methods    []string
@@ -277,6 +278,12 @@ func (mux *MuxAPI) Use(handlers ...Handler) *MuxAPI {
 	return mux
 }
 
+// Domain adds domain name filter.
+func (mux *MuxAPI) Domain(domain string) *MuxAPI {
+	mux.domain = domain
+	return mux
+}
+
 // comb mux.handlers, mux.paramInfos, mux.notes and mux.path,.
 // sort children by path.
 // note: can only be executed once before HTTP serving.
@@ -345,9 +352,23 @@ func (mux *MuxAPI) comb() {
 		mux.checkBodyParamConflicts()
 	} else {
 		for _, child := range mux.children {
+			if mux.domain != "" {
+				child.domain = mux.domain
+			}
 			child.comb()
 		}
 		sort.Sort(MuxAPIs(mux.children))
+	}
+
+	if mux.domain != "" {
+		domain := mux.domain
+		mux.Use(HandlerFunc(func(ctx *Context) error {
+			if ctx.Domain() != domain {
+				ctx.Stop()
+				ctx.Error(404, "Not Found")
+			}
+			return nil
+		}))
 	}
 }
 

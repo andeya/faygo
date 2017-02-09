@@ -157,7 +157,7 @@ func addpath(mux *MuxAPI, tag *swagger.Tag) {
 	operas := map[string]*swagger.Opera{}
 	pid := apiCreatePath(mux.Path())
 	summary := apiSummary(mux.Name())
-	desc := apiDesc(mux.Notes())
+	desc := apiDesc(mux.domain, mux.Notes())
 	for _, method := range mux.Methods() {
 		if method == "CONNECT" || method == "TRACE" {
 			continue
@@ -298,8 +298,11 @@ func apiSummary(desc string) string {
 	return strings.TrimSpace(strings.Split(strings.TrimSpace(desc), "\n")[0])
 }
 
-func apiDesc(notes []Notes) string {
+func apiDesc(domain string, notes []Notes) string {
 	var desc string
+	if domain != "" {
+		desc += fmt.Sprintf("Specified domain: %s\n", domain)
+	}
 	count := len(notes)
 	for i, n := range notes {
 		if count > 1 {

@@ -32,7 +32,7 @@ func Route1(frame *thinkgo.Framework) {
 			)),
 			frame.NewNamedStaticFS("markdown fs test", "/md", thinkgo.MarkdownFS(
 				"./static/markdown",
-			)),
+			)).Domain("localhost"),
 			frame.NewNamedGET("reverse proxy", "/search", handler.Search(0)),
 		).Use(tgMiddleware.CrossOrigin)
 }
@@ -63,6 +63,6 @@ func Route2(frame *thinkgo.Framework) {
 
 	frame.NamedStaticFS("markdown fs test", "/md", thinkgo.MarkdownFS(
 		"./static/markdown",
-	))
+	)).Domain("localhost")
 	frame.Use(tgMiddleware.CrossOrigin)
 }
