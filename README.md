@@ -396,19 +396,19 @@ float64 |  []float64 |
 
 package summary  |  import path
 -----------------|-----------------------------------------------------------------------------------------------------------------
-[barcode](https://github.com/henrylee2cn/thinkgo/raw/master/ext/barcode             | `github.com/henrylee2cn/thinkgo/ext/barcode`
-[Bit unit conversion](https://github.com/henrylee2cn/thinkgo/raw/master/ext/bitconv | `github.com/henrylee2cn/thinkgo/ext/bitconv`
-[gorm(DB ORM)](https://github.com/henrylee2cn/thinkgo/raw/master/ext/db/gorm        | `github.com/henrylee2cn/thinkgo/ext/db/gorm`
-[sqlx(DB ext)](https://github.com/henrylee2cn/thinkgo/raw/master/ext/db/sqlx        | `github.com/henrylee2cn/thinkgo/ext/db/sqlx`
-[xorm(DB ORM)](https://github.com/henrylee2cn/thinkgo/raw/master/ext/db/xorm        | `github.com/henrylee2cn/thinkgo/ext/db/xorm`
-[directSQL(Configured SQL engine)](https://github.com/henrylee2cn/thinkgo/raw/master/ext/db/directsql | `github.com/henrylee2cn/thinkgo/ext/db/directsql`
-[One-time Password](https://github.com/henrylee2cn/thinkgo/raw/master/ext/otp       | `github.com/henrylee2cn/thinkgo/ext/otp`
-[UUID](https://github.com/henrylee2cn/thinkgo/raw/master/ext/uuid                   | `github.com/henrylee2cn/thinkgo/ext/uuid`
-[Websocket](https://github.com/henrylee2cn/thinkgo/raw/master/ext/websocket         | `github.com/henrylee2cn/thinkgo/ext/websocket`
-[ini](https://github.com/henrylee2cn/thinkgo/raw/master/ini                         | `github.com/henrylee2cn/thinkgo/ini`
-[cron](https://github.com/henrylee2cn/thinkgo/raw/master/ext/cron                   | `github.com/henrylee2cn/thinkgo/ext/cron`
-[task](https://github.com/henrylee2cn/thinkgo/raw/master/ext/task                   | `github.com/henrylee2cn/thinkgo/ext/task`
-[http client](https://github.com/henrylee2cn/thinkgo/raw/master/ext/surfer          | `github.com/henrylee2cn/thinkgo/ext/surfer`
+[barcode](https://github.com/henrylee2cn/thinkgo/raw/master/ext/barcode)             | `github.com/henrylee2cn/thinkgo/ext/barcode`
+[Bit unit conversion](https://github.com/henrylee2cn/thinkgo/raw/master/ext/bitconv) | `github.com/henrylee2cn/thinkgo/ext/bitconv`
+[gorm(DB ORM)](https://github.com/henrylee2cn/thinkgo/raw/master/ext/db/gorm)        | `github.com/henrylee2cn/thinkgo/ext/db/gorm`
+[sqlx(DB ext)](https://github.com/henrylee2cn/thinkgo/raw/master/ext/db/sqlx)        | `github.com/henrylee2cn/thinkgo/ext/db/sqlx`
+[xorm(DB ORM)](https://github.com/henrylee2cn/thinkgo/raw/master/ext/db/xorm)        | `github.com/henrylee2cn/thinkgo/ext/db/xorm`
+[directSQL(Configured SQL engine)](https://github.com/henrylee2cn/thinkgo/raw/master/ext/db/directsql) | `github.com/henrylee2cn/thinkgo/ext/db/directsql`
+[One-time Password](https://github.com/henrylee2cn/thinkgo/raw/master/ext/otp)       | `github.com/henrylee2cn/thinkgo/ext/otp`
+[UUID](https://github.com/henrylee2cn/thinkgo/raw/master/ext/uuid)                   | `github.com/henrylee2cn/thinkgo/ext/uuid`
+[Websocket](https://github.com/henrylee2cn/thinkgo/raw/master/ext/websocket)         | `github.com/henrylee2cn/thinkgo/ext/websocket`
+[ini](https://github.com/henrylee2cn/thinkgo/raw/master/ini)                         | `github.com/henrylee2cn/thinkgo/ini`
+[cron](https://github.com/henrylee2cn/thinkgo/raw/master/ext/cron)                   | `github.com/henrylee2cn/thinkgo/ext/cron`
+[task](https://github.com/henrylee2cn/thinkgo/raw/master/ext/task)                   | `github.com/henrylee2cn/thinkgo/ext/task`
+[http client](https://github.com/henrylee2cn/thinkgo/raw/master/ext/surfer)          | `github.com/henrylee2cn/thinkgo/ext/surfer`
 
 
 ## License
