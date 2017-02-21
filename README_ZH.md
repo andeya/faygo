@@ -397,19 +397,19 @@ float64 |  []float64 |
 
 扩展包           |  导入路径
 -----------------|-----------------------------------------------------------------------------------------------------------------
-[各种条码](https://github.com/henrylee2cn/thinkgo/raw/master/ext/barcode):       | `github.com/henrylee2cn/thinkgo/ext/barcode`
-[比特单位](https://github.com/henrylee2cn/thinkgo/raw/master/ext/bitconv):       | `github.com/henrylee2cn/thinkgo/ext/bitconv`
-[gorm数据库引擎](https://github.com/henrylee2cn/thinkgo/raw/master/ext/db/gorm): | `github.com/henrylee2cn/thinkgo/ext/db/gorm`
-[sqlx数据库引擎](https://github.com/henrylee2cn/thinkgo/raw/master/ext/db/sqlx): | `github.com/henrylee2cn/thinkgo/ext/db/sqlx`
-[xorm数据库引擎](https://github.com/henrylee2cn/thinkgo/raw/master/ext/db/xorm): | `github.com/henrylee2cn/thinkgo/ext/db/xorm`
-[directSQL(配置化SQL引擎)](https://github.com/henrylee2cn/thinkgo/raw/master/ext/db/directsql): | `github.com/henrylee2cn/thinkgo/ext/db/directsql`
-[口令算法](https://github.com/henrylee2cn/thinkgo/raw/master/ext/otp):           | `github.com/henrylee2cn/thinkgo/ext/otp`
-[UUID](https://github.com/henrylee2cn/thinkgo/raw/master/ext/uuid):              | `github.com/henrylee2cn/thinkgo/ext/uuid`
-[Websocket](https://github.com/henrylee2cn/thinkgo/raw/master/ext/websocket):    | `github.com/henrylee2cn/thinkgo/ext/websocket`
-[ini配置](https://github.com/henrylee2cn/thinkgo/raw/master/ini):                | `github.com/henrylee2cn/thinkgo/ini`
-[定时器](https://github.com/henrylee2cn/thinkgo/raw/master/ext/cron):            | `github.com/henrylee2cn/thinkgo/ext/cron`
-[任务工具](https://github.com/henrylee2cn/thinkgo/raw/master/ext/task):          | `github.com/henrylee2cn/thinkgo/ext/task`
-[HTTP客户端](https://github.com/henrylee2cn/thinkgo/raw/master/ext/surfer):      | `github.com/henrylee2cn/thinkgo/ext/surfer`
+[各种条码](https://github.com/henrylee2cn/thinkgo/raw/master/ext/barcode)       | `github.com/henrylee2cn/thinkgo/ext/barcode`
+[比特单位](https://github.com/henrylee2cn/thinkgo/raw/master/ext/bitconv)       | `github.com/henrylee2cn/thinkgo/ext/bitconv`
+[gorm数据库引擎](https://github.com/henrylee2cn/thinkgo/raw/master/ext/db/gorm) | `github.com/henrylee2cn/thinkgo/ext/db/gorm`
+[sqlx数据库引擎](https://github.com/henrylee2cn/thinkgo/raw/master/ext/db/sqlx) | `github.com/henrylee2cn/thinkgo/ext/db/sqlx`
+[xorm数据库引擎](https://github.com/henrylee2cn/thinkgo/raw/master/ext/db/xorm) | `github.com/henrylee2cn/thinkgo/ext/db/xorm`
+[directSQL(配置化SQL引擎)](https://github.com/henrylee2cn/thinkgo/raw/master/ext/db/directsql) | `github.com/henrylee2cn/thinkgo/ext/db/directsql`
+[口令算法](https://github.com/henrylee2cn/thinkgo/raw/master/ext/otp)           | `github.com/henrylee2cn/thinkgo/ext/otp`
+[UUID](https://github.com/henrylee2cn/thinkgo/raw/master/ext/uuid)              | `github.com/henrylee2cn/thinkgo/ext/uuid`
+[Websocket](https://github.com/henrylee2cn/thinkgo/raw/master/ext/websocket)    | `github.com/henrylee2cn/thinkgo/ext/websocket`
+[ini配置](https://github.com/henrylee2cn/thinkgo/raw/master/ini)                | `github.com/henrylee2cn/thinkgo/ini`
+[定时器](https://github.com/henrylee2cn/thinkgo/raw/master/ext/cron)            | `github.com/henrylee2cn/thinkgo/ext/cron`
+[任务工具](https://github.com/henrylee2cn/thinkgo/raw/master/ext/task)          | `github.com/henrylee2cn/thinkgo/ext/task`
+[HTTP客户端](https://github.com/henrylee2cn/thinkgo/raw/master/ext/surfer)      | `github.com/henrylee2cn/thinkgo/ext/surfer`
 
 
 ## 开源协议
