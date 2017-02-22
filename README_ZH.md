@@ -66,7 +66,7 @@ think run [appname]
  * HTTPS/HTTP2(Let's Encrypt TLS)
  * HTTPS/HTTP2(Let's Encrypt TLS on UNIX socket)
  * HTTP(UNIX socket)
- * HTTPS/HTTP2(UNIX socket TLS)
+ * HTTPS/HTTP2(TLS on UNIX socket)
 - 支持多实例运行，且配置信息相互独立
 - 支持同一实例监听多网络类型、多端口
 - 基于高性能路由httprouter进行二次开发，支持链式与树形两种路由信息注册风格

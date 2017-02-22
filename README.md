@@ -63,7 +63,7 @@ think run [appname]
  * HTTPS/HTTP2(Let's Encrypt TLS)
  * HTTPS/HTTP2(Let's Encrypt TLS on UNIX socket)
  * HTTP(UNIX socket)
- * HTTPS/HTTP2(UNIX socket TLS)
+ * HTTPS/HTTP2(TLS on UNIX socket)
 - Multi-instance is supported, and these configurations information are independent of each other
 - Supports the same instance to monitor multi-network and multi-port
 - Based on the high-performance `httprouter` to redevelope, and provides chain or tree style to register router
