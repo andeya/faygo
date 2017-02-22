@@ -28,6 +28,7 @@ import (
 	"golang.org/x/crypto/acme/autocert"
 )
 
+// network types
 const (
 	// listenAndServe listens on the TCP network address and then
 	// calls Serve to handle requests on incoming connections.
