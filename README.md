@@ -2,7 +2,7 @@
 
 ![Thinkgo Favicon](https://github.com/henrylee2cn/thinkgo/raw/master/doc/thinkgo_96x96.png)
 
-Thinkgo is a Golang Web framework that handler is middleware, supports intelligent parameter mapping and validation, and automates API documentation.
+Thinkgo is a Golang Web framework that handler is middleware, supports intelligent parameter mapping and validation, and automates API documentation. [User Manual](https://github.com/henrylee2cn/thinkbook)
 
 [简体中文](https://github.com/henrylee2cn/thinkgo/blob/master/README_ZH.md)
 
@@ -57,9 +57,9 @@ think run [appname]
 - Middleware and handler exactly the same, they together constitute the handler chain
 - Supports the use of struct (implemented handler) tag tags to define request parameter information and its validation information
 - The API documentation (swagger2.0) is automatically built by the handler
-- Supports HTTP/HTTP2, HTTPS (tls/letsencrypt), UNIX and other Server types
+- Supports various network types, such as HTTP, HTTPS(TLS), Let's Encrypt(TLS), HTTP2, UNIX and so on
 - Multi-instance is supported, and these configurations information are independent of each other
-- Supports the same instance to monitor multi-server and multi-port
+- Supports the same instance to monitor multi-network and multi-port
 - Based on the high-performance `httprouter` to redevelope, and provides chain or tree style to register router
 - Powerful file router supports for custom file systems, framework has provided DirFS, RenderFS, MarkdownFS and so on
 - Supports cross-platform color log system, and has two output interface (console and file)
@@ -102,18 +102,18 @@ func (i *Index) Serve(ctx *thinkgo.Context) error {
 }
 
 func main() {
-  app := thinkgo.New("myapp", "0.1")
+    app := thinkgo.New("myapp", "0.1")
 
-  // Register the route in a chain style
-  app.GET("/index/:id", new(Index))
+    // Register the route in a chain style
+    app.GET("/index/:id", new(Index))
 
-  // Register the route in a tree style
-  // app.Route(
-  //   app.NewGET("/index/:id", new(Index)),
-  // )
+    // Register the route in a tree style
+    // app.Route(
+    //     app.NewGET("/index/:id", new(Index)),
+    // )
 
-  // Start the service
-  thinkgo.Run()
+    // Start the service
+    thinkgo.Run()
 }
 
 /*
@@ -121,13 +121,13 @@ http GET:
     http://localhost:8080/index/1?title=test&p=abc&p=xyz
 response:
     {
-      "Id": 1,
-      "Title": "test",
-      "Paragraph": [
-        "abc",
-        "xyz"
-      ],
-      "Cookie": "2016-11-13 01:14:40.9038005 +0800 CST"
+        "Id": 1,
+        "Title": "test",
+        "Paragraph": [
+            "abc",
+            "xyz"
+        ],
+        "Cookie": "2016-11-13 01:14:40.9038005 +0800 CST"
     }
 */
 ```

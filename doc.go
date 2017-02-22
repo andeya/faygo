@@ -21,8 +21,9 @@ A trivial example is:
     package main
 
     import (
-        "github.com/henrylee2cn/thinkgo"
+        // "mime/multipart"
         "time"
+        "github.com/henrylee2cn/thinkgo"
     )
 
     type Index struct {
@@ -41,31 +42,32 @@ A trivial example is:
     }
 
     func main() {
-    // Register the route in a chain style
-    // thinkgo.GET("/index/:id", new(Index))
+        app := thinkgo.New("myapp", "0.1")
 
-    // Register the route in a tree style
-    thinkgo.Route(
-        thinkgo.NewGET("/index/:id", new(Index)),
-    )
+        // Register the route in a chain style
+        app.GET("/index/:id", new(Index))
 
-    // Start the service
-    thinkgo.Run()
-}
+        // Register the route in a tree style
+        // app.Route(
+        //     app.NewGET("/index/:id", new(Index)),
+        // )
 
+        // Start the service
+        thinkgo.Run()
+    }
 
 run result:
     http GET:
-        http://localhost:8080/index/1?title=test&p=abc&p=xyz
+    http://localhost:8080/index/1?title=test&p=abc&p=xyz
     response:
         {
-          "Id": 1,
-          "Title": "test",
-          "Paragraph": [
-            "abc",
-            "xyz"
-          ],
-          "Cookie": "2016-11-13 01:14:40.9038005 +0800 CST"
+            "Id": 1,
+            "Title": "test",
+            "Paragraph": [
+                "abc",
+                "xyz"
+            ],
+            "Cookie": "2016-11-13 01:14:40.9038005 +0800 CST"
         }
 
 

@@ -8,6 +8,8 @@ Thinkgo以全新的架构实现，它面向Handler接口开发，是支持智能
 
 官方QQ群：Go-Web 编程 42730308    [![Go-Web 编程群](http://pub.idqqimg.com/wpa/images/group.png)](http://jq.qq.com/?_wv=1027&k=fzi4p1)
 
+[用户手册](https://github.com/henrylee2cn/thinkbook)
+
 ![thinkgo server](https://github.com/henrylee2cn/thinkgo/raw/master/doc/server.png)
 
 ![thinkgo apidoc](https://github.com/henrylee2cn/thinkgo/raw/master/doc/apidoc.png)
@@ -58,9 +60,9 @@ think run [appname]
 - 面向Handler接口开发（func or struct），中间件与操作完全等同可任意拼接路由操作链
 - 支持用struct Handler在Tag标签定义请求参数信息及其校验信息
 - 支持自动构建API文档（swagger2.0）
-- 支持HTTP/HTTP2、HTTPS(tls/letsencrypt)、UNIX多种Server类型
+- 支持HTTP, HTTPS(TLS), Let's Encrypt(TLS), HTTP2, UNIX等多种网络类型
 - 支持多实例运行，且配置信息相互独立
-- 支持同一实例监听多Server类型、多端口
+- 支持同一实例监听多网络类型、多端口
 - 基于高性能路由httprouter进行二次开发，支持链式与树形两种路由信息注册风格
 - 强大的文件路由功能，支持自定义文件系统，框架提供快捷的DirFS、RenderFS、MarkdownFS等
 - 提供近似LRU的文件缓存功能
@@ -103,18 +105,18 @@ func (i *Index) Serve(ctx *thinkgo.Context) error {
 }
 
 func main() {
-  app := thinkgo.New("myapp", "0.1")
+    app := thinkgo.New("myapp", "0.1")
 
-  // Register the route in a chain style
-  app.GET("/index/:id", new(Index))
+    // Register the route in a chain style
+    app.GET("/index/:id", new(Index))
 
-  // Register the route in a tree style
-  // app.Route(
-  //   app.NewGET("/index/:id", new(Index)),
-  // )
+    // Register the route in a tree style
+    // app.Route(
+    //     app.NewGET("/index/:id", new(Index)),
+    // )
 
-  // Start the service
-  thinkgo.Run()
+    // Start the service
+    thinkgo.Run()
 }
 
 /*
@@ -122,13 +124,13 @@ http GET:
     http://localhost:8080/index/1?title=test&p=abc&p=xyz
 response:
     {
-      "Id": 1,
-      "Title": "test",
-      "Paragraph": [
-        "abc",
-        "xyz"
-      ],
-      "Cookie": "2016-11-13 01:14:40.9038005 +0800 CST"
+        "Id": 1,
+        "Title": "test",
+        "Paragraph": [
+            "abc",
+            "xyz"
+        ],
+        "Cookie": "2016-11-13 01:14:40.9038005 +0800 CST"
     }
 */
 ```
