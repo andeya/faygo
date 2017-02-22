@@ -34,12 +34,12 @@ type (
 	// Config is the configuration information for each web instance
 	Config struct {
 		// RunMode         string      `ini:"run_mode"`         // run mode: dev | prod
-		NetTypes        []string    `ini:"net_types" delim:"|"` // List of network type: normal | tls | letsencrypt | unix
-		Addrs           []string    `ini:"addrs" delim:"|"`     // List of multiple listening addresses
-		TLSCertFile     string      `ini:"tls_certfile"`        // TLS certificate file path
-		TLSKeyFile      string      `ini:"tls_keyfile"`         // TLS key file path
-		LetsencryptFile string      `ini:"letsencrypt_file"`    // SSL free certificate path
-		UNIXFileMode    os.FileMode `ini:"unix_filemode"`       // File permissions for UNIX Server (438 equivalent to 0666)
+		NetTypes       []string    `ini:"net_types" delim:"|"` // List of network type: http | https | unix_http | unix_https | letsencrypt | unix_letsencrypt
+		Addrs          []string    `ini:"addrs" delim:"|"`     // List of multiple listening addresses
+		TLSCertFile    string      `ini:"tls_certfile"`        // TLS certificate file path
+		TLSKeyFile     string      `ini:"tls_keyfile"`         // TLS key file path
+		LetsencryptDir string      `ini:"letsencrypt_dir"`     // Let's Encrypt TLS certificate cache directory
+		UNIXFileMode   os.FileMode `ini:"unix_filemode"`       // File permissions for UNIX Server (438 equivalent to 0666)
 		// Maximum duration for reading the full request (including body).
 		//
 		// This also limits the maximum duration for idle keep-alive
@@ -163,10 +163,6 @@ type (
 const (
 	// RUNMODE_DEV                 = "dev"
 	// RUNMODE_PROD                = "prod"
-	NETTYPE_NORMAL              = "normal"
-	NETTYPE_TLS                 = "tls"
-	NETTYPE_LETSENCRYPT         = "letsencrypt"
-	NETTYPE_UNIX                = "unix"
 	MB                          = 1 << 20 // 1MB
 	defaultMultipartMaxMemory   = 32 * MB // 32 MB
 	defaultMultipartMaxMemoryMB = 32
@@ -231,7 +227,7 @@ func newConfig(filename string) Config {
 	atomic.AddUint32(&appCount, 1)
 	var background = Config{
 		// RunMode:              RUNMODE_DEV,
-		NetTypes:             []string{"normal"},
+		NetTypes:             []string{NETTYPE_HTTP},
 		Addrs:                []string{addr},
 		UNIXFileMode:         0666,
 		MultipartMaxMemoryMB: defaultMultipartMaxMemoryMB,
@@ -287,9 +283,9 @@ func newConfig(filename string) Config {
 			}
 			for _, t := range background.NetTypes {
 				switch t {
-				case NETTYPE_NORMAL, NETTYPE_TLS, NETTYPE_LETSENCRYPT, NETTYPE_UNIX:
+				case NETTYPE_HTTP, NETTYPE_UNIX_HTTP, NETTYPE_HTTPS, NETTYPE_UNIX_HTTPS, NETTYPE_LETSENCRYPT, NETTYPE_UNIX_LETSENCRYPT:
 				default:
-					panic("Please set a valid config item `net_types`, refer to the following:\nnormal | tls | letsencrypt | unix")
+					panic("Please set a valid config item `net_types`, refer to the following:" + __netTypes__ + "\n")
 				}
 			}
 			background.multipartMaxMemory = background.MultipartMaxMemoryMB * MB

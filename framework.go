@@ -219,7 +219,7 @@ func (frame *Framework) build() {
 				netType:         netType,
 				tlsCertFile:     frame.config.TLSCertFile,
 				tlsKeyFile:      frame.config.TLSKeyFile,
-				letsencryptFile: frame.config.LetsencryptFile,
+				letsencryptDir:  frame.config.LetsencryptDir,
 				unixFileMode:    frame.config.UNIXFileMode,
 				Server: &http.Server{
 					Addr:         frame.config.Addrs[i],

@@ -274,11 +274,11 @@ kill -USR2 [pid]
 - 应用的各实例均有单独一份配置，其文件名格式 `config/{appname}[_{version}].ini`，配置详情：
 
 ```
-net_types              = normal|tls              # 多种Server类型列表，支持 normal | tls | letsencrypt | unix
+net_types              = http|https              # 多种Server类型列表，支持 http | https | unix_http | unix_https | letsencrypt | unix_letsencrypt
 addrs                  = 0.0.0.0:80|0.0.0.0:443  # 多个监听地址列表
 tls_certfile           =                         # TLS证书文件路径
 tls_keyfile            =                         # TLS密钥文件路径
-letsencrypt_file       =                         # SSL免费证书路径
+letsencrypt_dir        =                         # Let's Encrypt TLS证书缓存目录
 unix_filemode          = 438                     # UNIX Server的文件权限（438即0666）
 read_timeout           = 0                       # 读取请求数据超时
 write_timeout          = 0                       # 写入响应数据超时

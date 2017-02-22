@@ -273,11 +273,11 @@ kill -USR2 [pid]
 - Each instance of the application has a single configuration (file name format `config/{appname}[_{version}].ini`). Refer to the following:
 
 ```
-net_types              = normal|tls              # List of network type: normal | tls | letsencrypt | unix
+net_types              = http|https              # List of network type: http | https | unix_http | unix_https | letsencrypt | unix_letsencrypt
 addrs                  = 0.0.0.0:80|0.0.0.0:443  # List of multiple listening addresses
 tls_certfile           =                         # TLS certificate file path
 tls_keyfile            =                         # TLS key file path
-letsencrypt_file       =                         # SSL free certificate path
+letsencrypt_dir        =                         # Let's Encrypt TLS certificate cache directory
 unix_filemode          = 438                     # File permissions for UNIX Server (438 equivalent to 0666)
 read_timeout           = 0                       # Maximum duration for reading the full request (including body)
 write_timeout          = 0                       # Maximum duration for writing the full response (including body)
