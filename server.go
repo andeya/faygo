@@ -49,14 +49,22 @@ const (
 	// If server.Addr is blank, ":https" is used.
 	NETTYPE_HTTPS = "https"
 	// NETTYPE_LETSENCRYPT listens on a new Automatic TLS using letsencrypt.org service.
-	// if you want to disable cache directory then simple give config `letsencrypt_cache` a value of empty string ""
+	// if you want to disable cache directory then simple give config `letsencrypt_dir` a value of empty string "".
+	//
+	// If server.Addr is blank, ":https" is used.
 	NETTYPE_LETSENCRYPT = "letsencrypt"
 	// NETTYPE_UNIX_LETSENCRYPT listens on a new Automatic TLS using letsencrypt.org Unix service.
-	// if you want to disable cache directory then simple give config `letsencrypt_cache` a value of empty string ""
+	// if you want to disable cache directory then simple give config `letsencrypt_dir` a value of empty string "".
+	//
+	// If server.Addr is blank, ":https" is used.
 	NETTYPE_UNIX_LETSENCRYPT = "unix_letsencrypt"
 	// NETTYPE_UNIX_HTTP announces on the Unix domain socket addr and listens a Unix service.
+	//
+	// If server.Addr is blank, ":http" is used.
 	NETTYPE_UNIX_HTTP = "unix_http"
 	// NETTYPE_UNIX_HTTPS announces on the Unix domain socket addr and listens a secure Unix service.
+	//
+	// If server.Addr is blank, ":https" is used.
 	NETTYPE_UNIX_HTTPS = "unix_https"
 
 	__netTypes__ = "http | https | unix_http | unix_https | letsencrypt | unix_letsencrypt"

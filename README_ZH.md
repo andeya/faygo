@@ -60,7 +60,13 @@ think run [appname]
 - 面向Handler接口开发（func or struct），中间件与操作完全等同可任意拼接路由操作链
 - 支持用struct Handler在Tag标签定义请求参数信息及其校验信息
 - 支持自动构建API文档（swagger2.0）
-- 支持HTTP, HTTPS(TLS), Let's Encrypt(TLS), HTTP2, UNIX等多种网络类型
+- 支持多种网络类型：
+ * HTTP
+ * HTTPS/HTTP2(TLS)
+ * HTTPS/HTTP2(Let's Encrypt TLS)
+ * HTTPS/HTTP2(Let's Encrypt TLS on UNIX socket)
+ * HTTP(UNIX socket)
+ * HTTPS/HTTP2(UNIX socket TLS)
 - 支持多实例运行，且配置信息相互独立
 - 支持同一实例监听多网络类型、多端口
 - 基于高性能路由httprouter进行二次开发，支持链式与树形两种路由信息注册风格
