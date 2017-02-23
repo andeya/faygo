@@ -37,14 +37,14 @@ const (
 	VERSION = "1.0"
 
 	banner = `
-   _______  _                _                    
-  |__   __|| |    [ ]       | |                   
-     | |   | |_    _    _   | |  _   ___    ___   
-     | |   |  _ \ | | / _ \ | |/ /  / _ \  / _ \  
-     | |   | | | || || | | ||   -  | |_| || |_| | 
-     |_|   |_| |_||_||_| |_||_| \_\ \_  /  \___/  
-                                    _ \ \         
-                                    \_\_/         ` + VERSION + "\n"
+        ___                    
+      /  _/                    
+     _| |_  __        __   ___ 
+    /_   // _ |/\  /\/ _ \/ _ \
+      | |  \/ /\ \/ / |/ / |/ /
+      / / \_/\\ \  / \_ / \__/ 
+     / /        / /  _\ \      
+    \_/        \_/  \_\_/   VERSION ` + VERSION + "  URL https://github.com/henrylee2cn/faygo\n"
 
 	// SHUTDOWN_TIMEOUT the default time-out period for the service shutdown
 	SHUTDOWN_TIMEOUT = 1 * time.Minute

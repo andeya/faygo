@@ -8,9 +8,9 @@ import (
 
 func main() {
 	faygo.SetShutdown(time.Minute, func() error {
-		faygo.Debug("finalizer 等待5s...")
-		time.Sleep(5 * time.Second)
-		faygo.Debug("finalizer 5s到时！")
+		faygo.Debug("finalizer 等待3s...")
+		time.Sleep(3 * time.Second)
+		faygo.Debug("finalizer 3s到时！")
 		return nil
 	})
 	faygo.SetUpload("./upload/0", false, false)
