@@ -6,11 +6,12 @@ Faygo is a Golang Web framework that handler is middleware, supports intelligent
 
 [简体中文](https://github.com/henrylee2cn/faygo/blob/master/README_ZH.md)
 
-![faygo server](https://github.com/henrylee2cn/faygo/raw/master/doc/server.png)
+![faygo index](https://github.com/henrylee2cn/faygo/raw/master/doc/index.png)
 
 ![faygo apidoc](https://github.com/henrylee2cn/faygo/raw/master/doc/apidoc.png)
 
-![faygo index](https://github.com/henrylee2cn/faygo/raw/master/doc/index.png)
+![faygo server](https://github.com/henrylee2cn/faygo/raw/master/doc/server.png)
+
 
 ## Latest version
 

@@ -10,11 +10,11 @@ Faygo以全新的架构实现，它面向Handler接口开发，是支持智能�
 
 [查看《用户手册》](https://github.com/henrylee2cn/faybook)
 
-![faygo server](https://github.com/henrylee2cn/faygo/raw/master/doc/server.png)
+![faygo index](https://github.com/henrylee2cn/faygo/raw/master/doc/index.png)
 
 ![faygo apidoc](https://github.com/henrylee2cn/faygo/raw/master/doc/apidoc.png)
 
-![faygo index](https://github.com/henrylee2cn/faygo/raw/master/doc/index.png)
+![faygo server](https://github.com/henrylee2cn/faygo/raw/master/doc/server.png)
 
 ## 最新版本
 
