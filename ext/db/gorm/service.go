@@ -12,8 +12,8 @@ import (
 	_ "github.com/jinzhu/gorm/dialects/postgres" //github.com/lib/pq
 	// _ "github.com/jinzhu/gorm/dialects/sqlite"   //github.com/mattn/go-sqlite3
 
-	"github.com/henrylee2cn/thinkgo"
-	"github.com/henrylee2cn/thinkgo/utils"
+	"github.com/henrylee2cn/faygo"
+	"github.com/henrylee2cn/faygo/utils"
 )
 
 // DBService is a database engine object.
@@ -33,13 +33,13 @@ var dbService = func() (serv *DBService) {
 			panic("[gorm] " + strings.Join(errs, "\n"))
 		}
 		if serv.Default == nil {
-			thinkgo.Panicf("[gorm] the `default` database engine must be configured and enabled")
+			faygo.Panicf("[gorm] the `default` database engine must be configured and enabled")
 		}
 	}()
 
 	err := loadDBConfig()
 	if err != nil {
-		thinkgo.Panicf("[gorm]", err.Error())
+		faygo.Panicf("[gorm]", err.Error())
 		return
 	}
 
@@ -49,11 +49,11 @@ var dbService = func() (serv *DBService) {
 		}
 		engine, err := gorm.Open(conf.Driver, conf.Connstring)
 		if err != nil {
-			thinkgo.Critical("[gorm]", err.Error())
+			faygo.Critical("[gorm]", err.Error())
 			errs = append(errs, err.Error())
 			continue
 		}
-		engine.SetLogger(thinkgo.NewLog())
+		engine.SetLogger(faygo.NewLog())
 		engine.LogMode(conf.ShowSql)
 
 		engine.DB().SetMaxOpenConns(conf.MaxOpenConns)
@@ -63,7 +63,7 @@ var dbService = func() (serv *DBService) {
 			os.MkdirAll(filepath.Dir(conf.Connstring), 0777)
 			f, err := os.Create(conf.Connstring)
 			if err != nil {
-				thinkgo.Critical("[gorm]", err.Error())
+				faygo.Critical("[gorm]", err.Error())
 				errs = append(errs, err.Error())
 			} else {
 				f.Close()

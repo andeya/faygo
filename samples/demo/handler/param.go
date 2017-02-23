@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"sync"
 
-	"github.com/henrylee2cn/thinkgo"
+	"github.com/henrylee2cn/faygo"
 )
 
 type Param struct {
@@ -14,19 +14,19 @@ type Param struct {
 	Title        string                `param:"<in:query> <nonzero>"`
 	Paragraph    []string              `param:"<in:query> <name:p> <len: 1:10> <regexp: ^[\\w]*$>"`
 	Picture      *multipart.FileHeader `param:"<in:formData> <name:pic> <maxmb:30>"`
-	Cookie       *http.Cookie          `param:"<in:cookie> <name:thinkgo>"`
-	CookieString string                `param:"<in:cookie> <name:thinkgo>"`
+	Cookie       *http.Cookie          `param:"<in:cookie> <name:faygo>"`
+	CookieString string                `param:"<in:cookie> <name:faygo>"`
 }
 
 var once sync.Once
 
 // Implement the handler interface
-func (p *Param) Serve(ctx *thinkgo.Context) error {
+func (p *Param) Serve(ctx *faygo.Context) error {
 	ctx.Log().Info(ctx.R.Host)
 	once.Do(func() {
 		println("Set session...")
 		ctx.SetSession("name", "henry")
-		ctx.SetCookie("thinkgo", "henrylee")
+		ctx.SetCookie("faygo", "henrylee")
 	})
 	ctx.Log().Infof("Get session name=%v", ctx.GetSession("name"))
 
@@ -35,7 +35,7 @@ func (p *Param) Serve(ctx *thinkgo.Context) error {
 		ctx.Log().Infof("ctx.SaveFile: filename %s  url %s, size %d", p.Picture.Filename, info.Url, info.Size)
 	}
 	return ctx.JSON(200,
-		thinkgo.Map{
+		faygo.Map{
 			"Struct Params":    p,
 			"Additional Param": ctx.PathParam("additional"),
 		}, true)
@@ -43,14 +43,14 @@ func (p *Param) Serve(ctx *thinkgo.Context) error {
 }
 
 // Doc returns the API's note, result or parameters information.
-func (p *Param) Doc() thinkgo.Doc {
-	return thinkgo.Doc{
+func (p *Param) Doc() faygo.Doc {
+	return faygo.Doc{
 		Note: "param desc",
-		Return: thinkgo.JSONMsg{
+		Return: faygo.JSONMsg{
 			Code: 1,
 			Info: "success",
 		},
-		Params: []thinkgo.ParamInfo{
+		Params: []faygo.ParamInfo{
 			{
 				Name:  "additional",
 				In:    "path",

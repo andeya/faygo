@@ -14,7 +14,7 @@
 
 // HTTP file system with cache request handler
 
-package thinkgo
+package faygo
 
 import (
 	"bytes"
@@ -36,9 +36,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/henrylee2cn/thinkgo/acceptencoder"
-	"github.com/henrylee2cn/thinkgo/freecache"
-	"github.com/henrylee2cn/thinkgo/markdown"
+	"github.com/henrylee2cn/faygo/acceptencoder"
+	"github.com/henrylee2cn/faygo/freecache"
+	"github.com/henrylee2cn/faygo/markdown"
 )
 
 const indexPage = "/index.html"

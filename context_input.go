@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package thinkgo
+package faygo
 
 import (
 	"bytes"
@@ -35,8 +35,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/henrylee2cn/thinkgo/apiware"
-	"github.com/henrylee2cn/thinkgo/utils"
+	"github.com/henrylee2cn/faygo/apiware"
+	"github.com/henrylee2cn/faygo/utils"
 )
 
 // Regexes for checking the accept headers

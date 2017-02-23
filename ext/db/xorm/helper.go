@@ -4,7 +4,7 @@ import (
 	"errors"
 
 	"github.com/go-xorm/xorm"
-	"github.com/henrylee2cn/thinkgo"
+	"github.com/henrylee2cn/faygo"
 )
 
 // MustDB gets the specified database engine,
@@ -15,7 +15,7 @@ func MustDB(name ...string) *xorm.Engine {
 	}
 	engine, ok := dbService.List[name[0]]
 	if !ok {
-		thinkgo.Panicf("[xorm] the database engine `%s` is not configured", name[0])
+		faygo.Panicf("[xorm] the database engine `%s` is not configured", name[0])
 	}
 	return engine
 }
@@ -42,7 +42,7 @@ func MustConfig(name ...string) DBConfig {
 	}
 	config, ok := dbConfigs[name[0]]
 	if !ok {
-		thinkgo.Panicf("[xorm] the database engine `%s` is not configured", name[0])
+		faygo.Panicf("[xorm] the database engine `%s` is not configured", name[0])
 	}
 	return *config
 }

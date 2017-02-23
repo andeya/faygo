@@ -1,16 +1,16 @@
-# Thinkgo    [![GoDoc](https://godoc.org/github.com/tsuna/gohbase?status.png)](https://godoc.org/github.com/henrylee2cn/thinkgo)
+# Faygo    [![GoDoc](https://godoc.org/github.com/tsuna/gohbase?status.png)](https://godoc.org/github.com/henrylee2cn/faygo)
 
-![Lessgo Favicon](https://github.com/henrylee2cn/thinkgo/raw/master/doc/thinkgo_96x96.png)
+![Lessgo Favicon](https://github.com/henrylee2cn/faygo/raw/master/doc/faygo_96x96.png)
 
-Thinkgo is a Golang Web framework that handler is middleware, supports intelligent parameter mapping and validation, and automates API documentation.
+Faygo is a Golang Web framework that handler is middleware, supports intelligent parameter mapping and validation, and automates API documentation.
 
-[简体中文](https://github.com/henrylee2cn/thinkgo/blob/master/README_ZH.md)
+[简体中文](https://github.com/henrylee2cn/faygo/blob/master/README_ZH.md)
 
-![thinkgo server](https://github.com/henrylee2cn/thinkgo/raw/master/doc/server.png)
+![faygo server](https://github.com/henrylee2cn/faygo/raw/master/doc/server.png)
 
-![thinkgo apidoc](https://github.com/henrylee2cn/thinkgo/raw/master/doc/apidoc.png)
+![faygo apidoc](https://github.com/henrylee2cn/faygo/raw/master/doc/apidoc.png)
 
-![thinkgo index](https://github.com/henrylee2cn/thinkgo/raw/master/doc/index.png)
+![faygo index](https://github.com/henrylee2cn/faygo/raw/master/doc/index.png)
 
 ## Quick Start
 
@@ -21,7 +21,7 @@ Go Version ≥1.6
 ### Download and install
 
 ```sh
-go get -u -v github.com/henrylee2cn/thinkgo
+go get -u -v github.com/henrylee2cn/faygo
 ```
 
 ### Simple example
@@ -29,7 +29,7 @@ go get -u -v github.com/henrylee2cn/thinkgo
 package main
 
 import (
-    "github.com/henrylee2cn/thinkgo"
+    "github.com/henrylee2cn/faygo"
     "time"
 )
 
@@ -37,19 +37,19 @@ type Index struct {
     Id        int      `param:"in(path),required,desc(ID),range(0:10)"`
     Title     string   `param:"in(query),nonzero"`
     Paragraph []string `param:"in(query),name(p),len(1:10)" regexp:"(^[\\w]*$)"`
-    Cookie    string   `param:"in(cookie),name(thinkgoID)"`
+    Cookie    string   `param:"in(cookie),name(faygoID)"`
     // Picture         multipart.FileHeader `param:"in(formData),name(pic),maxmb(30)"`
 }
 
-func (i *Index) Serve(ctx *thinkgo.Context) error {
-    if ctx.CookieParam("thinkgoID") == "" {
-        ctx.SetCookie("thinkgoID", time.Now().String())
+func (i *Index) Serve(ctx *faygo.Context) error {
+    if ctx.CookieParam("faygoID") == "" {
+        ctx.SetCookie("faygoID", time.Now().String())
     }
     return ctx.JSON(200, i)
 }
 
 func main() {
-  app := thinkgo.New("myapp", "0.1")
+  app := faygo.New("myapp", "0.1")
 
   // Register the route in a chain style
   app.GET("/index/:id", new(Index))
@@ -78,7 +78,7 @@ response:
     }
 */
 ```
-[Full example](https://github.com/henrylee2cn/thinkgo/raw/master/demo)
+[Full example](https://github.com/henrylee2cn/faygo/raw/master/demo)
 
 ## Features
 
@@ -116,24 +116,24 @@ multipart_maxmemory_mb = 32                      # Maximum size of memory that c
 redirect_trailing_slash   = true                 # Automatic redirection (for example, `/foo/` -> `/foo`)
 redirect_fixed_path       = true                 # Tries to fix the current request path, if no handle is registered for it
 handle_method_not_allowed = true                 # Returns 405 if the requested method does not exist, otherwise returns 404
-handle_options            = true                 # Automatic response OPTIONS request, you can set the default Handler in Thinkgo
+handle_options            = true                 # Automatic response OPTIONS request, you can set the default Handler in Faygo
 
 [xsrf]                                           # XSRF security section
 enable = false                                   # Whether enabled or not
-key    = thinkgoxsrf                             # Encryption key
+key    = faygoxsrf                             # Encryption key
 expire = 3600                                    # Expire of XSRF token
 
 [session]                                        # Session section
 enable                 = false                   # Whether enabled or not
 provider               = memory                  # Data storage
-name                   = thinkgosessionID        # The client stores the name of the cookie
+name                   = faygosessionID        # The client stores the name of the cookie
 gc_max_lifetime        = 3600                    # The interval between triggering the GC
 provider_config        =                         # According to the different engine settings different configuration information
 cookie_lifetime        = 0                       # The default value is 0, which is the lifetime of the browser
 auto_setcookie         = true                    # Automatically set on the session cookie value, the general default true
 domain                 =                         # The domain name that is allowed to access this cookie
 enable_sid_in_header   = false                   # Whether to write a session ID to the header
-name_in_header         = Thinkgosessionid        # The name of the header when the session ID is written to the header
+name_in_header         = Faygosessionid        # The name of the header when the session ID is written to the header
 enable_sid_in_urlquery = false                   # Whether to write the session ID to the URL Query params
 
 [apidoc]                                         # API documentation section
@@ -221,17 +221,17 @@ float32 |  []float32 |
 float64 |  []float64 |
 
 # Expansion package
-- [barcode](https://github.com/henrylee2cn/thinkgo/raw/master/ext/barcode):       `github.com/henrylee2cn/thinkgo/ext/barcode`
-- [Bit unit conversion](https://github.com/henrylee2cn/thinkgo/raw/master/ext/bitconv):       `github.com/henrylee2cn/thinkgo/ext/bitconv`
-- [timer](https://github.com/henrylee2cn/thinkgo/raw/master/ext/cron):            `github.com/henrylee2cn/thinkgo/ext/cron`
-- [gorm(DB ORM)](https://github.com/henrylee2cn/thinkgo/raw/master/ext/db/gorm): `github.com/henrylee2cn/thinkgo/ext/db/gorm`
-- [sqlx(DB ext)](https://github.com/henrylee2cn/thinkgo/raw/master/ext/db/sqlx): `github.com/henrylee2cn/thinkgo/ext/db/sqlx`
-- [xorm(DB ORM)](https://github.com/henrylee2cn/thinkgo/raw/master/ext/db/xorm): `github.com/henrylee2cn/thinkgo/ext/db/xorm`
-- [One-time Password](https://github.com/henrylee2cn/thinkgo/raw/master/ext/otp):           `github.com/henrylee2cn/thinkgo/ext/otp`
-- [UUID](https://github.com/henrylee2cn/thinkgo/raw/master/ext/uuid):              `github.com/henrylee2cn/thinkgo/ext/uuid`
-- [Websocket](https://github.com/henrylee2cn/thinkgo/raw/master/ext/websocket):    `github.com/henrylee2cn/thinkgo/ext/websocket`
-- [ini](https://github.com/henrylee2cn/thinkgo/raw/master/ini):                `github.com/henrylee2cn/thinkgo/ini`
+- [barcode](https://github.com/henrylee2cn/faygo/raw/master/ext/barcode):       `github.com/henrylee2cn/faygo/ext/barcode`
+- [Bit unit conversion](https://github.com/henrylee2cn/faygo/raw/master/ext/bitconv):       `github.com/henrylee2cn/faygo/ext/bitconv`
+- [timer](https://github.com/henrylee2cn/faygo/raw/master/ext/cron):            `github.com/henrylee2cn/faygo/ext/cron`
+- [gorm(DB ORM)](https://github.com/henrylee2cn/faygo/raw/master/ext/db/gorm): `github.com/henrylee2cn/faygo/ext/db/gorm`
+- [sqlx(DB ext)](https://github.com/henrylee2cn/faygo/raw/master/ext/db/sqlx): `github.com/henrylee2cn/faygo/ext/db/sqlx`
+- [xorm(DB ORM)](https://github.com/henrylee2cn/faygo/raw/master/ext/db/xorm): `github.com/henrylee2cn/faygo/ext/db/xorm`
+- [One-time Password](https://github.com/henrylee2cn/faygo/raw/master/ext/otp):           `github.com/henrylee2cn/faygo/ext/otp`
+- [UUID](https://github.com/henrylee2cn/faygo/raw/master/ext/uuid):              `github.com/henrylee2cn/faygo/ext/uuid`
+- [Websocket](https://github.com/henrylee2cn/faygo/raw/master/ext/websocket):    `github.com/henrylee2cn/faygo/ext/websocket`
+- [ini](https://github.com/henrylee2cn/faygo/raw/master/ini):                `github.com/henrylee2cn/faygo/ini`
 
 
 # License
-Thinkgo is under Apache v2 License. See the [LICENSE](https://github.com/henrylee2cn/thinkgo/raw/master/LICENSE) file for the full license text.
+Faygo is under Apache v2 License. See the [LICENSE](https://github.com/henrylee2cn/faygo/raw/master/LICENSE) file for the full license text.

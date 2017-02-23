@@ -3,7 +3,7 @@ package gorm
 import (
 	"errors"
 
-	"github.com/henrylee2cn/thinkgo"
+	"github.com/henrylee2cn/faygo"
 	"github.com/jinzhu/gorm"
 )
 
@@ -15,7 +15,7 @@ func MustDB(name ...string) *gorm.DB {
 	}
 	db, ok := dbService.List[name[0]]
 	if !ok {
-		thinkgo.Panicf("[gorm] the database engine `%s` is not configured", name[0])
+		faygo.Panicf("[gorm] the database engine `%s` is not configured", name[0])
 	}
 	return db
 }
@@ -42,7 +42,7 @@ func MustConfig(name ...string) DBConfig {
 	}
 	config, ok := dbConfigs[name[0]]
 	if !ok {
-		thinkgo.Panicf("[gorm] the database engine `%s` is not configured", name[0])
+		faygo.Panicf("[gorm] the database engine `%s` is not configured", name[0])
 	}
 	return *config
 }

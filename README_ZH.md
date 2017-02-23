@@ -1,20 +1,20 @@
-# Thinkgo    [![GoDoc](https://godoc.org/github.com/tsuna/gohbase?status.png)](https://godoc.org/github.com/henrylee2cn/thinkgo)    ![Thinkgo goreportcard](https://goreportcard.com/badge/github.com/henrylee2cn/thinkgo)
+# Faygo    [![GoDoc](https://godoc.org/github.com/tsuna/gohbase?status.png)](https://godoc.org/github.com/henrylee2cn/faygo)    ![Faygo goreportcard](https://goreportcard.com/badge/github.com/henrylee2cn/faygo)
 
-![Thinkgo Favicon](https://github.com/henrylee2cn/thinkgo/raw/master/doc/thinkgo_96x96.png)
+![Faygo Favicon](https://github.com/henrylee2cn/faygo/raw/master/doc/faygo_96x96.png)
 
 ## 概述
 
-Thinkgo以全新的架构实现，它面向Handler接口开发，是支持智能参数映射与校验、支持自动化API文档的Go语言web框架。
+Faygo以全新的架构实现，它面向Handler接口开发，是支持智能参数映射与校验、支持自动化API文档的Go语言web框架。
 
 官方QQ群：Go-Web 编程 42730308    [![Go-Web 编程群](http://pub.idqqimg.com/wpa/images/group.png)](http://jq.qq.com/?_wv=1027&k=fzi4p1)
 
-[查看《用户手册》](https://github.com/henrylee2cn/thinkbook)
+[查看《用户手册》](https://github.com/henrylee2cn/faybook)
 
-![thinkgo server](https://github.com/henrylee2cn/thinkgo/raw/master/doc/server.png)
+![faygo server](https://github.com/henrylee2cn/faygo/raw/master/doc/server.png)
 
-![thinkgo apidoc](https://github.com/henrylee2cn/thinkgo/raw/master/doc/apidoc.png)
+![faygo apidoc](https://github.com/henrylee2cn/faygo/raw/master/doc/apidoc.png)
 
-![thinkgo index](https://github.com/henrylee2cn/thinkgo/raw/master/doc/index.png)
+![faygo index](https://github.com/henrylee2cn/faygo/raw/master/doc/index.png)
 
 ## 最新版本
 
@@ -31,27 +31,27 @@ Go Version ≥1.8
 - 方式一 源码下载
 
 ```sh
-go get -u -v github.com/henrylee2cn/thinkgo
+go get -u -v github.com/henrylee2cn/faygo
 ```
 
-- 方式二 部署工具 （[Go to think](https://github.com/henrylee2cn/think)）
+- 方式二 部署工具 （[Go to fay](https://github.com/henrylee2cn/fay)）
 
 ```sh
-go get -u -v github.com/henrylee2cn/think
+go get -u -v github.com/henrylee2cn/fay
 ```
 
 ```
-        think command [arguments]
+        fay command [arguments]
 
 The commands are:
-        new        创建、编译和运行（监控文件变化）一个新的thinkgo项目
+        new        创建、编译和运行（监控文件变化）一个新的faygo项目
         run        编译和运行（监控文件变化）任意一个已存在的golang项目
 
-think new appname [apptpl]
-        appname    指定新thinkgo项目的创建目录
-        apptpl     指定一个thinkgo项目模板（可选）
+fay new appname [apptpl]
+        appname    指定新faygo项目的创建目录
+        apptpl     指定一个faygo项目模板（可选）
 
-think run [appname]
+fay run [appname]
         appname    指定待运行的golang项目路径（可选）
 ```
 
@@ -81,7 +81,7 @@ think run [appname]
 
 - `struct Handler` 的多用途合一
 
-![thinkgo struct handler 多重用途合一](https://github.com/henrylee2cn/thinkgo/raw/master/doc/MultiUsage.png)
+![faygo struct handler 多重用途合一](https://github.com/henrylee2cn/faygo/raw/master/doc/MultiUsage.png)
 
 
 ## 简单示例
@@ -92,26 +92,26 @@ package main
 import (
     // "mime/multipart"
     "time"
-    "github.com/henrylee2cn/thinkgo"
+    "github.com/henrylee2cn/faygo"
 )
 
 type Index struct {
     Id        int      `param:"<in:path> <required> <desc:ID> <range: 0:10>"`
     Title     string   `param:"<in:query> <nonzero>"`
     Paragraph []string `param:"<in:query> <name:p> <len: 1:10> <regexp: ^[\\w]*$>"`
-    Cookie    string   `param:"<in:cookie> <name:thinkgoID>"`
+    Cookie    string   `param:"<in:cookie> <name:faygoID>"`
     // Picture         *multipart.FileHeader `param:"<in:formData> <name:pic> <maxmb:30>"`
 }
 
-func (i *Index) Serve(ctx *thinkgo.Context) error {
-    if ctx.CookieParam("thinkgoID") == "" {
-        ctx.SetCookie("thinkgoID", time.Now().String())
+func (i *Index) Serve(ctx *faygo.Context) error {
+    if ctx.CookieParam("faygoID") == "" {
+        ctx.SetCookie("faygoID", time.Now().String())
     }
     return ctx.JSON(200, i)
 }
 
 func main() {
-    app := thinkgo.New("myapp", "0.1")
+    app := faygo.New("myapp", "0.1")
 
     // Register the route in a chain style
     app.GET("/index/:id", new(Index))
@@ -122,7 +122,7 @@ func main() {
     // )
 
     // Start the service
-    thinkgo.Run()
+    faygo.Run()
 }
 
 /*
@@ -141,7 +141,7 @@ response:
 */
 ```
 
-[示例库](https://github.com/henrylee2cn/thinkgo/raw/master/samples)
+[示例库](https://github.com/henrylee2cn/faygo/raw/master/samples)
 
 ## 操作和中间件
 
@@ -151,14 +151,14 @@ response:
 
 ```go
 // 不含API文档描述
-func Page() thinkgo.HandlerFunc {
-    return func(ctx *thinkgo.Context) error {
-        return ctx.String(200, "thinkgo")
+func Page() faygo.HandlerFunc {
+    return func(ctx *faygo.Context) error {
+        return ctx.String(200, "faygo")
     }
 }
 
 // 含API文档描述
-var Page2 = thinkgo.WrapDoc(Page(), "测试页2的注意事项", "文本")
+var Page2 = faygo.WrapDoc(Page(), "测试页2的注意事项", "文本")
 ```
 
 - 结构体类型
@@ -171,26 +171,26 @@ type Param struct {
 }
 
 // Serve实现Handler接口
-func (p *Param) Serve(ctx *thinkgo.Context) error {
+func (p *Param) Serve(ctx *faygo.Context) error {
     return ctx.JSON(200,
-        thinkgo.Map{
+        faygo.Map{
             "Struct Params":    p,
             "Additional Param": ctx.PathParam("additional"),
         }, true)
 }
 
 // Doc实现API文档接口（可选）
-func (p *Param) Doc() thinkgo.Doc {
-    return thinkgo.Doc{
+func (p *Param) Doc() faygo.Doc {
+    return faygo.Doc{
         // 向API文档声明接口注意事项
         Note: "param desc",
         // 向API文档声明响应内容格式
-        Return: thinkgo.JSONMsg{
+        Return: faygo.JSONMsg{
             Code: 1,
             Info: "success",
         },
         // 向API文档增加额外的请求参数声明（可选）
-        Params: []thinkgo.ParamInfo{
+        Params: []faygo.ParamInfo{
             {
                 Name:  "additional",
                 In:    "path",
@@ -207,7 +207,7 @@ func (p *Param) Doc() thinkgo.Doc {
 过滤函数必须是HandlerFunc类型！
 
 ```go
-func Root2Index(ctx *thinkgo.Context) error {
+func Root2Index(ctx *faygo.Context) error {
     // 不允许直接访问`/index`
     if ctx.Path() == "/index" {
         ctx.Stop()
@@ -226,7 +226,7 @@ func Root2Index(ctx *thinkgo.Context) error {
 
 ```go
 // 新建应用实例，参数：名称、版本
-var app1 = thinkgo.New("myapp1", "1.0")
+var app1 = faygo.New("myapp1", "1.0")
 
 // 路由
 app1.Filter(Root2Index).
@@ -247,7 +247,7 @@ app1.Filter(Root2Index).
 
 ```go
 // 新建应用实例，参数：名称、版本
-var app2 = thinkgo.New("myapp2", "1.0")
+var app2 = faygo.New("myapp2", "1.0")
 
 // 路由
 app2.Filter(Root2Index)
@@ -296,24 +296,24 @@ multipart_maxmemory_mb = 32                      # 接收上传文件时允许�
 redirect_trailing_slash   = true                 # 当前请求的URL含`/`后缀如`/foo/`且相应路由不存在时，如存在`/foo`，则自动跳转至`/foo`
 redirect_fixed_path       = true                 # 自动修复URL，如`/FOO` `/..//Foo`均被跳转至`/foo`（依赖redirect_trailing_slash=true）
 handle_method_not_allowed = true                 # 若开启，当前请求方法不存在时返回405，否则返回404
-handle_options            = true                 # 若开启，自动应答OPTIONS类请求，可在Thinkgo中设置默认Handler
+handle_options            = true                 # 若开启，自动应答OPTIONS类请求，可在Faygo中设置默认Handler
 
 [xsrf]                                           # XSRF跨站请求伪造过滤配置区
 enable = false                                   # 是否开启
-key    = thinkgoxsrf                             # 加密key
+key    = faygoxsrf                             # 加密key
 expire = 3600                                    # xsrf防伪token有效时长
 
 [session]                                        # Session配置区（详情参考beego session模块）
 enable                 = false                   # 是否开启
 provider               = memory                  # 数据存储方式
-name                   = thinkgosessionID        # 客户端存储cookie的名字
+name                   = faygosessionID        # 客户端存储cookie的名字
 gc_max_lifetime        = 3600                    # 触发GC的时间
 provider_config        =                         # 配置信息，根据不同的引擎设置不同的配置信息
 cookie_lifetime        = 0                       # 客户端存储的cookie的时间，默认值是0，即浏览器生命周期
 auto_setcookie         = true                    # 是否自动设置关于session的cookie值，一般默认true
 domain                 =                         # 可以访问此cookie的域名
 enable_sid_in_header   = false                   # 是否将session ID写入Header
-name_in_header         = Thinkgosessionid        # 将session ID写入Header时的头名称
+name_in_header         = Faygosessionid        # 将session ID写入Header时的头名称
 enable_sid_in_urlquery = false                   # 是否将session ID写入url的query部分
 
 [apidoc]                                         # API文档
@@ -405,21 +405,21 @@ float64 |  []float64 |
 
 扩展包           |  导入路径
 -----------------|-----------------------------------------------------------------------------------------------------------------
-[各种条码](https://github.com/henrylee2cn/thinkgo/raw/master/ext/barcode)       | `github.com/henrylee2cn/thinkgo/ext/barcode`
-[比特单位](https://github.com/henrylee2cn/thinkgo/raw/master/ext/bitconv)       | `github.com/henrylee2cn/thinkgo/ext/bitconv`
-[gorm数据库引擎](https://github.com/henrylee2cn/thinkgo/raw/master/ext/db/gorm) | `github.com/henrylee2cn/thinkgo/ext/db/gorm`
-[sqlx数据库引擎](https://github.com/henrylee2cn/thinkgo/raw/master/ext/db/sqlx) | `github.com/henrylee2cn/thinkgo/ext/db/sqlx`
-[xorm数据库引擎](https://github.com/henrylee2cn/thinkgo/raw/master/ext/db/xorm) | `github.com/henrylee2cn/thinkgo/ext/db/xorm`
-[directSQL(配置化SQL引擎)](https://github.com/henrylee2cn/thinkgo/raw/master/ext/db/directsql) | `github.com/henrylee2cn/thinkgo/ext/db/directsql`
-[口令算法](https://github.com/henrylee2cn/thinkgo/raw/master/ext/otp)           | `github.com/henrylee2cn/thinkgo/ext/otp`
-[UUID](https://github.com/henrylee2cn/thinkgo/raw/master/ext/uuid)              | `github.com/henrylee2cn/thinkgo/ext/uuid`
-[Websocket](https://github.com/henrylee2cn/thinkgo/raw/master/ext/websocket)    | `github.com/henrylee2cn/thinkgo/ext/websocket`
-[ini配置](https://github.com/henrylee2cn/thinkgo/raw/master/ini)                | `github.com/henrylee2cn/thinkgo/ini`
-[定时器](https://github.com/henrylee2cn/thinkgo/raw/master/ext/cron)            | `github.com/henrylee2cn/thinkgo/ext/cron`
-[任务工具](https://github.com/henrylee2cn/thinkgo/raw/master/ext/task)          | `github.com/henrylee2cn/thinkgo/ext/task`
-[HTTP客户端](https://github.com/henrylee2cn/thinkgo/raw/master/ext/surfer)      | `github.com/henrylee2cn/thinkgo/ext/surfer`
+[各种条码](https://github.com/henrylee2cn/faygo/raw/master/ext/barcode)       | `github.com/henrylee2cn/faygo/ext/barcode`
+[比特单位](https://github.com/henrylee2cn/faygo/raw/master/ext/bitconv)       | `github.com/henrylee2cn/faygo/ext/bitconv`
+[gorm数据库引擎](https://github.com/henrylee2cn/faygo/raw/master/ext/db/gorm) | `github.com/henrylee2cn/faygo/ext/db/gorm`
+[sqlx数据库引擎](https://github.com/henrylee2cn/faygo/raw/master/ext/db/sqlx) | `github.com/henrylee2cn/faygo/ext/db/sqlx`
+[xorm数据库引擎](https://github.com/henrylee2cn/faygo/raw/master/ext/db/xorm) | `github.com/henrylee2cn/faygo/ext/db/xorm`
+[directSQL(配置化SQL引擎)](https://github.com/henrylee2cn/faygo/raw/master/ext/db/directsql) | `github.com/henrylee2cn/faygo/ext/db/directsql`
+[口令算法](https://github.com/henrylee2cn/faygo/raw/master/ext/otp)           | `github.com/henrylee2cn/faygo/ext/otp`
+[UUID](https://github.com/henrylee2cn/faygo/raw/master/ext/uuid)              | `github.com/henrylee2cn/faygo/ext/uuid`
+[Websocket](https://github.com/henrylee2cn/faygo/raw/master/ext/websocket)    | `github.com/henrylee2cn/faygo/ext/websocket`
+[ini配置](https://github.com/henrylee2cn/faygo/raw/master/ini)                | `github.com/henrylee2cn/faygo/ini`
+[定时器](https://github.com/henrylee2cn/faygo/raw/master/ext/cron)            | `github.com/henrylee2cn/faygo/ext/cron`
+[任务工具](https://github.com/henrylee2cn/faygo/raw/master/ext/task)          | `github.com/henrylee2cn/faygo/ext/task`
+[HTTP客户端](https://github.com/henrylee2cn/faygo/raw/master/ext/surfer)      | `github.com/henrylee2cn/faygo/ext/surfer`
 
 
 ## 开源协议
 
-Thinkgo 项目采用商业应用友好的 [Apache2.0](https://github.com/henrylee2cn/thinkgo/raw/master/LICENSE) 协议发布。
+Faygo 项目采用商业应用友好的 [Apache2.0](https://github.com/henrylee2cn/faygo/raw/master/LICENSE) 协议发布。

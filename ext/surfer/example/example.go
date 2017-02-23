@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/henrylee2cn/thinkgo/ext/surfer"
+	"github.com/henrylee2cn/faygo/ext/surfer"
 	"io/ioutil"
 	"log"
 	"net/url"

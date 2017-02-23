@@ -90,8 +90,8 @@
              - now: 当前服务器日期时间 
              - nowunix: 当前服务器日期时间 unix格式(64位整数)  
             默认参数取值扩展定义并使用
-               1）编写函数 参数必须为*thinkgo.Context:
-                  func name(ctx *thinkgo.Context) interface{
+               1）编写函数 参数必须为*faygo.Context:
+                  func name(ctx *faygo.Context) interface{
                       ...
                   }
                2）注册函数

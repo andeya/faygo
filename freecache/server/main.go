@@ -15,7 +15,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/henrylee2cn/thinkgo/freecache"
+	"github.com/henrylee2cn/faygo/freecache"
 )
 
 var (

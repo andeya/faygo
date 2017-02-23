@@ -6,7 +6,7 @@ import (
 	"image/jpeg"
 	"image/png"
 
-	"github.com/henrylee2cn/thinkgo/ext/barcode"
+	"github.com/henrylee2cn/faygo/ext/barcode"
 )
 
 // 常见二维码边长

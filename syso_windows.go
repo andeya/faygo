@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package thinkgo
+package faygo
 
 import (
-	_ "github.com/henrylee2cn/thinkgo/_syso"
+	_ "github.com/henrylee2cn/faygo/_syso"
 )

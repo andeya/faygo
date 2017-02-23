@@ -29,7 +29,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/henrylee2cn/thinkgo/utils"
+	"github.com/henrylee2cn/faygo/utils"
 )
 
 func init() {

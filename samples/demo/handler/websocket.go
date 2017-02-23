@@ -3,20 +3,20 @@ package handler
 import (
 	"time"
 
-	"github.com/henrylee2cn/thinkgo"
-	"github.com/henrylee2cn/thinkgo/ext/websocket"
+	"github.com/henrylee2cn/faygo"
+	"github.com/henrylee2cn/faygo/ext/websocket"
 )
 
-func WebsocketPage() thinkgo.HandlerFunc {
-	return func(ctx *thinkgo.Context) error {
-		return ctx.Render(200, thinkgo.JoinStatic("websocket.html"), nil)
+func WebsocketPage() faygo.HandlerFunc {
+	return func(ctx *faygo.Context) error {
+		return ctx.Render(200, faygo.JoinStatic("websocket.html"), nil)
 	}
 }
 
-var Websocket = thinkgo.WrapDoc(
-	thinkgo.HandlerFunc(func(ctx *thinkgo.Context) error {
+var Websocket = faygo.WrapDoc(
+	faygo.HandlerFunc(func(ctx *faygo.Context) error {
 		var upgrader = websocket.Upgrader{}
-		conn, err := upgrader.ThinkUpgrade(ctx, nil)
+		conn, err := upgrader.FayUpgrade(ctx, nil)
 		if err != nil {
 			return err
 		}

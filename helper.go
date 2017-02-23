@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package thinkgo
+package faygo
 
 import (
 	"errors"
@@ -24,8 +24,8 @@ import (
 	"reflect"
 	"strings"
 
-	"github.com/henrylee2cn/thinkgo/ini"
-	"github.com/henrylee2cn/thinkgo/utils"
+	"github.com/henrylee2cn/faygo/ini"
+	"github.com/henrylee2cn/faygo/utils"
 )
 
 // JoinStatic adds the static directory prefix to the file name.

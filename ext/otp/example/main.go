@@ -1,8 +1,8 @@
 package main
 
 import (
-	"github.com/henrylee2cn/thinkgo/ext/otp"
-	"github.com/henrylee2cn/thinkgo/ext/otp/totp"
+	"github.com/henrylee2cn/faygo/ext/otp"
+	"github.com/henrylee2cn/faygo/ext/otp/totp"
 
 	"bufio"
 	"bytes"

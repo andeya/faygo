@@ -15,7 +15,7 @@ import (
 	"regexp"
 	"time"
 
-	"github.com/henrylee2cn/thinkgo"
+	"github.com/henrylee2cn/faygo"
 )
 
 var reIdentifiers = regexp.MustCompile("^[a-zA-Z0-9_]+$")
@@ -56,12 +56,12 @@ func contextcall(name string, params ...interface{}) (result reflect.Value, err 
 		return
 	}
 	fv := reflect.ValueOf(sqlcontext[name])
-	thinkgo.Debug("Context type : ", name)
-	thinkgo.Debug("Context Kind : ", fv.Kind())
+	faygo.Debug("Context type : ", name)
+	faygo.Debug("Context Kind : ", fv.Kind())
 	// is function？
 	if fv.Kind() == reflect.Func {
 		t := fv.Type()
-		thinkgo.Debug("Context Func: ", t)
+		faygo.Debug("Context Func: ", t)
 		//Check input arguments
 		if len(params) != t.NumIn() {
 			err = errors.New("parameters of function not adapted")
@@ -78,7 +78,7 @@ func contextcall(name string, params ...interface{}) (result reflect.Value, err 
 		}
 		//return result
 		result = fv.Call(in)[0]
-		thinkgo.Debug("Context func value : ", result)
+		faygo.Debug("Context func value : ", result)
 	} else {
 		// value
 		result = reflect.ValueOf(fv.Interface())

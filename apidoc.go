@@ -14,7 +14,7 @@
 
 // API automation documentation.
 
-package thinkgo
+package faygo
 
 import (
 	"bytes"
@@ -26,7 +26,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/henrylee2cn/thinkgo/swagger"
+	"github.com/henrylee2cn/faygo/swagger"
 )
 
 type swaggerFS struct {

@@ -1,8 +1,8 @@
 package main
 
 import (
-	"github.com/henrylee2cn/thinkgo"
-	"github.com/henrylee2cn/thinkgo/ext/db/xorm"
+	"github.com/henrylee2cn/faygo"
+	"github.com/henrylee2cn/faygo/ext/db/xorm"
 	"mime/multipart"
 )
 
@@ -32,7 +32,7 @@ func (m *MultiUsage) AddUser() error {
 }
 
 // Serve impletes Handler
-func (m *MultiUsage) Serve(ctx *thinkgo.Context) error {
+func (m *MultiUsage) Serve(ctx *faygo.Context) error {
 	info, err := ctx.SaveFile("avatar", false, m.Name)
 	if err != nil {
 		return ctx.String(412, err.Error())
@@ -50,22 +50,22 @@ func (m *MultiUsage) Serve(ctx *thinkgo.Context) error {
 }
 
 // Doc returns the API's note.
-func (m *MultiUsage) Doc() thinkgo.Doc {
-	return thinkgo.Doc{
+func (m *MultiUsage) Doc() faygo.Doc {
+	return faygo.Doc{
 		Note: "struct handler's multi usage",
 	}
 }
 
 func main() {
 	// new app
-	app := thinkgo.New("myapp", "1.0")
+	app := faygo.New("myapp", "1.0")
 	// Register the route, and set the default value for apidoc
 	app.POST("/multi", &MultiUsage{
 		Name: "henrylee",
 		Age:  30,
 	})
 	// Start the service
-	thinkgo.Run()
+	faygo.Run()
 
 	// PS: By visiting /apidoc to test.
 }

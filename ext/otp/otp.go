@@ -18,8 +18,8 @@
 package otp
 
 import (
-	"github.com/henrylee2cn/thinkgo/ext/barcode"
-	"github.com/henrylee2cn/thinkgo/ext/barcode/qr"
+	"github.com/henrylee2cn/faygo/ext/barcode"
+	"github.com/henrylee2cn/faygo/ext/barcode/qr"
 
 	"crypto/md5"
 	"crypto/sha1"

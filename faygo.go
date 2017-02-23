@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package thinkgo
+package faygo
 
 import (
 	"context"
@@ -26,14 +26,14 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/henrylee2cn/thinkgo/acceptencoder"
-	"github.com/henrylee2cn/thinkgo/apiware"
-	"github.com/henrylee2cn/thinkgo/logging"
-	"github.com/henrylee2cn/thinkgo/utils"
+	"github.com/henrylee2cn/faygo/acceptencoder"
+	"github.com/henrylee2cn/faygo/apiware"
+	"github.com/henrylee2cn/faygo/logging"
+	"github.com/henrylee2cn/faygo/utils"
 )
 
 const (
-	// VERSION is thinkgo web framework's version
+	// VERSION is faygo web framework's version
 	VERSION = "1.0"
 
 	banner = `
@@ -50,7 +50,7 @@ const (
 	SHUTDOWN_TIMEOUT = 1 * time.Minute
 )
 
-// New uses the thinkgo web framework to create a new application.
+// New uses the faygo web framework to create a new application.
 func New(name string, version ...string) *Framework {
 	return newFramework(name, version...)
 }
@@ -241,7 +241,7 @@ func SetParamNameMapper(paramNameMapper apiware.ParamNameMapper) {
 	}
 }
 
-// GetRender returns a custom thinkgo template renderer using pongo2.
+// GetRender returns a custom faygo template renderer using pongo2.
 func GetRender() *Render {
 	return global.render
 }
@@ -416,7 +416,7 @@ type (
 		paramNameMapper apiware.ParamNameMapper
 		// global file cache system manager
 		fsManager *FileServerManager
-		// Render is a custom thinkgo template renderer using pongo2.
+		// Render is a custom faygo template renderer using pongo2.
 		render *Render
 
 		// The path for the upload files.
@@ -495,7 +495,7 @@ var (
 			"<head><title>%d %s</title></head>\n"+
 			"<body bgcolor=\"white\">\n"+
 			"<center><h1>%d %s</h1></center>\n"+
-			"<hr>\n<center>thinkgo/%s</center>\n%s\n</body>\n</html>\n",
+			"<hr>\n<center>faygo/%s</center>\n%s\n</body>\n</html>\n",
 			status, statusText, status, statusText, VERSION, errStr),
 		)
 	}

@@ -10,7 +10,7 @@ import (
 	"database/sql"
 	"errors"
 	"github.com/go-xorm/core"
-	"github.com/henrylee2cn/thinkgo"
+	"github.com/henrylee2cn/faygo"
 	"reflect"
 )
 
@@ -92,7 +92,7 @@ func MultiSelectMapToRows(modelId, sqlId string, mp map[string]interface{}) (map
 	}
 	//循環每個sql定義
 	for i, cmd := range se.Cmds {
-		thinkgo.Debug("MultiSelectMap :" + cmd.Sql)
+		faygo.Debug("MultiSelectMap :" + cmd.Sql)
 		rows, err := db.QueryMap(cmd.Sql, &mp)
 		if err != nil {
 			return nil, err
@@ -197,7 +197,7 @@ func BacthExecMap(modelId, sqlId string, sp []map[string]interface{}) error {
 	}
 	return transact(db, func(tx *core.Tx) error {
 		for _, p := range sp {
-			thinkgo.Debug("BacthExecMap :" + se.Cmds[0].Sql)
+			faygo.Debug("BacthExecMap :" + se.Cmds[0].Sql)
 			if _, err := tx.ExecMap(se.Cmds[0].Sql, &p); err != nil {
 				return err
 			}
@@ -223,7 +223,7 @@ func BacthMultiExecMap(modelId, sqlId string, mp map[string][]map[string]interfa
 			//循環其批量參數
 			if sp, ok := mp[cmd.Pin]; ok {
 				for _, p := range sp {
-					thinkgo.Debug("BacthMultiExecMap :" + cmd.Sql)
+					faygo.Debug("BacthMultiExecMap :" + cmd.Sql)
 					if _, err := tx.ExecMap(cmd.Sql, &p); err != nil {
 						return err
 					}

@@ -14,8 +14,8 @@ import (
 	// _ "github.com/mattn/go-oci8"         //oracle(need to install the pkg-config utility)
 	// _ "github.com/mattn/go-sqlite3"      //sqlite
 
-	"github.com/henrylee2cn/thinkgo"
-	"github.com/henrylee2cn/thinkgo/utils"
+	"github.com/henrylee2cn/faygo"
+	"github.com/henrylee2cn/faygo/utils"
 )
 
 // DBService is a database engine object.
@@ -34,13 +34,13 @@ var dbService = func() (serv *DBService) {
 			panic("[xorm] " + strings.Join(errs, "\n"))
 		}
 		if serv.Default == nil {
-			thinkgo.Panicf("[xorm] the `default` database engine must be configured and enabled")
+			faygo.Panicf("[xorm] the `default` database engine must be configured and enabled")
 		}
 	}()
 
 	err := loadDBConfig()
 	if err != nil {
-		thinkgo.Panicf("[xorm]", err.Error())
+		faygo.Panicf("[xorm]", err.Error())
 		return
 	}
 
@@ -50,13 +50,13 @@ var dbService = func() (serv *DBService) {
 		}
 		engine, err := xorm.NewEngine(conf.Driver, conf.Connstring)
 		if err != nil {
-			thinkgo.Critical("[xorm]", err.Error())
+			faygo.Critical("[xorm]", err.Error())
 			errs = append(errs, err.Error())
 			continue
 		}
 		err = engine.Ping()
 		if err != nil {
-			thinkgo.Critical("[xorm]", err.Error())
+			faygo.Critical("[xorm]", err.Error())
 			errs = append(errs, err.Error())
 			continue
 		}
@@ -99,7 +99,7 @@ var dbService = func() (serv *DBService) {
 			os.MkdirAll(filepath.Dir(conf.Connstring), 0777)
 			f, err := os.Create(conf.Connstring)
 			if err != nil {
-				thinkgo.Critical("[xorm]", err.Error())
+				faygo.Critical("[xorm]", err.Error())
 				errs = append(errs, err.Error())
 			} else {
 				f.Close()

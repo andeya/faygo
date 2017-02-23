@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package thinkgo
+package faygo
 
 import (
 	"fmt"
@@ -239,20 +239,20 @@ func newConfig(filename string) Config {
 		},
 		XSRF: XSRFConfig{
 			Enable: false,
-			Key:    "thinkgoxsrf",
+			Key:    "faygoxsrf",
 			Expire: 3600,
 		},
 		Session: SessionConfig{
 			Enable:                false,
 			Provider:              "memory",
-			Name:                  "thinkgosessionID",
+			Name:                  "faygosessionID",
 			GCMaxLifetime:         3600,
 			ProviderConfig:        "",
 			CookieLifetime:        0, //set cookie default is the browser life
 			AutoSetCookie:         true,
 			Domain:                "",
 			EnableSidInHttpHeader: false, //	enable store/get the sessionId into/from http headers
-			NameInHttpHeader:      "Thinkgosessionid",
+			NameInHttpHeader:      "Faygosessionid",
 			EnableSidInUrlQuery:   false, //	enable get the sessionId from Url Query params
 		},
 		APIdoc: APIdocConfig{

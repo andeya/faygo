@@ -3,10 +3,10 @@ package middleware
 import (
 	// "net/http"
 
-	"github.com/henrylee2cn/thinkgo"
+	"github.com/henrylee2cn/faygo"
 )
 
-func Root2Index(ctx *thinkgo.Context) error {
+func Root2Index(ctx *faygo.Context) error {
 	// Direct access to `/index` is not allowed
 	if ctx.Path() == "/index" {
 		ctx.Stop()

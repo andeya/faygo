@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package thinkgo
+package faygo
 
 import (
 	"errors"
@@ -20,22 +20,22 @@ import (
 	"reflect"
 	"sort"
 
-	"github.com/henrylee2cn/thinkgo/apiware"
+	"github.com/henrylee2cn/faygo/apiware"
 )
 
 type (
-	// Handler is the main Thinkgo Handler interface.
+	// Handler is the main Faygo Handler interface.
 	Handler interface {
 		Serve(ctx *Context) error
 	}
-	// APIHandler is the Thinkgo Handler interface,
+	// APIHandler is the Faygo Handler interface,
 	// which is implemented by a struct with API descriptor information.
 	// It is an intelligent Handler of binding parameters.
 	APIHandler interface {
 		Handler
 		APIDoc
 	}
-	// HandlerWithBody is the Thinkgo APIHandler interface but with DecodeBody method.
+	// HandlerWithBody is the Faygo APIHandler interface but with DecodeBody method.
 	HandlerWithBody interface {
 		Handler
 		Bodydecoder // Decode params from request body
@@ -99,7 +99,7 @@ type (
 	BinderrorFunc func(ctx *Context, err error)
 )
 
-// Serve implements the Handler, is like ServeHTTP but for Thinkgo.
+// Serve implements the Handler, is like ServeHTTP but for Faygo.
 func (h HandlerFunc) Serve(ctx *Context) error {
 	return h(ctx)
 }
@@ -163,7 +163,7 @@ func IsHandlerWithoutPath(handler Handler) bool {
 	return true
 }
 
-// Serve implements the APIHandler, is like ServeHTTP but for Thinkgo
+// Serve implements the APIHandler, is like ServeHTTP but for Faygo
 func (h *apiHandler) Serve(ctx *Context) error {
 	return h.handler.Serve(ctx)
 }

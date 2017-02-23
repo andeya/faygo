@@ -10,7 +10,7 @@ package directsql
 
 import (
 	"github.com/fsnotify/fsnotify"
-	"github.com/henrylee2cn/thinkgo"
+	"github.com/henrylee2cn/faygo"
 	"strings"
 )
 
@@ -21,7 +21,7 @@ func (mss *TModels) StartWatcher() error {
 	if err != nil {
 		return err
 	}
-	thinkgo.Info("Directsql start watching.....................")
+	faygo.Info("Directsql start watching.....................")
 	go func() {
 		for {
 			select {
@@ -29,32 +29,32 @@ func (mss *TModels) StartWatcher() error {
 				//如果变更的文件是 .msql文件
 				if strings.HasSuffix(event.Name, mss.extension) {
 					if event.Op&fsnotify.Write == fsnotify.Write {
-						thinkgo.Debug("Modified file:" + event.Name)
+						faygo.Debug("Modified file:" + event.Name)
 						err = mss.refreshModelFile(event.Name)
 						if err != nil {
-							thinkgo.Error(err.Error())
+							faygo.Error(err.Error())
 						}
 
 					} else if event.Op&fsnotify.Remove == fsnotify.Remove {
 
-						thinkgo.Debug("Delete file:" + event.Name)
+						faygo.Debug("Delete file:" + event.Name)
 						err = mss.removeModelFile(event.Name)
 						if err != nil {
-							thinkgo.Error(err.Error())
+							faygo.Error(err.Error())
 						}
 
 					} else if event.Op == fsnotify.Rename {
 
-						thinkgo.Debug("Rename file:" + event.Name)
+						faygo.Debug("Rename file:" + event.Name)
 						err = mss.renameModelFile(event.Name, event.Name)
 						if err != nil {
-							thinkgo.Error(err.Error())
+							faygo.Error(err.Error())
 						}
 					}
 				}
 			case err := <-mss.watcher.Errors:
 				if err != nil {
-					thinkgo.Error(err.Error())
+					faygo.Error(err.Error())
 				}
 			}
 		}
@@ -63,7 +63,7 @@ func (mss *TModels) StartWatcher() error {
 	for _, value := range mss.roots {
 		err = mss.watcher.Add(value)
 		if err != nil {
-			thinkgo.Error(err.Error())
+			faygo.Error(err.Error())
 			//return
 		}
 	}
@@ -73,7 +73,7 @@ func (mss *TModels) StartWatcher() error {
 //stop filesytem watcher
 func (mss *TModels) StopWatcher() error {
 	if mss.watcher != nil {
-		thinkgo.Info("Directsql stop watching.....................")
+		faygo.Info("Directsql stop watching.....................")
 		return mss.watcher.Close()
 	}
 	return nil

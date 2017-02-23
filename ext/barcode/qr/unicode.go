@@ -3,7 +3,7 @@ package qr
 import (
 	"errors"
 
-	"github.com/henrylee2cn/thinkgo/ext/barcode/utils"
+	"github.com/henrylee2cn/faygo/ext/barcode/utils"
 )
 
 func encodeUnicode(content string, ecl ErrorCorrectionLevel) (*utils.BitList, *versionInfo, error) {

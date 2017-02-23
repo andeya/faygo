@@ -8,7 +8,7 @@
 *.log
 *.sublime-project
 *.sublime-workspace
-think/*
+fay/*
 samples/*/log/*
 samples/*/static/*
 samples/*/upload/*

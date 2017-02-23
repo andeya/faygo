@@ -17,9 +17,9 @@ import (
 
 	"github.com/fsnotify/fsnotify"
 	"github.com/go-xorm/core"
-	"github.com/henrylee2cn/thinkgo"
-	thinkgoxorm "github.com/henrylee2cn/thinkgo/ext/db/xorm"
-	confpkg "github.com/henrylee2cn/thinkgo/ini"
+	"github.com/henrylee2cn/faygo"
+	faygoxorm "github.com/henrylee2cn/faygo/ext/db/xorm"
+	confpkg "github.com/henrylee2cn/faygo/ini"
 )
 
 //var modelsqls map[string]*TModel
@@ -149,7 +149,7 @@ func (ms *TModels) loadTModels() {
 	//打开directsql的配置文件
 	cfg, err := confpkg.Load(MSCONFIGFILE)
 	if err != nil {
-		thinkgo.Error(err.Error())
+		faygo.Error(err.Error())
 		return
 	}
 	//是否缓存与缓存时间
@@ -159,7 +159,7 @@ func (ms *TModels) loadTModels() {
 	//读取ModelSQL文件的根目录
 	roots, err := cfg.GetSection("roots")
 	if err != nil {
-		thinkgo.Error(err.Error())
+		faygo.Error(err.Error())
 		return
 	}
 
@@ -177,10 +177,10 @@ func (ms *TModels) loadTModels() {
 
 	//根据路径遍历加载
 	for _, value := range ms.roots {
-		thinkgo.Debug(value)
+		faygo.Debug(value)
 		err = filepath.Walk(value, ms.walkFunc)
 		if err != nil {
-			thinkgo.Error(err.Error())
+			faygo.Error(err.Error())
 		}
 
 	}
@@ -189,7 +189,7 @@ func (ms *TModels) loadTModels() {
 	if watch {
 		err := ms.StartWatcher()
 		if err != nil {
-			thinkgo.Error(err.Error())
+			faygo.Error(err.Error())
 		}
 	}
 
@@ -219,12 +219,12 @@ func (ms *TModels) walkFunc(path string, info os.FileInfo, err error) error {
 	if strings.HasSuffix(path, ms.extension) {
 		m, err := ms.parseTModel(path)
 		if err != nil {
-			thinkgo.Error("Model file: " + path + " --- " + err.Error())
+			faygo.Error("Model file: " + path + " --- " + err.Error())
 			return nil //单个文件解析出错继续加载其他的文件
 		}
 		//将本文件对应的TModel放入到TModels
 		ms.modelsqls[ms.filenameToModelId(path)] = m
-		thinkgo.Debug("Model file: " + path + " ------> " + ms.filenameToModelId(path) + "  loaded. ")
+		faygo.Debug("Model file: " + path + " ------> " + ms.filenameToModelId(path) + "  loaded. ")
 	}
 	return nil
 }
@@ -242,10 +242,10 @@ func (ms *TModels) parseTModel(msqlfile string) (*TModel, error) {
 		return nil, err
 	}
 	//设置数据库
-	dbe, ok := thinkgoxorm.DB(tempresult.Database)
+	dbe, ok := faygoxorm.DB(tempresult.Database)
 	if ok == false {
-		dbe = thinkgoxorm.MustDB()
-		//thinkgo.Log.Debug("database:", tempresult.Database)
+		dbe = faygoxorm.MustDB()
+		//faygo.Log.Debug("database:", tempresult.Database)
 	}
 	//定义一个 TModel将 tempTModel 转换为 TModel
 	result := &TModel{Id: tempresult.Id, DB: dbe.DB(), Sqls: make(map[string]*TSql)}
@@ -292,7 +292,7 @@ func (ms *TModels) parseTModel(msqlfile string) (*TModel, error) {
 			se.Sqltype = ST_BATCHMULTIEXEC
 		}
 		result.Sqls[se.Id] = se
-		//thinkgo.Debug(se)
+		//faygo.Debug(se)
 		//sql下的每个cmd循环处理
 		for _, cmd := range se.Cmds {
 			//每个cmd下的参数循环处理参数类型与默认值类型
@@ -382,7 +382,7 @@ func (ms *TModels) refreshModelFile(msqlfile string) error {
 	//重新解析
 	m, err := ms.parseTModel(msqlfile)
 	if err != nil {
-		thinkgo.Error(err.Error())
+		faygo.Error(err.Error())
 		return err //单个文件解析出错继续加载其他的文件
 	}
 	//将本文件对应的TModel放入到TModels
@@ -418,13 +418,13 @@ func GetSqlType(modelid string, sqlid string) TSqltype {
 
 //获取sqlentity SQL的执行实体
 func findSql(modelid string, sqlid string) *TSql {
-	//thinkgo.Debug("Model Path: " + modelid + " ,SqlId: " + sqlid)
+	//faygo.Debug("Model Path: " + modelid + " ,SqlId: " + sqlid)
 	return models.findsql(modelid, sqlid)
 }
 
 //根据TModel文件路径获取 TModel
 func findModel(modelid string) *TModel {
-	//thinkgo.Debug("Model Path: " + modelid)
+	//faygo.Debug("Model Path: " + modelid)
 	return models.findmodel(modelid)
 }
 

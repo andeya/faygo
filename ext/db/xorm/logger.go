@@ -3,8 +3,8 @@ package xorm
 import (
 	"github.com/go-xorm/core"
 
-	"github.com/henrylee2cn/thinkgo"
-	"github.com/henrylee2cn/thinkgo/logging"
+	"github.com/henrylee2cn/faygo"
+	"github.com/henrylee2cn/faygo/logging"
 )
 
 // ILogger logger
@@ -16,7 +16,7 @@ type ILogger struct {
 
 var iLogger = func() *ILogger {
 	log := &ILogger{
-		logging: thinkgo.NewLog(),
+		logging: faygo.NewLog(),
 	}
 	log.logging.ExtraCalldepth++
 	return log

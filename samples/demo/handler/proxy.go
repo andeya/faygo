@@ -1,20 +1,20 @@
 package handler
 
 import (
-	"github.com/henrylee2cn/thinkgo"
+	"github.com/henrylee2cn/faygo"
 )
 
 type Search int
 
-func (Search) Serve(ctx *thinkgo.Context) error {
+func (Search) Serve(ctx *faygo.Context) error {
 	return ctx.ReverseProxy("https://cn.bing.com/search", false)
 }
 
-func (Search) Doc() thinkgo.Doc {
-	return thinkgo.Doc{
+func (Search) Doc() faygo.Doc {
+	return faygo.Doc{
 		Note:   "reverse proxy",
 		Return: nil,
-		Params: []thinkgo.ParamInfo{
+		Params: []faygo.ParamInfo{
 			{
 				Name:     "q",
 				In:       "query",

@@ -4,8 +4,8 @@ package qr
 import (
 	"image"
 
-	"github.com/henrylee2cn/thinkgo/ext/barcode"
-	"github.com/henrylee2cn/thinkgo/ext/barcode/utils"
+	"github.com/henrylee2cn/faygo/ext/barcode"
+	"github.com/henrylee2cn/faygo/ext/barcode/utils"
 )
 
 type encodeFn func(content string, eccLevel ErrorCorrectionLevel) (*utils.BitList, *versionInfo, error)

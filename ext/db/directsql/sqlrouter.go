@@ -6,11 +6,11 @@ package directsql
 
 /*
 import (
-	"github.com/henrylee2cn/thinkgo"
+	"github.com/henrylee2cn/faygo"
 )
 
 //注册路由
-func SysRoute(frame *thinkgo.Framework) {
+func SysRoute(frame *faygo.Framework) {
 	frame.Static("/sys", "./sys_view")
 
 	file := frame.NamedGroup("文件管理", "/file", middleware.CheckLogin())

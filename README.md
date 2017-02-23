@@ -1,16 +1,16 @@
-# Thinkgo    [![GoDoc](https://godoc.org/github.com/tsuna/gohbase?status.png)](https://godoc.org/github.com/henrylee2cn/thinkgo)    ![Thinkgo goreportcard](https://goreportcard.com/badge/github.com/henrylee2cn/thinkgo)
+# Faygo    [![GoDoc](https://godoc.org/github.com/tsuna/gohbase?status.png)](https://godoc.org/github.com/henrylee2cn/faygo)    ![Faygo goreportcard](https://goreportcard.com/badge/github.com/henrylee2cn/faygo)
 
-![Thinkgo Favicon](https://github.com/henrylee2cn/thinkgo/raw/master/doc/thinkgo_96x96.png)
+![Faygo Favicon](https://github.com/henrylee2cn/faygo/raw/master/doc/faygo_96x96.png)
 
-Thinkgo is a Golang Web framework that handler is middleware, supports intelligent parameter mapping and validation, and automates API documentation. [Go to \<User Manual\>](https://github.com/henrylee2cn/thinkbook)
+Faygo is a Golang Web framework that handler is middleware, supports intelligent parameter mapping and validation, and automates API documentation. [Go to \<User Manual\>](https://github.com/henrylee2cn/faybook)
 
-[简体中文](https://github.com/henrylee2cn/thinkgo/blob/master/README_ZH.md)
+[简体中文](https://github.com/henrylee2cn/faygo/blob/master/README_ZH.md)
 
-![thinkgo server](https://github.com/henrylee2cn/thinkgo/raw/master/doc/server.png)
+![faygo server](https://github.com/henrylee2cn/faygo/raw/master/doc/server.png)
 
-![thinkgo apidoc](https://github.com/henrylee2cn/thinkgo/raw/master/doc/apidoc.png)
+![faygo apidoc](https://github.com/henrylee2cn/faygo/raw/master/doc/apidoc.png)
 
-![thinkgo index](https://github.com/henrylee2cn/thinkgo/raw/master/doc/index.png)
+![faygo index](https://github.com/henrylee2cn/faygo/raw/master/doc/index.png)
 
 ## Latest version
 
@@ -27,27 +27,27 @@ Go Version ≥1.8
 - Way 1: download source
 
 ```sh
-go get -u -v github.com/henrylee2cn/thinkgo
+go get -u -v github.com/henrylee2cn/faygo
 ```
 
-- Way 2: deployment tools ([Go to think](https://github.com/henrylee2cn/think))
+- Way 2: deployment tools ([Go to fay](https://github.com/henrylee2cn/fay))
 
 ```sh
-go get -u -v github.com/henrylee2cn/think
+go get -u -v github.com/henrylee2cn/fay
 ```
 
 ```
-        think command [arguments]
+        fay command [arguments]
 
 The commands are:
-        new        create, compile and run (monitor changes) a new thinkgo project
+        new        create, compile and run (monitor changes) a new faygo project
         run        compile and run (monitor changes) an any existing go project
 
-think new appname [apptpl]
-        appname    specifies the path of the new thinkgo project
-        apptpl     optionally, specifies the thinkgo project template type
+fay new appname [apptpl]
+        appname    specifies the path of the new faygo project
+        apptpl     optionally, specifies the faygo project template type
 
-think run [appname]
+fay run [appname]
         appname    optionally, specifies the path of the new project
 ```
 
@@ -78,7 +78,7 @@ think run [appname]
 
 - `struct Handler` multi-usage
 
-![thinkgo handler multi-usage](https://github.com/henrylee2cn/thinkgo/raw/master/doc/MultiUsage.png)
+![faygo handler multi-usage](https://github.com/henrylee2cn/faygo/raw/master/doc/MultiUsage.png)
 
 
 ## Simple example
@@ -89,26 +89,26 @@ package main
 import (
     // "mime/multipart"
     "time"
-    "github.com/henrylee2cn/thinkgo"
+    "github.com/henrylee2cn/faygo"
 )
 
 type Index struct {
     Id        int      `param:"<in:path> <required> <desc:ID> <range: 0:10>"`
     Title     string   `param:"<in:query> <nonzero>"`
     Paragraph []string `param:"<in:query> <name:p> <len: 1:10> <regexp: ^[\\w]*$>"`
-    Cookie    string   `param:"<in:cookie> <name:thinkgoID>"`
+    Cookie    string   `param:"<in:cookie> <name:faygoID>"`
     // Picture         *multipart.FileHeader `param:"<in:formData> <name:pic> <maxmb:30>"`
 }
 
-func (i *Index) Serve(ctx *thinkgo.Context) error {
-    if ctx.CookieParam("thinkgoID") == "" {
-        ctx.SetCookie("thinkgoID", time.Now().String())
+func (i *Index) Serve(ctx *faygo.Context) error {
+    if ctx.CookieParam("faygoID") == "" {
+        ctx.SetCookie("faygoID", time.Now().String())
     }
     return ctx.JSON(200, i)
 }
 
 func main() {
-    app := thinkgo.New("myapp", "0.1")
+    app := faygo.New("myapp", "0.1")
 
     // Register the route in a chain style
     app.GET("/index/:id", new(Index))
@@ -119,7 +119,7 @@ func main() {
     // )
 
     // Start the service
-    thinkgo.Run()
+    faygo.Run()
 }
 
 /*
@@ -138,7 +138,7 @@ response:
 */
 ```
 
-[All samples](https://github.com/henrylee2cn/thinkgo/raw/master/samples)
+[All samples](https://github.com/henrylee2cn/faygo/raw/master/samples)
 
 ## Handler and middleware
 
@@ -148,14 +148,14 @@ Handler and middleware are the same, both implemente Handler interface!
 
 ```go
 // Page handler doesn't contains API doc description
-func Page() thinkgo.HandlerFunc {
-    return func(ctx *thinkgo.Context) error {
-        return ctx.String(200, "thinkgo")
+func Page() faygo.HandlerFunc {
+    return func(ctx *faygo.Context) error {
+        return ctx.String(200, "faygo")
     }
 }
 
 // Page2 handler contains API doc description
-var Page2 = thinkgo.WrapDoc(Page(), "test page2 notes", "test")
+var Page2 = faygo.WrapDoc(Page(), "test page2 notes", "test")
 ```
 
 - struct type
@@ -168,26 +168,26 @@ type Param struct {
 }
 
 // Serve implemente Handler interface
-func (p *Param) Serve(ctx *thinkgo.Context) error {
+func (p *Param) Serve(ctx *faygo.Context) error {
     return ctx.JSON(200,
-        thinkgo.Map{
+        faygo.Map{
             "Struct Params":    p,
             "Additional Param": ctx.PathParam("additional"),
         }, true)
 }
 
 // Doc implemente API Doc interface (optional)
-func (p *Param) Doc() thinkgo.Doc {
-    return thinkgo.Doc{
+func (p *Param) Doc() faygo.Doc {
+    return faygo.Doc{
         // Add the API notes to the API doc
         Note: "param desc",
         // declare the response content format to the API doc
-        Return: thinkgo.JSONMsg{
+        Return: faygo.JSONMsg{
             Code: 1,
             Info: "success",
         },
         // additional request parameter declarations to the API doc (optional)
-        Params: []thinkgo.ParamInfo{
+        Params: []faygo.ParamInfo{
             {
                 Name:  "additional",
                 In:    "path",
@@ -204,7 +204,7 @@ func (p *Param) Doc() thinkgo.Doc {
 The filter function must be HandleFunc type!
 
 ```go
-func Root2Index(ctx *thinkgo.Context) error {
+func Root2Index(ctx *faygo.Context) error {
     // Direct access to `/index` is not allowed
     if ctx.Path() == "/index" {
         ctx.Stop()
@@ -223,7 +223,7 @@ func Root2Index(ctx *thinkgo.Context) error {
 
 ```go
 // New application object, params: name, version
-var app1 = thinkgo.New("myapp1", "1.0")
+var app1 = faygo.New("myapp1", "1.0")
 
 // router
 app1.Filter(Root2Index).
@@ -244,7 +244,7 @@ app1.Filter(Root2Index).
 
 ```go
 // New application object, params: name, version
-var app2 = thinkgo.New("myapp2", "1.0")
+var app2 = faygo.New("myapp2", "1.0")
 
 // router
 app2.Filter(Root2Index)
@@ -293,24 +293,24 @@ multipart_maxmemory_mb = 32                      # Maximum size of memory that c
 redirect_trailing_slash   = true                 # Automatic redirection (for example, `/foo/` -> `/foo`)
 redirect_fixed_path       = true                 # Tries to fix the current request path, if no handle is registered for it
 handle_method_not_allowed = true                 # Returns 405 if the requested method does not exist, otherwise returns 404
-handle_options            = true                 # Automatic response OPTIONS request, you can set the default Handler in Thinkgo
+handle_options            = true                 # Automatic response OPTIONS request, you can set the default Handler in Faygo
 
 [xsrf]                                           # XSRF security section
 enable = false                                   # Whether enabled or not
-key    = thinkgoxsrf                             # Encryption key
+key    = faygoxsrf                             # Encryption key
 expire = 3600                                    # Expire of XSRF token
 
 [session]                                        # Session section
 enable                 = false                   # Whether enabled or not
 provider               = memory                  # Data storage
-name                   = thinkgosessionID        # The client stores the name of the cookie
+name                   = faygosessionID        # The client stores the name of the cookie
 gc_max_lifetime        = 3600                    # The interval between triggering the GC
 provider_config        =                         # According to the different engine settings different configuration information
 cookie_lifetime        = 0                       # The default value is 0, which is the lifetime of the browser
 auto_setcookie         = true                    # Automatically set on the session cookie value, the general default true
 domain                 =                         # The domain name that is allowed to access this cookie
 enable_sid_in_header   = false                   # Whether to write a session ID to the header
-name_in_header         = Thinkgosessionid        # The name of the header when the session ID is written to the header
+name_in_header         = Faygosessionid        # The name of the header when the session ID is written to the header
 enable_sid_in_urlquery = false                   # Whether to write the session ID to the URL Query params
 
 [apidoc]                                         # API documentation section
@@ -402,21 +402,21 @@ float64 |  []float64 |
 
 package summary  |  import path
 -----------------|-----------------------------------------------------------------------------------------------------------------
-[barcode](https://github.com/henrylee2cn/thinkgo/raw/master/ext/barcode)             | `github.com/henrylee2cn/thinkgo/ext/barcode`
-[Bit unit conversion](https://github.com/henrylee2cn/thinkgo/raw/master/ext/bitconv) | `github.com/henrylee2cn/thinkgo/ext/bitconv`
-[gorm(DB ORM)](https://github.com/henrylee2cn/thinkgo/raw/master/ext/db/gorm)        | `github.com/henrylee2cn/thinkgo/ext/db/gorm`
-[sqlx(DB ext)](https://github.com/henrylee2cn/thinkgo/raw/master/ext/db/sqlx)        | `github.com/henrylee2cn/thinkgo/ext/db/sqlx`
-[xorm(DB ORM)](https://github.com/henrylee2cn/thinkgo/raw/master/ext/db/xorm)        | `github.com/henrylee2cn/thinkgo/ext/db/xorm`
-[directSQL(Configured SQL engine)](https://github.com/henrylee2cn/thinkgo/raw/master/ext/db/directsql) | `github.com/henrylee2cn/thinkgo/ext/db/directsql`
-[One-time Password](https://github.com/henrylee2cn/thinkgo/raw/master/ext/otp)       | `github.com/henrylee2cn/thinkgo/ext/otp`
-[UUID](https://github.com/henrylee2cn/thinkgo/raw/master/ext/uuid)                   | `github.com/henrylee2cn/thinkgo/ext/uuid`
-[Websocket](https://github.com/henrylee2cn/thinkgo/raw/master/ext/websocket)         | `github.com/henrylee2cn/thinkgo/ext/websocket`
-[ini](https://github.com/henrylee2cn/thinkgo/raw/master/ini)                         | `github.com/henrylee2cn/thinkgo/ini`
-[cron](https://github.com/henrylee2cn/thinkgo/raw/master/ext/cron)                   | `github.com/henrylee2cn/thinkgo/ext/cron`
-[task](https://github.com/henrylee2cn/thinkgo/raw/master/ext/task)                   | `github.com/henrylee2cn/thinkgo/ext/task`
-[http client](https://github.com/henrylee2cn/thinkgo/raw/master/ext/surfer)          | `github.com/henrylee2cn/thinkgo/ext/surfer`
+[barcode](https://github.com/henrylee2cn/faygo/raw/master/ext/barcode)             | `github.com/henrylee2cn/faygo/ext/barcode`
+[Bit unit conversion](https://github.com/henrylee2cn/faygo/raw/master/ext/bitconv) | `github.com/henrylee2cn/faygo/ext/bitconv`
+[gorm(DB ORM)](https://github.com/henrylee2cn/faygo/raw/master/ext/db/gorm)        | `github.com/henrylee2cn/faygo/ext/db/gorm`
+[sqlx(DB ext)](https://github.com/henrylee2cn/faygo/raw/master/ext/db/sqlx)        | `github.com/henrylee2cn/faygo/ext/db/sqlx`
+[xorm(DB ORM)](https://github.com/henrylee2cn/faygo/raw/master/ext/db/xorm)        | `github.com/henrylee2cn/faygo/ext/db/xorm`
+[directSQL(Configured SQL engine)](https://github.com/henrylee2cn/faygo/raw/master/ext/db/directsql) | `github.com/henrylee2cn/faygo/ext/db/directsql`
+[One-time Password](https://github.com/henrylee2cn/faygo/raw/master/ext/otp)       | `github.com/henrylee2cn/faygo/ext/otp`
+[UUID](https://github.com/henrylee2cn/faygo/raw/master/ext/uuid)                   | `github.com/henrylee2cn/faygo/ext/uuid`
+[Websocket](https://github.com/henrylee2cn/faygo/raw/master/ext/websocket)         | `github.com/henrylee2cn/faygo/ext/websocket`
+[ini](https://github.com/henrylee2cn/faygo/raw/master/ini)                         | `github.com/henrylee2cn/faygo/ini`
+[cron](https://github.com/henrylee2cn/faygo/raw/master/ext/cron)                   | `github.com/henrylee2cn/faygo/ext/cron`
+[task](https://github.com/henrylee2cn/faygo/raw/master/ext/task)                   | `github.com/henrylee2cn/faygo/ext/task`
+[http client](https://github.com/henrylee2cn/faygo/raw/master/ext/surfer)          | `github.com/henrylee2cn/faygo/ext/surfer`
 
 
 ## License
 
-Thinkgo is under Apache v2 License. See the [LICENSE](https://github.com/henrylee2cn/thinkgo/raw/master/LICENSE) file for the full license text.
+Faygo is under Apache v2 License. See the [LICENSE](https://github.com/henrylee2cn/faygo/raw/master/LICENSE) file for the full license text.

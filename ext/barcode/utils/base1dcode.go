@@ -5,7 +5,7 @@ import (
 	"image"
 	"image/color"
 
-	"github.com/henrylee2cn/thinkgo/ext/barcode"
+	"github.com/henrylee2cn/faygo/ext/barcode"
 )
 
 type base1DCode struct {

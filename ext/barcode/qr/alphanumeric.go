@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/henrylee2cn/thinkgo/ext/barcode/utils"
+	"github.com/henrylee2cn/faygo/ext/barcode/utils"
 )
 
 const charSet string = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ $%*+-./:"

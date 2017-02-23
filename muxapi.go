@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package thinkgo
+package faygo
 
 import (
 	"os"
@@ -303,7 +303,7 @@ func (mux *MuxAPI) comb() {
 				}
 				continue
 			}
-			errStr := "[Thinkgo-ToAPIHandler] " + err.Error()
+			errStr := "[Faygo-ToAPIHandler] " + err.Error()
 			mux.frame.Log().Panicf("%s\n", errStr)
 		}
 
@@ -360,7 +360,7 @@ func (mux *MuxAPI) checkPathParams() {
 		}
 		if !strings.Contains(mux.pattern, "/:"+paramInfo.Name) && !strings.Contains(mux.pattern, "/*"+paramInfo.Name) {
 			mux.frame.Log().Panicf(
-				"[Thinkgo-checkPathParams] the router pattern `%s` does not match the path param:\n%#v",
+				"[Faygo-checkPathParams] the router pattern `%s` does not match the path param:\n%#v",
 				mux.pattern,
 				paramInfo,
 			)
@@ -369,7 +369,7 @@ func (mux *MuxAPI) checkPathParams() {
 	}
 	if countPathParams(mux.pattern) < numPathParams {
 		mux.frame.Log().Panicf(
-			"[Thinkgo-checkPathParams] the router pattern `%s` does not match the path params:\n%#v",
+			"[Faygo-checkPathParams] the router pattern `%s` does not match the path params:\n%#v",
 			mux.pattern,
 			mux.paramInfos,
 		)
@@ -384,17 +384,17 @@ func (mux *MuxAPI) checkBodyParamConflicts() {
 		switch paramInfo.In {
 		case "formData":
 			if hasBody {
-				errStr := "[Thinkgo-checkBodyParamConflicts] handler struct tags of `in(formData)` and `in(body)` can not exist at the same time:\nURL path: " + mux.path
+				errStr := "[Faygo-checkBodyParamConflicts] handler struct tags of `in(formData)` and `in(body)` can not exist at the same time:\nURL path: " + mux.path
 				mux.frame.Log().Panicf("%s\n", errStr)
 			}
 			hasFormData = true
 		case "body":
 			if hasFormData {
-				errStr := "[Thinkgo-checkBodyParamConflicts] handler struct tags of `in(formData)` and `in(body)` can not exist at the same time:\nURL path: " + mux.path
+				errStr := "[Faygo-checkBodyParamConflicts] handler struct tags of `in(formData)` and `in(body)` can not exist at the same time:\nURL path: " + mux.path
 				mux.frame.Log().Panicf("%s\n", errStr)
 			}
 			if hasBody {
-				errStr := "[Thinkgo-checkBodyParamConflicts] there should not be more than one handler struct tag `in(body)`:\nURL path: " + mux.path
+				errStr := "[Faygo-checkBodyParamConflicts] there should not be more than one handler struct tag `in(body)`:\nURL path: " + mux.path
 				mux.frame.Log().Panicf("%s\n", errStr)
 			}
 			hasBody = true

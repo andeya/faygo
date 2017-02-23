@@ -13,13 +13,13 @@ import (
 	"fmt"
 
 	"github.com/go-xorm/core"
-	"github.com/henrylee2cn/thinkgo"
+	"github.com/henrylee2cn/faygo"
 )
 
 //根据sqlid获取 *TSql
 func (m *TModel) findSql(sqlid string) *TSql {
 	if se, ok := m.Sqls[sqlid]; ok {
-		//thinkgo.Debug("SqlId: " + sqlid)
+		//faygo.Debug("SqlId: " + sqlid)
 		return se
 	}
 	return nil
@@ -27,7 +27,7 @@ func (m *TModel) findSql(sqlid string) *TSql {
 
 //执行普通的单个查询SQL  mp 是MAP类型命名参数 map[string]interface{},返回结果 []map[string][]interface{}
 func (m *TModel) selectMap(se *TSql, mp map[string]interface{}) ([]map[string]interface{}, error) {
-	thinkgo.Debug("selectMap parameters :", mp)
+	faygo.Debug("selectMap parameters :", mp)
 	//执行sql
 	rows, err := m.DB.QueryMap(se.Cmds[0].Sql, &mp)
 	if err != nil {
@@ -45,7 +45,7 @@ type PagingSelectResult struct {
 
 //执行分页查询SQL  mp 是MAP类型命名参数 返回结果 int,[]map[string][]interface{}
 func (m *TModel) pagingSelectMap(se *TSql, mp map[string]interface{}) (*PagingSelectResult, error) {
-	thinkgo.Debug("pagingSelectMap parameters :", mp)
+	faygo.Debug("pagingSelectMap parameters :", mp)
 	//获取总页数，約定該SQL放到第二條，並且只返回一條記錄一個字段
 	trows, err := m.DB.QueryMap(se.Cmds[0].Sql, &mp)
 	if err != nil {
@@ -79,10 +79,10 @@ func (m *TModel) pagingSelectMap(se *TSql, mp map[string]interface{}) (*PagingSe
 //执行返回多個結果集的多個查询SQL， mp 是MAP类型命名参数 返回结果 map[string][]map[string][]string
 func (m *TModel) multiSelectMap(se *TSql, mp map[string]interface{}) (map[string][]map[string]interface{}, error) {
 	result := make(map[string][]map[string]interface{})
-	thinkgo.Debug("MultiSelectMap parameters :", mp)
+	faygo.Debug("MultiSelectMap parameters :", mp)
 	//循環每個sql定義
 	for i, cmd := range se.Cmds {
-		thinkgo.Debug("MultiSelectMap :" + cmd.Sql)
+		faygo.Debug("MultiSelectMap :" + cmd.Sql)
 		rows, err := m.DB.QueryMap(cmd.Sql, &mp)
 		if err != nil {
 			return nil, err
@@ -104,7 +104,7 @@ func (m *TModel) multiSelectMap(se *TSql, mp map[string]interface{}) (map[string
 //执行单个查询SQL返回JSON父子嵌套結果集 mp 是MAP类型命名参数 map[string]interface{},返回结果 []map[string][]interface{}
 //根据 Idfield、Pidfield 构建嵌套的 map 结果集
 func (m *TModel) nestedSelectMap(se *TSql, mp map[string]interface{}) ([]map[string]interface{}, error) {
-	thinkgo.Debug("NestedSelectMap :" + se.Cmds[0].Sql)
+	faygo.Debug("NestedSelectMap :" + se.Cmds[0].Sql)
 	rows, err := m.DB.QueryMap(se.Cmds[0].Sql, &mp)
 	defer rows.Close()
 	if err != nil {
@@ -122,8 +122,8 @@ type Execresult struct {
 
 //执行 UPDATE、DELETE、INSERT，mp 是 map[string]interface{}, 返回结果 execresult
 /*func (m *TModel) execMap(se *TSql, mp map[string]interface{}) (*Execresult, error) {
-	thinkgo.Debug("ExecMap :" + se.Cmds[0].Sql)
-	thinkgo.Debug("map paras :", mp)
+	faygo.Debug("ExecMap :" + se.Cmds[0].Sql)
+	faygo.Debug("map paras :", mp)
 	Result, err := m.DB.ExecMap(se.Cmds[0].Sql, &mp)
 	if err != nil {
 		return nil, err
@@ -136,11 +136,11 @@ type Execresult struct {
 //说明，将执行sql的execMap修改该可以执行多个配置的cmd，采用相同的参数---2016.11.20
 //执行 UPDATE、DELETE、INSERT，mp 是 map[string]interface{}，可以配置多个sql语句，使用相同的参数执行。
 func (m *TModel) execMap(se *TSql, mp map[string]interface{}) error {
-	thinkgo.Debug("ExecMap parameters :", mp)
+	faygo.Debug("ExecMap parameters :", mp)
 	return transact(m.DB, func(tx *core.Tx) error {
 		//循環每個sql定義
 		for _, cmd := range se.Cmds {
-			thinkgo.Debug("ExecMap sql:" + cmd.Sql)
+			faygo.Debug("ExecMap sql:" + cmd.Sql)
 			if _, err := tx.ExecMap(cmd.Sql, &mp); err != nil {
 				return err
 			}
@@ -151,10 +151,10 @@ func (m *TModel) execMap(se *TSql, mp map[string]interface{}) error {
 
 //批量执行 UPDATE、INSERT、sp 是MAP类型命名参数
 func (m *TModel) bacthExecMap(se *TSql, sp []map[string]interface{}) error {
-	thinkgo.Debug("BacthExecMap parameters :", sp)
+	faygo.Debug("BacthExecMap parameters :", sp)
 	return transact(m.DB, func(tx *core.Tx) error {
 		for _, p := range sp {
-			thinkgo.Debug("BacthExecMap :" + se.Cmds[0].Sql)
+			faygo.Debug("BacthExecMap :" + se.Cmds[0].Sql)
 			if _, err := tx.ExecMap(se.Cmds[0].Sql, &p); err != nil {
 				return err
 			}
@@ -171,7 +171,7 @@ func (m *TModel) bacthMultiExecMap(se *TSql, mp map[string][]map[string]interfac
 			//循環其批量參數
 			if sp, ok := mp[cmd.Pin]; ok {
 				for _, p := range sp {
-					thinkgo.Debug("BacthMultiExecMap :" + cmd.Sql)
+					faygo.Debug("BacthMultiExecMap :" + cmd.Sql)
 					if _, err := tx.ExecMap(cmd.Sql, &p); err != nil {
 						return err
 					}

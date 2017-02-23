@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package thinkgo
+package faygo
 
 import (
 	"errors"
@@ -24,9 +24,9 @@ import (
 	"path"
 	"sync"
 
-	"github.com/henrylee2cn/thinkgo/logging"
-	"github.com/henrylee2cn/thinkgo/session"
-	"github.com/henrylee2cn/thinkgo/utils"
+	"github.com/henrylee2cn/faygo/logging"
+	"github.com/henrylee2cn/faygo/session"
+	"github.com/henrylee2cn/faygo/utils"
 )
 
 // Headers

@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package thinkgo
+package faygo
 
 import (
 	"bytes"
@@ -29,7 +29,7 @@ import (
 	"time"
 	"unsafe"
 
-	"github.com/henrylee2cn/thinkgo/acceptencoder"
+	"github.com/henrylee2cn/faygo/acceptencoder"
 )
 
 // Size returns the current size, in bytes, of the response.

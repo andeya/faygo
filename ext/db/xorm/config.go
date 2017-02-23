@@ -4,8 +4,8 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/henrylee2cn/thinkgo"
-	"github.com/henrylee2cn/thinkgo/ini"
+	"github.com/henrylee2cn/faygo"
+	"github.com/henrylee2cn/faygo/ini"
 )
 
 // DBConfig is database connection config
@@ -29,7 +29,7 @@ type DBConfig struct {
 
 // default constant
 const (
-	DBCONFIG_FILE  = thinkgo.CONFIG_DIR + "xorm.ini"
+	DBCONFIG_FILE  = faygo.CONFIG_DIR + "xorm.ini"
 	DATABASE_DIR   = "database/"
 	DEFAULTDB_NAME = "default"
 )
@@ -39,7 +39,7 @@ var (
 	defaultConfig = &DBConfig{
 		Name:         DEFAULTDB_NAME,
 		Driver:       "mysql",
-		Connstring:   "root:@tcp(127.0.0.1:3306)/thinkgo?charset=utf8",
+		Connstring:   "root:@tcp(127.0.0.1:3306)/faygo?charset=utf8",
 		MaxOpenConns: 100,
 		MaxIdleConns: 100,
 		TableFix:     "prefix",

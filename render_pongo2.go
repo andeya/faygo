@@ -1,4 +1,4 @@
-package thinkgo
+package faygo
 
 import (
 	"bytes"
@@ -9,7 +9,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/henrylee2cn/thinkgo/pongo2"
+	"github.com/henrylee2cn/faygo/pongo2"
 )
 
 type (
@@ -18,7 +18,7 @@ type (
 		template *pongo2.Template
 		modTime  time.Time
 	}
-	// Render is a custom thinkgo template renderer using pongo2.
+	// Render is a custom faygo template renderer using pongo2.
 	Render struct {
 		set           *pongo2.TemplateSet
 		tplCache      map[string]*Tpl
@@ -32,7 +32,7 @@ type (
 // New creates a new Render instance with custom Options.
 func newRender(openCacheFile func(name string) (http.File, error)) *Render {
 	return &Render{
-		set:           pongo2.NewSet("thinkgo", pongo2.DefaultLoader),
+		set:           pongo2.NewSet("faygo", pongo2.DefaultLoader),
 		tplCache:      make(map[string]*Tpl),
 		tplContext:    make(pongo2.Context),
 		openCacheFile: openCacheFile,

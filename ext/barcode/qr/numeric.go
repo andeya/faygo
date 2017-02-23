@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/henrylee2cn/thinkgo/ext/barcode/utils"
+	"github.com/henrylee2cn/faygo/ext/barcode/utils"
 )
 
 func encodeNumeric(content string, ecl ErrorCorrectionLevel) (*utils.BitList, *versionInfo, error) {

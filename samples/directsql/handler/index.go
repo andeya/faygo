@@ -9,16 +9,16 @@
 package handler
 
 import (
-	"github.com/henrylee2cn/thinkgo"
+	"github.com/henrylee2cn/faygo"
 )
 
-func Index() thinkgo.HandlerFunc {
-	return func(c *thinkgo.Context) error {
+func Index() faygo.HandlerFunc {
+	return func(c *faygo.Context) error {
 		return c.Render(200, "view/index.html", nil)
 	}
 }
-func Pongo2() thinkgo.HandlerFunc {
-	return func(c *thinkgo.Context) error {
+func Pongo2() faygo.HandlerFunc {
+	return func(c *faygo.Context) error {
 		return c.Render(200, "view/pongo2.tpl", nil)
 	}
 }

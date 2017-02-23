@@ -17,13 +17,13 @@
 package middleware
 
 import (
-	"github.com/henrylee2cn/thinkgo"
+	"github.com/henrylee2cn/faygo"
 )
 
 // CrossOrigin creates Cross-Domain middleware
-var CrossOrigin = thinkgo.HandlerFunc(func(ctx *thinkgo.Context) error {
-	ctx.SetHeader(thinkgo.HeaderAccessControlAllowOrigin, ctx.HeaderParam(thinkgo.HeaderOrigin))
-	// ctx.SetHeader(thinkgo.HeaderAccessControlAllowOrigin, "*")
-	ctx.SetHeader(thinkgo.HeaderAccessControlAllowCredentials, "true")
+var CrossOrigin = faygo.HandlerFunc(func(ctx *faygo.Context) error {
+	ctx.SetHeader(faygo.HeaderAccessControlAllowOrigin, ctx.HeaderParam(faygo.HeaderOrigin))
+	// ctx.SetHeader(faygo.HeaderAccessControlAllowOrigin, "*")
+	ctx.SetHeader(faygo.HeaderAccessControlAllowCredentials, "true")
 	return nil
 })

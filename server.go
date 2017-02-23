@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package thinkgo
+package faygo
 
 import (
 	"crypto/tls"
@@ -22,9 +22,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/henrylee2cn/thinkgo/errors"
-	"github.com/henrylee2cn/thinkgo/gracenet"
-	"github.com/henrylee2cn/thinkgo/logging"
+	"github.com/henrylee2cn/faygo/errors"
+	"github.com/henrylee2cn/faygo/gracenet"
+	"github.com/henrylee2cn/faygo/logging"
 	"golang.org/x/crypto/acme/autocert"
 )
 

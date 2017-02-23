@@ -47,8 +47,8 @@ func main() {
     surfer.DestroyJsFiles()
 }
 ```
-[Full example](https://github.com/henrylee2cn/thinkgo/raw/master/samples)
+[Full example](https://github.com/henrylee2cn/faygo/raw/master/samples)
 
 ## License
 
-Surfer is under Apache v2 License. See the [LICENSE](https://github.com/henrylee2cn/thinkgo/raw/master/LICENSE) file for the full license text.
+Surfer is under Apache v2 License. See the [LICENSE](https://github.com/henrylee2cn/faygo/raw/master/LICENSE) file for the full license text.

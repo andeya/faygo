@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"errors"
 
-	"github.com/henrylee2cn/thinkgo"
+	"github.com/henrylee2cn/faygo"
 	"github.com/jmoiron/sqlx"
 )
 
@@ -16,7 +16,7 @@ func MustDB(name ...string) *sqlx.DB {
 	}
 	db, ok := dbService.List[name[0]]
 	if !ok {
-		thinkgo.Panicf("[sqlx] the database engine `%s` is not configured", name[0])
+		faygo.Panicf("[sqlx] the database engine `%s` is not configured", name[0])
 	}
 	return db
 }
@@ -43,7 +43,7 @@ func MustConfig(name ...string) DBConfig {
 	}
 	config, ok := dbConfigs[name[0]]
 	if !ok {
-		thinkgo.Panicf("[sqlx] the database engine `%s` is not configured", name[0])
+		faygo.Panicf("[sqlx] the database engine `%s` is not configured", name[0])
 	}
 	return *config
 }

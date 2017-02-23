@@ -5,7 +5,7 @@ import (
 	"sync"
 	"sync/atomic"
 
-	"github.com/henrylee2cn/thinkgo/freecache/murmur3"
+	"github.com/henrylee2cn/faygo/freecache/murmur3"
 )
 
 type Cache struct {

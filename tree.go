@@ -42,14 +42,14 @@
 //  thirdKey   := ps[2].Key   // the name of the 3rd parameter
 //  thirdValue := ps[2].Value // the value of the 3rd parameter
 
-package thinkgo
+package faygo
 
 import (
 	"strings"
 	"unicode"
 	"unicode/utf8"
 
-	"github.com/henrylee2cn/thinkgo/apiware"
+	"github.com/henrylee2cn/faygo/apiware"
 )
 
 // Handle is a function that can be registered to a route to handle HTTP requests.

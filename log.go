@@ -12,15 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package thinkgo
+package faygo
 
 import (
 	"log"
 	"os"
 	"strings"
 
-	"github.com/henrylee2cn/thinkgo/logging"
-	"github.com/henrylee2cn/thinkgo/logging/color"
+	"github.com/henrylee2cn/faygo/logging"
+	"github.com/henrylee2cn/faygo/logging/color"
 )
 
 // NewLog gets a global logger
@@ -41,7 +41,7 @@ var (
 func (global *GlobalVariables) initLogger() {
 	if global.config.Log.FileEnable {
 		fileBackend = func() *logging.FileBackend {
-			fileBackend, err := logging.NewDefaultFileBackend(global.logDir+"thinkgo.log", global.config.Log.AsyncLen)
+			fileBackend, err := logging.NewDefaultFileBackend(global.logDir+"faygo.log", global.config.Log.AsyncLen)
 			if err != nil {
 				panic(err)
 			}

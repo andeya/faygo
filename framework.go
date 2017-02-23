@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package thinkgo
+package faygo
 
 import (
 	"bytes"
@@ -25,14 +25,14 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/henrylee2cn/thinkgo/logging"
-	"github.com/henrylee2cn/thinkgo/logging/color"
-	"github.com/henrylee2cn/thinkgo/session"
-	"github.com/henrylee2cn/thinkgo/swagger"
-	"github.com/henrylee2cn/thinkgo/utils"
+	"github.com/henrylee2cn/faygo/logging"
+	"github.com/henrylee2cn/faygo/logging/color"
+	"github.com/henrylee2cn/faygo/session"
+	"github.com/henrylee2cn/faygo/swagger"
+	"github.com/henrylee2cn/faygo/utils"
 )
 
-// Framework is the thinkgo web framework.
+// Framework is the faygo web framework.
 type Framework struct {
 	// name of the application
 	name string
@@ -87,7 +87,7 @@ type Framework struct {
 // Make sure the Framework conforms with the http.Handler interface
 var _ http.Handler = new(Framework)
 
-// newFramework uses the thinkgo web framework to create a new application.
+// newFramework uses the faygo web framework to create a new application.
 func newFramework(name string, version ...string) *Framework {
 	mutexNewApp.Lock()
 	defer mutexNewApp.Unlock()

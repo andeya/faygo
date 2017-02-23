@@ -20,11 +20,11 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/henrylee2cn/thinkgo"
+	"github.com/henrylee2cn/faygo"
 )
 
 // NewIPFilter creates middleware that intercepts the specified IP prefix.
-func NewIPFilter(whitelist []string, realIP bool) thinkgo.HandlerFunc {
+func NewIPFilter(whitelist []string, realIP bool) faygo.HandlerFunc {
 	var noAccess bool
 	var match []string
 	var prefix []string
@@ -41,7 +41,7 @@ func NewIPFilter(whitelist []string, realIP bool) thinkgo.HandlerFunc {
 		}
 	}
 
-	return func(ctx *thinkgo.Context) error {
+	return func(ctx *faygo.Context) error {
 		if noAccess {
 			ctx.Error(http.StatusForbidden, "no access")
 			return nil

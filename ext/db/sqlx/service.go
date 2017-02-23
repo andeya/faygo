@@ -14,8 +14,8 @@ import (
 	// _ "github.com/mattn/go-oci8"         //oracle(need to install the pkg-config utility)
 	// _ "github.com/mattn/go-sqlite3"      //sqlite
 
-	"github.com/henrylee2cn/thinkgo"
-	"github.com/henrylee2cn/thinkgo/utils"
+	"github.com/henrylee2cn/faygo"
+	"github.com/henrylee2cn/faygo/utils"
 )
 
 // DBService is a database engine object.
@@ -35,13 +35,13 @@ var dbService = func() (serv *DBService) {
 			panic("[sqlx] " + strings.Join(errs, "\n"))
 		}
 		if serv.Default == nil {
-			thinkgo.Panicf("[sqlx] the `default` database engine must be configured and enabled")
+			faygo.Panicf("[sqlx] the `default` database engine must be configured and enabled")
 		}
 	}()
 
 	err := loadDBConfig()
 	if err != nil {
-		thinkgo.Panicf("[sqlx]", err.Error())
+		faygo.Panicf("[sqlx]", err.Error())
 		return
 	}
 
@@ -51,7 +51,7 @@ var dbService = func() (serv *DBService) {
 		}
 		db, err := sqlx.Connect(conf.Driver, conf.Connstring)
 		if err != nil {
-			thinkgo.Critical("[sqlx]", err.Error())
+			faygo.Critical("[sqlx]", err.Error())
 			errs = append(errs, err.Error())
 			continue
 		}
@@ -71,7 +71,7 @@ var dbService = func() (serv *DBService) {
 			os.MkdirAll(filepath.Dir(conf.Connstring), 0777)
 			f, err := os.Create(conf.Connstring)
 			if err != nil {
-				thinkgo.Critical("[sqlx]", err.Error())
+				faygo.Critical("[sqlx]", err.Error())
 				errs = append(errs, err.Error())
 			} else {
 				f.Close()

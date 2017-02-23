@@ -1,5 +1,5 @@
 /*
-Package thinkgo is a Golang Web framework that handler is middleware,
+Package faygo is a Golang Web framework that handler is middleware,
 supports intelligent parameter mapping and validation, and automates API documentation.
 
 Copyright 2016 HenryLee. All Rights Reserved.
@@ -23,26 +23,26 @@ A trivial example is:
     import (
         // "mime/multipart"
         "time"
-        "github.com/henrylee2cn/thinkgo"
+        "github.com/henrylee2cn/faygo"
     )
 
     type Index struct {
         Id        int      `param:"<in:path> <required> <desc:ID> <range: 0:10>"`
         Title     string   `param:"<in:query> <nonzero>"`
         Paragraph []string `param:"<in:query> <name:p> <len: 1:10> <regexp: ^[\\w]*$>"`
-        Cookie    string   `param:"<in:cookie> <name:thinkgoID>"`
+        Cookie    string   `param:"<in:cookie> <name:faygoID>"`
         // Picture         *multipart.FileHeader `param:"<in:formData> <name:pic> <maxmb:30>"`
     }
 
-    func (i *Index) Serve(ctx *thinkgo.Context) error {
-        if ctx.CookieParam("thinkgoID") == "" {
-            ctx.SetCookie("thinkgoID", time.Now().String())
+    func (i *Index) Serve(ctx *faygo.Context) error {
+        if ctx.CookieParam("faygoID") == "" {
+            ctx.SetCookie("faygoID", time.Now().String())
         }
         return ctx.JSON(200, i)
     }
 
     func main() {
-        app := thinkgo.New("myapp", "0.1")
+        app := faygo.New("myapp", "0.1")
 
         // Register the route in a chain style
         app.GET("/index/:id", new(Index))
@@ -53,7 +53,7 @@ A trivial example is:
         // )
 
         // Start the service
-        thinkgo.Run()
+        faygo.Run()
     }
 
 run result:
@@ -119,4 +119,4 @@ List of supported param value types:
     float32 |  []float32 |
     float64 |  []float64 |
 */
-package thinkgo
+package faygo

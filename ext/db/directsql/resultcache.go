@@ -9,7 +9,7 @@
 package directsql
 
 import (
-	"github.com/henrylee2cn/thinkgo"
+	"github.com/henrylee2cn/faygo"
 	"sync"
 	"time"
 )
@@ -43,8 +43,8 @@ func GetCache(key string, suffix string) (ok bool, result []byte) {
 	// 有缓存,并且后缀标识相同，且未到期则返回 true 以及缓存值
 	if (memoized != nil) && (memoized.Suffix == suffix) && memoized.Timeout.After(time.Now()) {
 		//lessgo.Log.Debug("Get Cache Result:["+key+" - "+suffix+"] ", memoized.Result)
-		thinkgo.Debug("Get Cache time:["+key+" - "+suffix+"]", time.Now())
-		thinkgo.Debug("Get Cache timeout:["+key+" - "+suffix+"]", memoized.Timeout)
+		faygo.Debug("Get Cache time:["+key+" - "+suffix+"]", time.Now())
+		faygo.Debug("Get Cache timeout:["+key+" - "+suffix+"]", memoized.Timeout)
 		return true, memoized.Result
 	}
 	return false, nil
@@ -60,7 +60,7 @@ func SetCache(key string, suffix string, value []byte, timeout int) {
 		if (memoized != nil) && (memoized.Suffix != suffix) {
 			return
 		}
-		//thinkgo.Debug("Set Cache:[" + key + " - " + suffix + "]")
+		//faygo.Debug("Set Cache:[" + key + " - " + suffix + "]")
 		//缓存不存在或虽然存在但suffix后缀相同则修改之
 		var duration time.Duration
 		//-1为一直有效，-2为一月，-3为一周 -4为一天，单位为分钟
@@ -83,7 +83,7 @@ func SetCache(key string, suffix string, value []byte, timeout int) {
 			Result:  value,
 		}
 		mp.mutex.Unlock()
-		//thinkgo.Debug("Set Cache Result:["+key+" - "+suffix+"]", mp.pool[key])
+		//faygo.Debug("Set Cache Result:["+key+" - "+suffix+"]", mp.pool[key])
 	}
 }
 

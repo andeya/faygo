@@ -12,12 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package thinkgo
+package faygo
 
 import (
 	"testing"
 )
 
 func TestNewConfig(t *testing.T) {
-	t.Logf("%#v", newConfig("test/thinkgo.ini"))
+	t.Logf("%#v", newConfig("test/faygo.ini"))
 }

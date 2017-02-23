@@ -1,7 +1,7 @@
 package qr
 
 import (
-	"github.com/henrylee2cn/thinkgo/ext/barcode/utils"
+	"github.com/henrylee2cn/faygo/ext/barcode/utils"
 )
 
 type errorCorrection struct {
