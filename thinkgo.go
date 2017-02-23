@@ -46,7 +46,7 @@ const (
                                     _ \ \         
                                     \_\_/         ` + VERSION + "\n"
 
-	// SHUTDOWN_TIMEOUT the time-out period for closing the service
+	// SHUTDOWN_TIMEOUT the default time-out period for the service shutdown
 	SHUTDOWN_TIMEOUT = 1 * time.Minute
 )
 
@@ -101,22 +101,41 @@ func Running(name string, version ...string) bool {
 	return frame.Running()
 }
 
-// SetFinalizer sets the function which is called after the services shutdown.
-func SetFinalizer(finalizer func(context.Context) error) {
-	global.finalizer = finalizer
+// SetShutdown sets the function which is called after the services shutdown,
+// and the time-out period for the service shutdown.
+// If parameter timeout is 0, automatically use default `SHUTDOWN_TIMEOUT`(60s).
+// If parameter timeout less than 0, it is indefinite period.
+// The finalizer function is executed before the shutdown deadline, but it is not guaranteed to be completed.
+func SetShutdown(timeout time.Duration, finalizers ...func() error) {
+	if timeout == 0 {
+		timeout = SHUTDOWN_TIMEOUT
+	} else if timeout < 0 {
+		timeout = 1<<63 - 1
+	}
+	global.shutdownTimeout = timeout
+	global.finalizers = finalizers
 }
 
 // Shutdown closes all the frame services gracefully.
+// Parameter timeout is used to reset time-out period for the service shutdown.
 func Shutdown(timeout ...time.Duration) {
-	Print("\x1b[46m[SYS]\x1b[0m shutting down servers...")
 	global.framesLock.Lock()
 	defer global.framesLock.Unlock()
-	// shut down gracefully, but wait no longer than d before halting
-	var d = SHUTDOWN_TIMEOUT
+	defer CloseLog()
+	Print("\x1b[46m[SYS]\x1b[0m shutting down servers...")
 	if len(timeout) > 0 {
-		d = timeout[0]
+		SetShutdown(timeout[0], global.finalizers...)
 	}
-	ctxTimeout, _ := context.WithTimeout(context.Background(), d)
+	graceful := shutdown(global.shutdownTimeout)
+	if graceful {
+		Print("\x1b[46m[SYS]\x1b[0m servers are shutted down gracefully.")
+	} else {
+		Print("\x1b[46m[SYS]\x1b[0m servers are shutted down, but not gracefully.")
+	}
+}
+
+func shutdown(timeout time.Duration) bool {
+	ctxTimeout, _ := context.WithTimeout(context.Background(), timeout)
 	count := new(sync.WaitGroup)
 	var flag int32 = 1
 	for _, frame := range global.frames {
@@ -130,18 +149,37 @@ func Shutdown(timeout ...time.Duration) {
 		}(frame)
 	}
 	count.Wait()
-	if global.finalizer != nil {
-		if err := global.finalizer(ctxTimeout); err != nil {
-			flag = 0
-			Error("[finalizer]", err.Error())
+
+	fchan := make(chan bool)
+	var idx int32
+	go func() {
+		for i, finalizer := range global.finalizers {
+			atomic.StoreInt32(&idx, int32(i))
+			if finalizer == nil {
+				continue
+			}
+			select {
+			case <-ctxTimeout.Done():
+				break
+			default:
+				if err := finalizer(); err != nil {
+					atomic.StoreInt32(&flag, 0)
+					Errorf("[shutdown-finalizer%d] %s", i, err.Error())
+				}
+			}
 		}
+		fchan <- true
+	}()
+	select {
+	case <-ctxTimeout.Done():
+		if err := ctxTimeout.Err(); err != nil {
+			atomic.StoreInt32(&flag, 0)
+			Errorf("[shutdown-finalizer%d] %s", atomic.LoadInt32(&idx), err.Error())
+		}
+	case <-fchan:
+		close(fchan)
 	}
-	if flag == 1 {
-		Print("\x1b[46m[SYS]\x1b[0m servers are shutted down gracefully.")
-	} else {
-		Print("\x1b[46m[SYS]\x1b[0m servers are shutted down, but not gracefully.")
-	}
-	CloseLog()
+	return flag == 1
 }
 
 // HandleError calls the default error handler.
@@ -395,8 +433,12 @@ type (
 		syslog *logging.Logger
 		bizlog *logging.Logger
 
-		// finalizer is called after the services shutdown.
-		finalizer func(context.Context) error
+		// the time-out period for the service shutdown.
+		shutdownTimeout time.Duration
+
+		// finalizers are called after the services shutdown.
+		// It is executed before the shutdown deadline, but it is not guaranteed to be completed.
+		finalizers []func() error
 
 		graceOnce sync.Once
 	}
@@ -425,9 +467,10 @@ var (
 				globalConfig.Cache.Enable,
 				globalConfig.Gzip.Enable,
 			),
-			upload: defaultUpload,
-			static: defaultStatic,
-			logDir: defaultLogDir,
+			upload:          defaultUpload,
+			static:          defaultStatic,
+			logDir:          defaultLogDir,
+			shutdownTimeout: SHUTDOWN_TIMEOUT,
 		}
 		if globalConfig.Cache.Enable {
 			global.render = newRender(func(name string) (http.File, error) {

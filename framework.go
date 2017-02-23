@@ -255,10 +255,9 @@ func (frame *Framework) shutdown(ctxTimeout context.Context) (graceful bool) {
 	for _, server := range frame.servers {
 		count.Add(1)
 		go func(srv *Server) {
-			ctxCancel, _ := context.WithCancel(ctxTimeout)
-			if err := srv.Shutdown(ctxCancel); err != nil {
+			if err := srv.Shutdown(ctxTimeout); err != nil {
 				atomic.StoreInt32(&flag, 0)
-				frame.Log().Error("[shutdown]", err.Error())
+				frame.Log().Errorf("[shutdown-%s] %s", frame.NameWithVersion(), err.Error())
 			}
 			count.Done()
 		}(server)

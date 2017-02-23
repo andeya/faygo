@@ -17,11 +17,8 @@
 package thinkgo
 
 import (
-	"context"
 	"os"
 	"os/signal"
-	"sync"
-	"sync/atomic"
 	"syscall"
 	"time"
 )
@@ -43,10 +40,10 @@ func graceSignal() {
 // Reboot all the frame services gracefully.
 // Notes: Windows system are not supported!
 func Reboot(timeout ...time.Duration) {
-	Print("\x1b[46m[SYS]\x1b[0m rebooting servers...")
-	defer CloseLog()
 	global.framesLock.Lock()
 	defer global.framesLock.Unlock()
+	defer CloseLog()
+	Print("\x1b[46m[SYS]\x1b[0m rebooting servers...")
 
 	ppid := os.Getppid()
 
@@ -61,31 +58,11 @@ func Reboot(timeout ...time.Duration) {
 		return
 	}
 
-	// Shut down gracefully, but wait no longer than d before halting
-	var d = SHUTDOWN_TIMEOUT
+	// Shut down gracefully, but wait no longer than global.shutdownTimeout before halting
 	if len(timeout) > 0 {
-		d = timeout[0]
+		SetShutdown(timeout[0], global.finalizers...)
 	}
-	ctxTimeout, _ := context.WithTimeout(context.Background(), d)
-	count := new(sync.WaitGroup)
-	var flag int32 = 1
-	for _, frame := range global.frames {
-		count.Add(1)
-		go func(fm *Framework) {
-			graceful := fm.shutdown(ctxTimeout)
-			if !graceful {
-				atomic.StoreInt32(&flag, 0)
-			}
-			count.Done()
-		}(frame)
-	}
-	count.Wait()
-	if global.finalizer != nil {
-		if err := global.finalizer(ctxTimeout); err != nil {
-			flag = 0
-			Error("[finalizer]", err.Error())
-		}
-	}
+	graceful := shutdown(global.shutdownTimeout)
 
 	// Close the parent if we inherited and it wasn't init that started us.
 	if ppid != 1 {
@@ -96,7 +73,7 @@ func Reboot(timeout ...time.Duration) {
 		}
 	}
 
-	if flag == 1 {
+	if graceful {
 		Print("\x1b[46m[SYS]\x1b[0m servers are rebooted gracefully.")
 	} else {
 		Print("\x1b[46m[SYS]\x1b[0m servers are rebooted, but not gracefully.")
