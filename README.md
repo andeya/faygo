@@ -69,6 +69,7 @@ fay run [appname]
 - Supports the same instance to monitor multi-network and multi-port
 - Based on the high-performance `httprouter` to redevelope, and provides chain or tree style to register router
 - Powerful file router supports for custom file systems, framework has provided DirFS, RenderFS, MarkdownFS and so on
+- Use the most powerful pongo2 as the HTML rendering engine
 - Supports cross-platform color log system, and has two output interface (console and file)
 - Supports session management
 - Supports global gzip compression configuration

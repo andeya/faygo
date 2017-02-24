@@ -69,9 +69,10 @@ fay run [appname]
  * HTTPS/HTTP2(TLS on UNIX socket)
 - 支持多实例运行，且配置信息相互独立
 - 支持同一实例监听多网络类型、多端口
-- 基于高性能路由httprouter进行二次开发，支持链式与树形两种路由信息注册风格
+- 基于高性能路由 `httprouter` 进行二次开发，支持链式与树形两种路由信息注册风格
 - 强大的文件路由功能，支持自定义文件系统，框架提供快捷的DirFS、RenderFS、MarkdownFS等
-- 提供近似LRU的文件缓存功能
+- 采用最强大的 `pongo2` 作为HTML渲染引擎
+- 提供近似LRU的文件缓存功能，主要用途是静态文件缓存
 - 跨平台的彩色日志系统，且同时支持console和file两种输出形式（可以同时使用）
 - 提供Session管理功能
 - 支持Gzip全局配置
