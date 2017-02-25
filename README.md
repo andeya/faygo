@@ -2,7 +2,7 @@
 
 ![Faygo Favicon](https://github.com/henrylee2cn/faygo/raw/master/doc/faygo_96x96.png)
 
-Faygo uses the new architecture to make itself the most suitable Go Web framework for developping API. Just define a struct Handler, Faygo will automatically bind, verify the request parameters and generate the online API documentation. [Go to \<User Manual\>](https://github.com/henrylee2cn/faydoc)
+Faygo uses the new architecture to make itself the most suitable Go Web framework for developping API. Just define one struct Handler, Faygo will automatically bind, verify the request parameters and generate the online API documentation. [Go to \<User Manual\>](https://github.com/henrylee2cn/faydoc)
 
 [简体中文](https://github.com/henrylee2cn/faygo/blob/master/README_ZH.md)
 
@@ -54,7 +54,7 @@ fay run [appname]
 
 ## Features
 
-- a `struct Handler` can get more things:
+- One `struct Handler` can get more things:
  * Define Handler/Middleware
  * Bind and verify request parameters
  * Generate an online document for the Swagger 2.0 API
