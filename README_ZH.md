@@ -4,7 +4,7 @@
 
 ## 概述
 
-Faygo以全新的架构实现，它面向Handler接口开发，是支持智能参数映射与校验、支持自动化API文档的Go语言web框架。
+Faygo 是一款全新架构的、最适合API开发的Go Web框架，只需定义一个struct Handler，就能自动绑定、验证请求参数并生成在线API文档。
 
 官方QQ群：Go-Web 编程 42730308    [![Go-Web 编程群](http://pub.idqqimg.com/wpa/images/group.png)](http://jq.qq.com/?_wv=1027&k=fzi4p1)
 
@@ -57,33 +57,33 @@ fay run [appname]
 
 ## 框架特性
 
-- 面向Handler接口开发（func or struct），中间件与操作完全等同可任意拼接路由操作链
-- 支持用struct Handler在Tag标签定义请求参数信息及其校验信息
-- 支持自动构建API文档（swagger2.0）
+- 一个 `struct Handler` 搞定多件事情：
+ * 定义Handler/Middleware
+ * 绑定与验证请求参数
+ * 生成swagger2.0 API在线文档
+ * 数据库ORM映射
+![faygo struct handler 多重用途合一](https://github.com/henrylee2cn/faygo/raw/master/doc/MultiUsage.png)
+- Handler与Middleware完全相同，都是实现Handler接口（`func`或`struct`类型），共同构成路由操作链，只是概念层面的说法不同
 - 支持多种网络类型：
- * HTTP
- * HTTPS/HTTP2(TLS)
- * HTTPS/HTTP2(Let's Encrypt TLS)
- * HTTPS/HTTP2(Let's Encrypt TLS on UNIX socket)
- * HTTP(UNIX socket)
- * HTTPS/HTTP2(TLS on UNIX socket)
-- 支持多实例运行，且配置信息相互独立
-- 支持同一实例监听多网络类型、多端口
-- 基于高性能路由 `httprouter` 进行二次开发，支持链式与树形两种路由信息注册风格
-- 强大的文件路由功能，支持自定义文件系统，框架提供快捷的DirFS、RenderFS、MarkdownFS等
+网络类型                                      | 配置`net_types`值
+----------------------------------------------|----------------
+HTTP                                          | `http`
+HTTPS/HTTP2(TLS)                              | 'https'
+HTTPS/HTTP2(Let's Encrypt TLS)                | `letsencrypt`
+HTTPS/HTTP2(Let's Encrypt TLS on UNIX socket) | `unix_letsencrypt`
+HTTP(UNIX socket)                             | `unix_http`
+HTTPS/HTTP2(TLS on UNIX socket)               | `unix_https`
+- 支持单服务单监听、单服务多监听、多服务多监听等，多个服务的配置信息相互独立
+- 基于 `httprouter` 开发高性能路由，支持链式与树形两种注册风格，支持灵活的静态文件路由（如DirFS、RenderFS、MarkdownFS等）
+- 支持平滑关闭、平滑升级，提供fay工具进行新建项目、热编译、元编程
 - 采用最强大的 `pongo2` 作为HTML渲染引擎
 - 提供近似LRU的文件缓存功能，主要用途是静态文件缓存
 - 跨平台的彩色日志系统，且同时支持console和file两种输出形式（可以同时使用）
 - 提供Session管理功能
 - 支持Gzip全局配置
 - 提供XSRF跨站请求伪造安全过滤
-- 简单整洁的配置文件，且自动补填默认值方便设置
-- 支持平滑关闭与重启
-
-- `struct Handler` 的多用途合一
-
-![faygo struct handler 多重用途合一](https://github.com/henrylee2cn/faygo/raw/master/doc/MultiUsage.png)
-
+- 大多数功能尽量使用简洁的ini进行配置来避免不必要的重新编译，并且这些配置文件支持自动补填默认值
+- 提供 `gorm`、`xorm`、`sqlx`、`directSQL`、`Websocket`、`ini` 、`http client` 等很多常用扩展包
 
 ## 简单示例
 
@@ -226,7 +226,7 @@ func Root2Index(ctx *faygo.Context) error {
 - 树状
 
 ```go
-// 新建应用实例，参数：名称、版本
+// 新建应用服务，参数：名称、版本
 var app1 = faygo.New("myapp1", "1.0")
 
 // 路由
@@ -247,7 +247,7 @@ app1.Filter(Root2Index).
 - 链状
 
 ```go
-// 新建应用实例，参数：名称、版本
+// 新建应用服务，参数：名称、版本
 var app2 = faygo.New("myapp2", "1.0")
 
 // 路由
@@ -280,7 +280,7 @@ kill -USR2 [pid]
 
 ## 配置文件说明
 
-- 应用的各实例均有单独一份配置，其文件名格式 `config/{appname}[_{version}].ini`，配置详情：
+- 应用的各服务均有单独一份配置，其文件名格式 `config/{appname}[_{version}].ini`，配置详情：
 
 ```
 net_types              = http|https              # 多种网络类型列表，支持 http | https | unix_http | unix_https | letsencrypt | unix_letsencrypt
