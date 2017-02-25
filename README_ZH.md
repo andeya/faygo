@@ -4,7 +4,7 @@
 
 ## 概述
 
-Faygo 是一款全新架构的、最适合API开发的Go Web框架，只需定义一个struct Handler，就能自动绑定、验证请求参数并生成在线API文档。
+Faygo 使用全新架构，是最合适开发API接口的Go Web框架。用户只需定义一个struct Handler，就能自动绑定、验证请求参数并生成在线API文档。
 
 官方QQ群：Go-Web 编程 42730308    [![Go-Web 编程群](http://pub.idqqimg.com/wpa/images/group.png)](http://jq.qq.com/?_wv=1027&k=fzi4p1)
 
