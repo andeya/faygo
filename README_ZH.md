@@ -58,10 +58,10 @@ fay run [appname]
 ## 框架特性
 
 - 一个 `struct Handler` 搞定多件事情：
- * 定义Handler/Middleware
+ * 定义 Handler/Middleware
  * 绑定与验证请求参数
- * 生成swagger2.0 API在线文档
- * 数据库ORM映射
+ * 生成 Swagger2.0 API 在线文档
+ * 数据库 ORM 映射
 
 ![faygo struct handler 多重用途合一](https://github.com/henrylee2cn/faygo/raw/master/doc/MultiUsage.png)
 
@@ -71,7 +71,7 @@ fay run [appname]
 网络类型                                      | 配置`net_types`值
 ----------------------------------------------|----------------
 HTTP                                          | `http`
-HTTPS/HTTP2(TLS)                              | 'https'
+HTTPS/HTTP2(TLS)                              | `https`
 HTTPS/HTTP2(Let's Encrypt TLS)                | `letsencrypt`
 HTTPS/HTTP2(Let's Encrypt TLS on UNIX socket) | `unix_letsencrypt`
 HTTP(UNIX socket)                             | `unix_http`
