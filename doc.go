@@ -1,6 +1,6 @@
 /*
-Package faygo is a Golang Web framework that handler is middleware,
-supports intelligent parameter mapping and validation, and automates API documentation.
+Package Faygo uses the new architecture to make itself the most suitable Go Web framework for developping API;
+Just define a struct Handler, Faygo will automatically bind, verify the request parameters and generate the online API documentation.
 
 Copyright 2016 HenryLee. All Rights Reserved.
 
