@@ -84,6 +84,7 @@ HTTPS/HTTP2(TLS on UNIX socket)               | `unix_https`
 - Support global gzip compression configuration
 - Support XSRF security filtering
 - Most features try to use simple ini configurations to avoid unnecessary recompilation, and these profiles can be automatically assigned default values
+- Provide `gorm`, ` xorm`, `sqlx`, ` directSQL`, `Websocket`, ` ini`, `http client` and many other commonly used expansion packages
 
 ## Simple example
 
