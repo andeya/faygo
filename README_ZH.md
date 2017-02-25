@@ -8,7 +8,7 @@ Faygo以全新的架构实现，它面向Handler接口开发，是支持智能�
 
 官方QQ群：Go-Web 编程 42730308    [![Go-Web 编程群](http://pub.idqqimg.com/wpa/images/group.png)](http://jq.qq.com/?_wv=1027&k=fzi4p1)
 
-[查看《用户手册》](https://github.com/henrylee2cn/faybook)
+[查看《用户手册》](https://github.com/henrylee2cn/faydoc)
 
 ![faygo index](https://github.com/henrylee2cn/faygo/raw/master/doc/index.png)
 

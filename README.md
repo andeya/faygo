@@ -2,7 +2,7 @@
 
 ![Faygo Favicon](https://github.com/henrylee2cn/faygo/raw/master/doc/faygo_96x96.png)
 
-Faygo is a Golang Web framework that handler is middleware, supports intelligent parameter mapping and validation, and automates API documentation. [Go to \<User Manual\>](https://github.com/henrylee2cn/faybook)
+Faygo is a Golang Web framework that handler is middleware, supports intelligent parameter mapping and validation, and automates API documentation. [Go to \<User Manual\>](https://github.com/henrylee2cn/faydoc)
 
 [简体中文](https://github.com/henrylee2cn/faygo/blob/master/README_ZH.md)
 
