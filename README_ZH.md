@@ -63,8 +63,6 @@ fay run [appname]
  * 生成 Swagger2.0 API 在线文档
  * 数据库 ORM 映射
 
-![faygo struct handler 多重用途合一](https://github.com/henrylee2cn/faygo/raw/master/doc/MultiUsage.png)
-
 - Handler与Middleware完全相同，都是实现Handler接口（`func`或`struct`类型），共同构成路由操作链，只是概念层面的说法不同
 - 支持多种网络类型：
 
@@ -88,6 +86,8 @@ HTTPS/HTTP2(TLS on UNIX socket)               | `unix_https`
 - 提供XSRF跨站请求伪造安全过滤
 - 大多数功能尽量使用简洁的ini进行配置来避免不必要的重新编译，并且这些配置文件支持自动补填默认值
 - 提供 `gorm`、`xorm`、`sqlx`、`directSQL`、`Websocket`、`ini` 、`http client` 等很多常用扩展包
+
+![faygo struct handler 多重用途合一](https://github.com/henrylee2cn/faygo/raw/master/doc/MultiUsage.png)
 
 ## 简单示例
 

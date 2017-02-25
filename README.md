@@ -60,8 +60,6 @@ fay run [appname]
  * Generate an online document for the Swagger 2.0 API
  * Database ORM mapping
 
-![faygo handler multi-usage](https://github.com/henrylee2cn/faygo/raw/master/doc/MultiUsage.png)
-
 - Handler and Middleware are exactly the same, both implement the Handler interface (`func` or` struct`), which together constitute the handler chain of the router.
 - Supports multiple network types:
 
@@ -74,17 +72,19 @@ HTTPS/HTTP2(Let's Encrypt TLS on UNIX socket) | `unix_letsencrypt`
 HTTP(UNIX socket)                             | `unix_http`
 HTTPS/HTTP2(TLS on UNIX socket)               | `unix_https`
 
-- Support single-service & single-listener, single-service & multi-listener, multi-service & multi-listener and so on. The configuration of multiple services is independent of each other
-- The high-performance router based on `httprouter` supports both chain and tree registration styles; supports flexible static file router (such as DirFS, RenderFS, MarkdownFS, etc.)
+- Support single-service & single-listener, single-service & multi-listener, multi-service & multi-listener and so on. The configuration of multiple services is independent of each other.
+- The high-performance router based on `httprouter` supports both chain and tree registration styles; supports flexible static file router (such as DirFS, RenderFS, MarkdownFS, etc.).
 - Support graceful shutdown and rebooting, provide fay tools which has new projects, hot compilation , meta programming function.
-- Use the most powerful `pongo2` as the HTML rendering engine
-- Support near-LRU memory caching (mainly used for static file cache)
-- Support cross-platform color log system, and has two output interface (console and file)
-- Support session management
-- Support global gzip compression configuration
-- Support XSRF security filtering
-- Most features try to use simple ini configurations to avoid unnecessary recompilation, and these profiles can be automatically assigned default values
-- Provide `gorm`, ` xorm`, `sqlx`, ` directSQL`, `Websocket`, ` ini`, `http client` and many other commonly used expansion packages
+- Use the most powerful `pongo2` as the HTML rendering engine.
+- Support near-LRU memory caching. (mainly used for static file cache)
+- Support cross-platform color log system, and has two output interface(console and file).
+- Support session management.
+- Support global gzip compression configuration.
+- Support XSRF security filtering.
+- Most features try to use simple ini configurations to avoid unnecessary recompilation, and these profiles can be automatically assigned default values.
+- Provide `gorm`, ` xorm`, `sqlx`, ` directSQL`, `Websocket`, ` ini`, `http client` and many other commonly used expansion packages.
+
+![faygo handler multi-usage](https://github.com/henrylee2cn/faygo/raw/master/doc/MultiUsage.png)
 
 ## Simple example
 
