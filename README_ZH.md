@@ -67,6 +67,7 @@ fay run [appname]
 
 - Handler与Middleware完全相同，都是实现Handler接口（`func`或`struct`类型），共同构成路由操作链，只是概念层面的说法不同
 - 支持多种网络类型：
+
 网络类型                                      | 配置`net_types`值
 ----------------------------------------------|----------------
 HTTP                                          | `http`
@@ -75,6 +76,7 @@ HTTPS/HTTP2(Let's Encrypt TLS)                | `letsencrypt`
 HTTPS/HTTP2(Let's Encrypt TLS on UNIX socket) | `unix_letsencrypt`
 HTTP(UNIX socket)                             | `unix_http`
 HTTPS/HTTP2(TLS on UNIX socket)               | `unix_https`
+
 - 支持单服务单监听、单服务多监听、多服务多监听等，多个服务的配置信息相互独立
 - 基于 `httprouter` 开发高性能路由，支持链式与树形两种注册风格，支持灵活的静态文件路由（如DirFS、RenderFS、MarkdownFS等）
 - 支持平滑关闭、平滑升级，提供fay工具进行新建项目、热编译、元编程
