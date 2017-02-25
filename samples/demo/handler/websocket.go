@@ -13,28 +13,27 @@ func WebsocketPage() faygo.HandlerFunc {
 	}
 }
 
-var Websocket = faygo.WrapDoc(
-	faygo.HandlerFunc(func(ctx *faygo.Context) error {
-		var upgrader = websocket.Upgrader{}
-		conn, err := upgrader.FayUpgrade(ctx, nil)
-		if err != nil {
-			return err
-		}
-		defer conn.Close()
+var Websocket = faygo.WrapDoc(func(ctx *faygo.Context) error {
+	var upgrader = websocket.Upgrader{}
+	conn, err := upgrader.FayUpgrade(ctx, nil)
+	if err != nil {
+		return err
+	}
+	defer conn.Close()
 
-		for {
-			var req interface{}
-			if err := conn.ReadJSON(&req); err != nil {
-				ctx.Log().Warning("read:", err)
-				return nil
-			}
-			ctx.Log().Info("req:", req)
-			if err := conn.WriteJSON(map[string]string{"server_time": time.Now().String()}); err != nil {
-				ctx.Log().Warning("write:", err)
-				return nil
-			}
+	for {
+		var req interface{}
+		if err := conn.ReadJSON(&req); err != nil {
+			ctx.Log().Warning("read:", err)
+			return nil
 		}
-	}),
+		ctx.Log().Info("req:", req)
+		if err := conn.WriteJSON(map[string]string{"server_time": time.Now().String()}); err != nil {
+			ctx.Log().Warning("write:", err)
+			return nil
+		}
+	}
+},
 	"websocket example",
 	map[string]string{"server_time": time.Now().String()},
 )

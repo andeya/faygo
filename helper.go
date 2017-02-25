@@ -124,7 +124,7 @@ func (w *docWrap) Doc() Doc {
 }
 
 // WrapDoc adds a note to the handler
-func WrapDoc(handler Handler, note string, ret interface{}, params ...ParamInfo) Handler {
+func WrapDoc(handler HandlerFunc, note string, ret interface{}, params ...ParamInfo) Handler {
 	return &docWrap{
 		Handler: handler,
 		doc: Doc{
