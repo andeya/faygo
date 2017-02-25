@@ -62,7 +62,9 @@ fay run [appname]
  * 绑定与验证请求参数
  * 生成swagger2.0 API在线文档
  * 数据库ORM映射
+
 ![faygo struct handler 多重用途合一](https://github.com/henrylee2cn/faygo/raw/master/doc/MultiUsage.png)
+
 - Handler与Middleware完全相同，都是实现Handler接口（`func`或`struct`类型），共同构成路由操作链，只是概念层面的说法不同
 - 支持多种网络类型：
 网络类型                                      | 配置`net_types`值
