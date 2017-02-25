@@ -57,7 +57,7 @@ fay run [appname]
 
 ## 框架特性
 
-- 一个 `struct Handler` 搞定多件事情：
+- 一个 `struct Handler` 搞定多件事：
  * 定义 Handler/Middleware
  * 绑定与验证请求参数
  * 生成 Swagger2.0 API 在线文档

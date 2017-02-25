@@ -2,7 +2,7 @@
 
 ![Faygo Favicon](https://github.com/henrylee2cn/faygo/raw/master/doc/faygo_96x96.png)
 
-Faygo is a Golang Web framework that handler is middleware, supports intelligent parameter mapping and validation, and automates API documentation. [Go to \<User Manual\>](https://github.com/henrylee2cn/faydoc)
+Faygo uses the new architecture to make self is the most suitable Go Web framework for developping API. Just define a struct Handler, Faygo will automatically bind, verify the request parameters and generate the online API documentation. [Go to \<User Manual\>](https://github.com/henrylee2cn/faydoc)
 
 [简体中文](https://github.com/henrylee2cn/faygo/blob/master/README_ZH.md)
 
@@ -54,34 +54,36 @@ fay run [appname]
 
 ## Features
 
-- Handler interface oriented development (func or struct)
-- Middleware and handler exactly the same, they together constitute the handler chain
-- Supports the use of struct (implemented handler) tag tags to define request parameter information and its validation information
-- The API documentation (swagger2.0) is automatically built by the handler
-- Supports various network types:
- * HTTP
- * HTTPS/HTTP2(TLS)
- * HTTPS/HTTP2(Let's Encrypt TLS)
- * HTTPS/HTTP2(Let's Encrypt TLS on UNIX socket)
- * HTTP(UNIX socket)
- * HTTPS/HTTP2(TLS on UNIX socket)
-- Multi-instance is supported, and these configurations information are independent of each other
-- Supports the same instance to monitor multi-network and multi-port
-- Based on the high-performance `httprouter` to redevelope, and provides chain or tree style to register router
-- Powerful file router supports for custom file systems, framework has provided DirFS, RenderFS, MarkdownFS and so on
-- Use the most powerful `pongo2` as the HTML rendering engine
-- Supports cross-platform color log system, and has two output interface (console and file)
-- Supports session management
-- Supports global gzip compression configuration
-- Supports XSRF security filtering
-- Supports near-LRU memory caching (mainly used for static file cache)
-- Nice and easy to use configuration file, automatically write default values
-- Supports shutdown and reboot gracefully
-
-- `struct Handler` multi-usage
+- a `struct Handler` can get more things:
+ * Define Handler/Middleware
+ * Bind and verify request parameters
+ * Generate an online document for the Swagger 2.0 API
+ * Database ORM mapping
 
 ![faygo handler multi-usage](https://github.com/henrylee2cn/faygo/raw/master/doc/MultiUsage.png)
 
+- Handler and Middleware are exactly the same, both implement the Handler interface (`func` or` struct`), which together constitute the handler chain of the router.
+- Supports multiple network types:
+
+Network types                                 | Configuration `net_types`
+----------------------------------------------|----------------
+HTTP                                          | `http`
+HTTPS/HTTP2(TLS)                              | `https`
+HTTPS/HTTP2(Let's Encrypt TLS)                | `letsencrypt`
+HTTPS/HTTP2(Let's Encrypt TLS on UNIX socket) | `unix_letsencrypt`
+HTTP(UNIX socket)                             | `unix_http`
+HTTPS/HTTP2(TLS on UNIX socket)               | `unix_https`
+
+- Support single-service & single-listener, single-service & multi-listener, multi-service & multi-listener and so on. The configuration of multiple services is independent of each other
+- The high-performance router based on `httprouter` supports both chain and tree registration styles; supports flexible static file router (such as DirFS, RenderFS, MarkdownFS, etc.)
+- Support graceful shutdown and rebooting, provide fay tools which has new projects, hot compilation , meta programming function.
+- Use the most powerful `pongo2` as the HTML rendering engine
+- Support near-LRU memory caching (mainly used for static file cache)
+- Support cross-platform color log system, and has two output interface (console and file)
+- Support session management
+- Support global gzip compression configuration
+- Support XSRF security filtering
+- Most features try to use simple ini configurations to avoid unnecessary recompilation, and these profiles can be automatically assigned default values
 
 ## Simple example
 
