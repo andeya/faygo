@@ -14,7 +14,7 @@ import (
 	"path/filepath"
 	"strings"
 	"sync"
-
+     "errors"
 	"github.com/fsnotify/fsnotify"
 	"github.com/go-xorm/core"
 	"github.com/henrylee2cn/faygo"
@@ -91,6 +91,9 @@ const (
 	ST_EXEC                           //4 执行SQL，可以一个事务内批量执行多个cmd
 	ST_BATCHEXEC                      //5 根据传入参数在一个事务内多次执行SQL
 	ST_BATCHMULTIEXEC                 //6 批量执行复合SQL(多数据集批量插入、更新、删除)---OK!
+	ST_IMPORT                         //7 导入数据的SQL：通过xlsx导入数据配置的SQL
+	ST_EXPORT                         //8 导出数据的SQL：导出excel格式文件数据
+	ST_REPORT                         //9 报表用的SQL：通过xlsx模板创建报表的SQL
 )
 
 //TSqlParameter 参数校验定义
@@ -290,6 +293,14 @@ func (ms *TModels) parseTModel(msqlfile string) (*TModel, error) {
 			se.Sqltype = ST_BATCHEXEC
 		case "batchmultiexec", "batchcomplex":
 			se.Sqltype = ST_BATCHMULTIEXEC
+	    case "import":
+			se.Sqltype = ST_IMPORT	
+		case "export":
+			se.Sqltype = ST_EXPORT	
+	    case "report":
+			se.Sqltype = ST_REPORT			
+		default :
+		    faygo.Error(errors.New("错误：配置文件[ "+msqlfile+" ]中存在无效的sql节点类型[ "+se.Sqltypestr+" ]!"))
 		}
 		result.Sqls[se.Id] = se
 		//faygo.Debug(se)

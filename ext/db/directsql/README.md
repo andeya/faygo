@@ -56,7 +56,7 @@
          - "callback":"可选参数，不为空时返回JSONP"（仅适用于 select/pagingselect/multiselect）,
          - "start":"可选参数，分页查询时需要 开始记录数"（仅适用于 pagingselect）,
          - "limted":"可选参数，分页查询时需要 每页记录数"（仅适用于 pagingselect）,
-         - "recache":"可选参数，如果结果配置的为缓存，通过该参数刷新缓存"---未实现,
+  
 
     - batchexec(batchinsert/batchupdate)参数,简单批量json参数(数组)
         [{"id":"001","name":"aaaaa"},{"id":"002","name":"bbbbb"},{"id":"003","name":"ccc"}]
