@@ -25,13 +25,32 @@ const (
 	ColorWhite
 )
 
+// background color values
+const (
+	ColorBlackBg = iota + 40
+	ColorRedBg
+	ColorGreenBg
+	ColorYellowBg
+	ColorBlueBg
+	ColorMagentaBg
+	ColorCyanBg
+	ColorWhiteBg
+)
+
 var (
+	// colors = []string{
+	// 	CRITICAL: ColorSeq(ColorMagenta),
+	// 	ERROR:    ColorSeq(ColorRed),
+	// 	WARNING:  ColorSeq(ColorYellow),
+	// 	NOTICE:   ColorSeq(ColorGreen),
+	// 	DEBUG:    ColorSeq(ColorCyan),
+	// }
 	colors = []string{
-		CRITICAL: ColorSeq(ColorMagenta),
-		ERROR:    ColorSeq(ColorRed),
-		WARNING:  ColorSeq(ColorYellow),
-		NOTICE:   ColorSeq(ColorGreen),
-		DEBUG:    ColorSeq(ColorCyan),
+		CRITICAL: ColorSeq(ColorMagentaBg),
+		ERROR:    ColorSeq(ColorRedBg),
+		WARNING:  ColorSeq(ColorYellowBg),
+		NOTICE:   ColorSeq(ColorGreenBg),
+		DEBUG:    ColorSeq(ColorCyanBg),
 	}
 	boldcolors = []string{
 		CRITICAL: ColorSeqBold(ColorMagenta),
