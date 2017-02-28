@@ -1,6 +1,6 @@
 /*
-Package Faygo uses the new architecture to make itself the most suitable Go Web framework for developping API;
-Just define a struct Handler, Faygo will automatically bind, verify the request parameters and generate the online API documentation.
+Package Faygo is a fast and concise Go Web framework that can be used to develop high-performance web app(especially API) with fewer codes;
+Just define a struct Handler, Faygo will automatically bind/verify the request parameters and generate the online API doc.
 
 Copyright 2016 HenryLee. All Rights Reserved.
 

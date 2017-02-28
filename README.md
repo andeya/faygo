@@ -2,7 +2,7 @@
 
 ![Faygo Favicon](https://github.com/henrylee2cn/faygo/raw/master/doc/faygo_96x96.png)
 
-Faygo uses the new architecture to make itself the most suitable Go Web framework for developping API. Just define a struct Handler, Faygo will automatically bind, verify the request parameters and generate the online API documentation. [Go to \<User Manual\>](https://github.com/henrylee2cn/faydoc)
+Faygo is a fast and concise Go Web framework that can be used to develop high-performance web app(especially API) with fewer codes. Just define a struct Handler, Faygo will automatically bind/verify the request parameters and generate the online API doc. [Go to \<User Manual\>](https://github.com/henrylee2cn/faydoc)
 
 [简体中文](https://github.com/henrylee2cn/faygo/blob/master/README_ZH.md)
 
