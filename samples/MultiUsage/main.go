@@ -45,7 +45,7 @@ func (m *MultiUsage) Serve(ctx *faygo.Context) error {
 	return ctx.String(200, "Success added user:\nname: %s\nage: %d\navatar: %s",
 		m.Name,
 		m.Age,
-		ctx.SiteWithPort()+m.Avatar,
+		ctx.Site()+m.Avatar,
 	)
 }
 
