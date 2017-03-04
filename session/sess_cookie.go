@@ -21,6 +21,8 @@ import (
 	"net/http"
 	"net/url"
 	"sync"
+
+	"github.com/henrylee2cn/faygo/utils"
 )
 
 var cookiepder = &CookieProvider{}
@@ -122,10 +124,10 @@ func (pder *CookieProvider) SessionInit(maxlifetime int64, config string) error 
 		return err
 	}
 	if pder.config.BlockKey == "" {
-		pder.config.BlockKey = string(generateRandomKey(16))
+		pder.config.BlockKey = utils.RandomString(16)
 	}
 	if pder.config.SecurityName == "" {
-		pder.config.SecurityName = string(generateRandomKey(20))
+		pder.config.SecurityName = utils.RandomString(16)
 	}
 	pder.block, err = aes.NewCipher([]byte(pder.config.BlockKey))
 	if err != nil {
