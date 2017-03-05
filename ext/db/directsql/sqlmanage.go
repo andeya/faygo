@@ -9,17 +9,17 @@ package directsql
 
 import (
 	"encoding/xml"
-	"io/ioutil"
-	"os"
-	"path/filepath"
-	"strings"
-	"sync"
-     "errors"
+	"errors"
 	"github.com/fsnotify/fsnotify"
 	"github.com/go-xorm/core"
 	"github.com/henrylee2cn/faygo"
 	faygoxorm "github.com/henrylee2cn/faygo/ext/db/xorm"
 	confpkg "github.com/henrylee2cn/faygo/ini"
+	"io/ioutil"
+	"os"
+	"path/filepath"
+	"strings"
+	"sync"
 )
 
 //var modelsqls map[string]*TModel
@@ -293,14 +293,14 @@ func (ms *TModels) parseTModel(msqlfile string) (*TModel, error) {
 			se.Sqltype = ST_BATCHEXEC
 		case "batchmultiexec", "batchcomplex":
 			se.Sqltype = ST_BATCHMULTIEXEC
-	    case "import":
-			se.Sqltype = ST_IMPORT	
+		case "import":
+			se.Sqltype = ST_IMPORT
 		case "export":
-			se.Sqltype = ST_EXPORT	
-	    case "report":
-			se.Sqltype = ST_REPORT			
-		default :
-		    faygo.Error(errors.New("错误：配置文件[ "+msqlfile+" ]中存在无效的sql节点类型[ "+se.Sqltypestr+" ]!"))
+			se.Sqltype = ST_EXPORT
+		case "report":
+			se.Sqltype = ST_REPORT
+		default:
+			faygo.Error(errors.New("错误：配置文件[ " + msqlfile + " ]中存在无效的sql节点类型[ " + se.Sqltypestr + " ]!"))
 		}
 		result.Sqls[se.Id] = se
 		//faygo.Debug(se)
