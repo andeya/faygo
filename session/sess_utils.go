@@ -18,14 +18,12 @@ import (
 	"bytes"
 	"crypto/cipher"
 	"crypto/hmac"
-	"crypto/rand"
 	"crypto/sha1"
 	"crypto/subtle"
 	"encoding/base64"
 	"encoding/gob"
 	"errors"
 	"fmt"
-	"io"
 	"strconv"
 	"time"
 
@@ -69,15 +67,6 @@ func DecodeGob(encoded []byte) (map[interface{}]interface{}, error) {
 	return out, nil
 }
 
-// generateRandomKey creates a random key with the given strength.
-func generateRandomKey(strength int) []byte {
-	k := make([]byte, strength)
-	if n, err := io.ReadFull(rand.Reader, k); n != strength || err != nil {
-		return utils.RandomBytes(strength)
-	}
-	return k
-}
-
 // Encryption -----------------------------------------------------------------
 
 // encrypt encrypts a value using the given block in counter mode.
@@ -85,7 +74,7 @@ func generateRandomKey(strength int) []byte {
 // A random initialization vector (http://goo.gl/zF67k) with the length of the
 // block size is prepended to the resulting ciphertext.
 func encrypt(block cipher.Block, value []byte) ([]byte, error) {
-	iv := generateRandomKey(block.BlockSize())
+	iv := utils.RandomBytes(block.BlockSize())
 	if iv == nil {
 		return nil, errors.New("encrypt: failed to generate random iv")
 	}

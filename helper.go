@@ -216,10 +216,6 @@ var ObjectName = utils.ObjectName
 //  func CleanPath(p string) string
 var CleanPath = utils.CleanPath
 
-// RandomBytes generate random []byte by specify chars.
-//  func RandomBytes(length int, alphabets ...byte) []byte
-var RandomBytes = utils.RandomBytes
-
 /**
  * define internal middlewares.
  */

@@ -2,29 +2,25 @@ package utils
 
 import (
 	"crypto/rand"
-	r "math/rand"
-	"time"
+	"encoding/base64"
 )
 
-var alphaNum = []byte(`0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz`)
+// RandomBytes returns securely generated random bytes. It will panic
+// if the system's secure random number generator fails to function correctly.
+func RandomBytes(n int) []byte {
+	b := make([]byte, n)
+	_, err := rand.Read(b)
+	// Note that err == nil only if we read len(b) bytes.
+	if err != nil {
+		panic(err)
+	}
 
-// RandomBytes generate random []byte by specify chars.
-func RandomBytes(length int, alphabets ...byte) []byte {
-	if len(alphabets) == 0 {
-		alphabets = alphaNum
-	}
-	var bytes = make([]byte, length)
-	var randBy bool
-	if num, err := rand.Read(bytes); num != length || err != nil {
-		r.Seed(time.Now().UnixNano())
-		randBy = true
-	}
-	for i, b := range bytes {
-		if randBy {
-			bytes[i] = alphabets[r.Intn(len(alphabets))]
-		} else {
-			bytes[i] = alphabets[b%byte(len(alphabets))]
-		}
-	}
-	return bytes
+	return b
+}
+
+// RandomString returns a URL-safe, base64 encoded securely generated
+// random string. It will panic if the system's secure random number generator
+// fails to function correctly.
+func RandomString(n int) string {
+	return base64.URLEncoding.EncodeToString(RandomBytes(n))
 }
