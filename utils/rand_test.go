@@ -3,6 +3,7 @@ package utils
 import (
 	"crypto/rand"
 	"io"
+	"sync"
 	"testing"
 )
 
@@ -33,4 +34,33 @@ func TestRandomBytes(t *testing.T) {
 	}()
 
 	b = RandomBytes(tokenLength)
+}
+
+func TestRandomString(t *testing.T) {
+	m := map[string]bool{}
+	var lock sync.Mutex
+	var group sync.WaitGroup
+	count := 10000
+	group.Add(count)
+	for i := 0; i < count; i++ {
+		go func() {
+			id := RandomString(16)
+			lock.Lock()
+			m[id] = true
+			lock.Unlock()
+			group.Done()
+		}()
+	}
+	group.Wait()
+	if len(m) != count {
+		t.Fail()
+	}
+	var i int
+	for id := range m {
+		i++
+		if i > 10 {
+			break
+		}
+		t.Log(id)
+	}
 }

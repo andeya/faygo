@@ -216,6 +216,12 @@ var ObjectName = utils.ObjectName
 //  func CleanPath(p string) string
 var CleanPath = utils.CleanPath
 
+// RandomString returns a URL-safe, base64 encoded securely generated
+// random string. It will panic if the system's secure random number generator
+// fails to function correctly.
+// The length n must be an integer multiple of 4, otherwise the last character will be padded with `=`.
+var RandomString = utils.RandomString
+
 /**
  * define internal middlewares.
  */
