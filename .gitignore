@@ -12,3 +12,6 @@ fay/*
 samples/*/log/*
 samples/*/static/*
 samples/*/upload/*
+samples/MultiUsage/MultiUsage
+samples/directsql/directsql
+samples/demo/demo
