@@ -1,7 +1,7 @@
-##Introduction##
+## Introduction##
 This is a package for GO which can be used to create different types of barcodes.
 
-##Supported Barcode Types##
+## Supported Barcode Types##
 * Codabar
 * Code 128
 * Code 39
@@ -11,7 +11,7 @@ This is a package for GO which can be used to create different types of barcodes
 * QR Codes
 * 2 of 5
 
-##Documentation##
+## Documentation##
 See [GoDoc](https://godoc.org/github.com/boombuler/barcode)
 
 To create a barcode use the Encode function from one of the subpackages.

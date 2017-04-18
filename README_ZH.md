@@ -427,4 +427,4 @@ float64 |  []float64 |
 
 ## 开源协议
 
-Faygo 项目采用商业应用友好的 [Apache2.0](https://github.com/henrylee2cn/faygo/raw/master/LICENSE) 协议发布。
+Faygo 项目采用商业应用友好的 [Apache2.0](https://github.com/henrylee2cn/faygo/raw/master/LICENSE) 协议发布
