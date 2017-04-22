@@ -443,6 +443,7 @@ func (ctx *Context) IsBreak() bool {
 	return ctx.pos == stopExecutionposition
 }
 
+/*
 // reset ctx.
 // Note: Never reset `ctx.frame`, `ctx.W`, `ctx.enableGzip`, `ctx.enableSession` and `ctx.enableXSRF`!
 func (ctx *Context) reset(w http.ResponseWriter, r *http.Request) {
@@ -453,4 +454,24 @@ func (ctx *Context) reset(w http.ResponseWriter, r *http.Request) {
 	ctx._xsrfTokenReset = false
 	ctx.W.reset(w)
 	ctx.R = r
+}
+*/
+
+func (frame *Framework) getContext(w http.ResponseWriter, r *http.Request) *Context {
+	ctx := frame.contextPool.Get().(*Context)
+	ctx.R = r
+	ctx.W.reset(w)
+	ctx.data = make(map[interface{}]interface{})
+	return ctx
+}
+
+func (frame *Framework) putContext(ctx *Context) {
+	ctx.R = nil
+	ctx.W.writer = nil
+	ctx.limitedRequestBody = nil
+	ctx.data = nil
+	ctx.queryParams = nil
+	ctx._xsrfToken = ""
+	ctx._xsrfTokenReset = false
+	frame.contextPool.Put(ctx)
 }

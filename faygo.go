@@ -483,6 +483,12 @@ var (
 		return global
 	}()
 	defaultErrorFunc = func(ctx *Context, errStr string, status int) {
+		if ctx.W.Committed() {
+			if status >= 500 {
+				ctx.Log().Debug(errStr)
+			}
+			return
+		}
 		if status >= 500 {
 			ctx.Log().Error(errStr)
 		}

@@ -260,18 +260,12 @@ func (ctx *Context) HasData(key interface{}) bool {
 
 // DataAll return the implicit data in the context
 func (ctx *Context) DataAll() map[interface{}]interface{} {
-	if ctx.data == nil {
-		ctx.data = make(map[interface{}]interface{})
-	}
 	return ctx.data
 }
 
 // SetData stores data with given key in this context.
 // This data are only available in this context.
 func (ctx *Context) SetData(key, val interface{}) {
-	if ctx.data == nil {
-		ctx.data = make(map[interface{}]interface{})
-	}
 	ctx.data[key] = val
 }
 

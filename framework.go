@@ -483,16 +483,15 @@ func (frame *Framework) registerSession() {
 // ServeHTTP makes the router implement the http.Handler interface.
 func (frame *Framework) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	var start = time.Now()
-	var ctx = frame.contextPool.Get().(*Context)
+	var ctx = frame.getContext(w, req)
 	defer func() {
 		if rcv := recover(); rcv != nil {
 			panicHandler(ctx, rcv)
 		}
-		frame.contextPool.Put(ctx)
+		frame.putContext(ctx)
 	}()
-	ctx.reset(w, req)
-	var u = ctx.URI()
 	var method = ctx.Method()
+	var u = ctx.URI()
 	if u == "" {
 		u = "/"
 	}
