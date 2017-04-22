@@ -12,4 +12,4 @@
   * 配置 config/xorm.ini 中数据库连接字符串
      - connstring   = root:@tcp(127.0.0.1:3306)/demo?charset=utf8
   * 编译运行 
-  * 浏览器打开 localhost:8080   
+  * 浏览器打开 localhost:8080  
