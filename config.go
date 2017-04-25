@@ -127,9 +127,10 @@ type (
 		Enable                bool   `ini:"enable"`                 // Whether enabled or not
 		Provider              string `ini:"provider"`               // Data storage
 		Name                  string `ini:"name"`                   // The client stores the name of the cookie
-		GCMaxLifetime         int64  `ini:"gc_max_lifetime"`        // The interval between triggering the GC
 		ProviderConfig        string `ini:"provider_config"`        // According to the different engine settings different configuration information
 		CookieLifetime        int    `ini:"cookie_lifetime"`        // The default value is 0, which is the lifetime of the browser
+		GCLifetime            int64  `ini:"gc_lifetime"`            // The interval between triggering the GC
+		MaxLifetime           int64  `ini:"max_lifetime"`           // The session max lefetime
 		AutoSetCookie         bool   `ini:"auto_setcookie"`         // Automatically set on the session cookie value, the general default true
 		Domain                string `ini:"domain"`                 // The domain name that is allowed to access this cookie
 		EnableSidInHttpHeader bool   `ini:"enable_sid_in_header"`   // Whether to write a session ID to the header
@@ -246,9 +247,10 @@ func newConfig(filename string) Config {
 			Enable:                false,
 			Provider:              "memory",
 			Name:                  "faygosessionID",
-			GCMaxLifetime:         3600,
-			ProviderConfig:        "",
 			CookieLifetime:        0, //set cookie default is the browser life
+			GCLifetime:            300,
+			MaxLifetime:           3600,
+			ProviderConfig:        "",
 			AutoSetCookie:         true,
 			Domain:                "",
 			EnableSidInHttpHeader: false, //	enable store/get the sessionId into/from http headers

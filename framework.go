@@ -463,9 +463,10 @@ func (frame *Framework) registerSession() {
 	conf := &session.ManagerConfig{
 		CookieName:              frame.config.Session.Name,
 		EnableSetCookie:         frame.config.Session.AutoSetCookie,
-		Gclifetime:              frame.config.Session.GCMaxLifetime,
-		Secure:                  true,
 		CookieLifeTime:          frame.config.Session.CookieLifetime,
+		Gclifetime:              frame.config.Session.GCLifetime,
+		Maxlifetime:             frame.config.Session.MaxLifetime,
+		Secure:                  true,
 		ProviderConfig:          frame.config.Session.ProviderConfig,
 		Domain:                  frame.config.Session.Domain,
 		EnableSidInHttpHeader:   frame.config.Session.EnableSidInHttpHeader,
