@@ -25,6 +25,7 @@
 //	}
 //
 // more docs: http://beego.me/docs/module/session.md
+// modify: henrylee
 package session
 
 import (
@@ -159,13 +160,13 @@ func NewManager(provideName string, cf *ManagerConfig) (*Manager, error) {
 // sid is empty when need to generate a new session id
 // otherwise return an valid session id.
 func (manager *Manager) getSid(r *http.Request) (string, error) {
-	cookie, errs := r.Cookie(manager.config.CookieName)
-	if errs != nil || cookie.Value == "" {
+	cookie, err := r.Cookie(manager.config.CookieName)
+	if err != nil || cookie.Value == "" {
 		var sid string
 		if manager.config.EnableSidInUrlQuery {
-			errs := r.ParseForm()
-			if errs != nil {
-				return "", errs
+			err := r.ParseForm()
+			if err != nil {
+				return "", err
 			}
 
 			sid = r.FormValue(manager.config.CookieName)
@@ -189,9 +190,9 @@ func (manager *Manager) getSid(r *http.Request) (string, error) {
 // SessionStart generate or read the session id from http request.
 // if session id exists, return SessionStore with this id.
 func (manager *Manager) SessionStart(w http.ResponseWriter, r *http.Request) (session Store, err error) {
-	sid, errs := manager.getSid(r)
-	if errs != nil {
-		return nil, errs
+	sid, err := manager.getSid(r)
+	if err != nil {
+		return nil, err
 	}
 
 	if sid != "" && manager.provider.SessionExist(sid) {
@@ -199,14 +200,14 @@ func (manager *Manager) SessionStart(w http.ResponseWriter, r *http.Request) (se
 	}
 
 	// Generate a new session
-	sid, errs = manager.sessionID()
-	if errs != nil {
-		return nil, errs
+	sid, err = manager.sessionID()
+	if err != nil {
+		return nil, err
 	}
 
 	session, err = manager.provider.SessionRead(sid)
 	if err != nil {
-		return nil, errs
+		return nil, err
 	}
 	cookie := &http.Cookie{
 		Name:     manager.config.CookieName,

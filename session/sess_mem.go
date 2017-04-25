@@ -11,6 +11,8 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+//
+// modify: henrylee
 
 package session
 
@@ -71,8 +73,9 @@ func (st *MemSessionStore) SessionID() string {
 	return st.sid
 }
 
-// SessionRelease Implement method, no used.
+// SessionRelease Implement method.
 func (st *MemSessionStore) SessionRelease(w http.ResponseWriter) {
+	st.timeAccessed = time.Now()
 }
 
 // MemProvider Implement the provider interface
@@ -95,7 +98,7 @@ func (pder *MemProvider) SessionInit(maxlifetime int64, savePath string) error {
 func (pder *MemProvider) SessionRead(sid string) (Store, error) {
 	pder.lock.RLock()
 	if element, ok := pder.sessions[sid]; ok {
-		go pder.SessionUpdate(sid)
+		go pder.sessionUpdate(sid)
 		pder.lock.RUnlock()
 		return element.Value.(*MemSessionStore), nil
 	}
@@ -122,7 +125,7 @@ func (pder *MemProvider) SessionExist(sid string) bool {
 func (pder *MemProvider) SessionRegenerate(oldsid, sid string) (Store, error) {
 	pder.lock.RLock()
 	if element, ok := pder.sessions[oldsid]; ok {
-		go pder.SessionUpdate(oldsid)
+		go pder.sessionUpdate(oldsid)
 		pder.lock.RUnlock()
 		pder.lock.Lock()
 		element.Value.(*MemSessionStore).sid = sid
@@ -179,8 +182,8 @@ func (pder *MemProvider) SessionAll() int {
 	return pder.list.Len()
 }
 
-// SessionUpdate expand time of session store by id in memory session
-func (pder *MemProvider) SessionUpdate(sid string) error {
+// sessionUpdate expand time of session store by id in memory session
+func (pder *MemProvider) sessionUpdate(sid string) error {
 	pder.lock.Lock()
 	defer pder.lock.Unlock()
 	if element, ok := pder.sessions[sid]; ok {

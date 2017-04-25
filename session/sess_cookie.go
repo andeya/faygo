@@ -83,12 +83,14 @@ func (st *CookieSessionStore) SessionRelease(w http.ResponseWriter) {
 	if err != nil {
 		return
 	}
-	cookie := &http.Cookie{Name: cookiepder.config.CookieName,
+	cookie := &http.Cookie{
+		Name:     cookiepder.config.CookieName,
 		Value:    url.QueryEscape(str),
 		Path:     "/",
 		HttpOnly: true,
 		Secure:   cookiepder.config.Secure,
-		MaxAge:   cookiepder.config.Maxage}
+		MaxAge:   cookiepder.config.Maxage,
+	}
 	http.SetCookie(w, cookie)
 	return
 }
@@ -176,10 +178,10 @@ func (pder *CookieProvider) SessionAll() int {
 	return 0
 }
 
-// SessionUpdate Implement method, no used.
-func (pder *CookieProvider) SessionUpdate(sid string) error {
-	return nil
-}
+// // SessionUpdate Implement method, no used.
+// func (pder *CookieProvider) SessionUpdate(sid string) error {
+// 	return nil
+// }
 
 func init() {
 	Register("cookie", cookiepder)
