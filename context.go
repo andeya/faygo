@@ -220,10 +220,7 @@ func (ctx *Context) SetSession(key interface{}, value interface{}) {
 // GetSession gets value from session.
 func (ctx *Context) GetSession(key interface{}) interface{} {
 	if ctx.CruSession == nil {
-		if _, err := ctx.StartSession(); err != nil {
-			ctx.Log().Warning(err.Error())
-			return nil
-		}
+		return nil
 	}
 	return ctx.CruSession.Get(key)
 }
@@ -231,10 +228,7 @@ func (ctx *Context) GetSession(key interface{}) interface{} {
 // DelSession removes value from session.
 func (ctx *Context) DelSession(key interface{}) {
 	if ctx.CruSession == nil {
-		if _, err := ctx.StartSession(); err != nil {
-			ctx.Log().Warning(err.Error())
-			return
-		}
+		return
 	}
 	ctx.CruSession.Delete(key)
 }
@@ -243,10 +237,7 @@ func (ctx *Context) DelSession(key interface{}) {
 // the session data have no changes.
 func (ctx *Context) SessionRegenerateID() {
 	if ctx.CruSession == nil {
-		if _, err := ctx.StartSession(); err != nil {
-			ctx.Log().Warning(err.Error())
-			return
-		}
+		return
 	}
 	ctx.CruSession.SessionRelease(ctx.W)
 	ctx.CruSession = ctx.frame.sessionManager.SessionRegenerateID(ctx.W, ctx.R)
@@ -255,10 +246,7 @@ func (ctx *Context) SessionRegenerateID() {
 // DestroySession cleans session data and session cookie.
 func (ctx *Context) DestroySession() {
 	if ctx.CruSession == nil {
-		if _, err := ctx.StartSession(); err != nil {
-			ctx.Log().Warning(err.Error())
-			return
-		}
+		return
 	}
 	ctx.CruSession.Flush()
 	ctx.CruSession = nil
