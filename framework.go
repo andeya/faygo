@@ -154,6 +154,11 @@ func (frame *Framework) NameWithVersion() string {
 	return frame.name + "_" + frame.version
 }
 
+// Config returns framework's config copy.
+func (frame *Framework) Config() Config {
+	return frame.config
+}
+
 // // Run starts web services.
 // func (frame *Framework) Run() {
 // 	global.framesLock.Lock()
