@@ -260,10 +260,23 @@ func (manager *Manager) SessionDestroy(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+var errNotExist = errors.New("The session ID does not exist")
+
+// GetSessionStore if session id exists, return SessionStore.
+func (manager *Manager) GetSessionStore(w http.ResponseWriter, r *http.Request) (Store, error) {
+	sid, err := manager.getSid(r)
+	if err != nil {
+		return nil, err
+	}
+	if sid != "" && manager.provider.SessionExist(sid) {
+		return manager.provider.SessionRead(sid)
+	}
+	return nil, errNotExist
+}
+
 // GetSessionStore Get SessionStore by its id.
-func (manager *Manager) GetSessionStore(sid string) (sessions Store, err error) {
-	sessions, err = manager.provider.SessionRead(sid)
-	return
+func (manager *Manager) GetSessionStoreById(sid string) (Store, error) {
+	return manager.provider.SessionRead(sid)
 }
 
 // GC Start session gc process.

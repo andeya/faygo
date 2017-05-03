@@ -193,48 +193,57 @@ func (ctx *Context) checkXSRFCookie() bool {
 	return true
 }
 
+var errNotEnableSession = errors.New("before using the session, must set config `session::enable = true`...")
+
 // StartSession starts session and load old session data info this controller.
 func (ctx *Context) StartSession() (session.Store, error) {
-	if !ctx.enableSession {
-		return nil, errors.New("before using the session, must set config `session::enable = true`...")
-	}
 	if ctx.CruSession != nil {
 		return ctx.CruSession, nil
+	}
+	if !ctx.enableSession {
+		return nil, errNotEnableSession
 	}
 	var err error
 	ctx.CruSession, err = ctx.frame.sessionManager.SessionStart(ctx.W, ctx.R)
 	return ctx.CruSession, err
 }
 
+// GetSessionStore return SessionStore.
+func (ctx *Context) GetSessionStore() (session.Store, error) {
+	if ctx.CruSession != nil {
+		return ctx.CruSession, nil
+	}
+	if !ctx.enableSession {
+		return nil, errNotEnableSession
+	}
+	var err error
+	ctx.CruSession, err = ctx.frame.sessionManager.GetSessionStore(ctx.W, ctx.R)
+	return ctx.CruSession, err
+}
+
 // SetSession puts value into session.
 func (ctx *Context) SetSession(key interface{}, value interface{}) {
-	if ctx.CruSession == nil {
-		if _, err := ctx.StartSession(); err != nil {
-			ctx.Log().Warning(err.Error())
-			return
-		}
+	if _, err := ctx.StartSession(); err != nil {
+		ctx.Log().Warning(err.Error())
+		return
 	}
 	ctx.CruSession.Set(key, value)
 }
 
 // GetSession gets value from session.
 func (ctx *Context) GetSession(key interface{}) interface{} {
-	if ctx.CruSession == nil {
-		if _, err := ctx.StartSession(); err != nil {
-			ctx.Log().Warning(err.Error())
-			return nil
-		}
+	if _, err := ctx.GetSessionStore(); err != nil {
+		ctx.Log().Warning(err.Error())
+		return nil
 	}
 	return ctx.CruSession.Get(key)
 }
 
 // DelSession removes value from session.
 func (ctx *Context) DelSession(key interface{}) {
-	if ctx.CruSession == nil {
-		if _, err := ctx.StartSession(); err != nil {
-			ctx.Log().Warning(err.Error())
-			return
-		}
+	if _, err := ctx.GetSessionStore(); err != nil {
+		ctx.Log().Warning(err.Error())
+		return
 	}
 	ctx.CruSession.Delete(key)
 }
@@ -242,11 +251,9 @@ func (ctx *Context) DelSession(key interface{}) {
 // SessionRegenerateID regenerates session id for this session.
 // the session data have no changes.
 func (ctx *Context) SessionRegenerateID() {
-	if ctx.CruSession == nil {
-		if _, err := ctx.StartSession(); err != nil {
-			ctx.Log().Warning(err.Error())
-			return
-		}
+	if _, err := ctx.GetSessionStore(); err != nil {
+		ctx.Log().Warning(err.Error())
+		return
 	}
 	ctx.CruSession.SessionRelease(ctx.W)
 	ctx.CruSession = ctx.frame.sessionManager.SessionRegenerateID(ctx.W, ctx.R)
@@ -254,11 +261,9 @@ func (ctx *Context) SessionRegenerateID() {
 
 // DestroySession cleans session data and session cookie.
 func (ctx *Context) DestroySession() {
-	if ctx.CruSession == nil {
-		if _, err := ctx.StartSession(); err != nil {
-			ctx.Log().Warning(err.Error())
-			return
-		}
+	if _, err := ctx.GetSessionStore(); err != nil {
+		ctx.Log().Warning(err.Error())
+		return
 	}
 	ctx.CruSession.Flush()
 	ctx.CruSession = nil
