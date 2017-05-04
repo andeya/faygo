@@ -26,7 +26,11 @@ import (
 func graceSignal() {
 	ch := make(chan os.Signal)
 	signal.Notify(ch, syscall.SIGINT, syscall.SIGTERM, syscall.SIGUSR2)
-	defer signal.Stop(ch)
+	defer func() {
+		signal.Stop(ch)
+		time.Sleep(time.Second)
+		os.Exit(0)
+	}()
 	sig := <-ch
 	switch sig {
 	case syscall.SIGINT, syscall.SIGTERM:

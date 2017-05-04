@@ -167,6 +167,25 @@ func (frame *Framework) ConfigFilename() string {
 	return CONFIG_DIR + "/" + frame.NameWithVersion() + ".ini"
 }
 
+// Run starts the web service.
+func (frame *Framework) Run() {
+	if frame.Running() {
+		return
+	}
+	go frame.run()
+	global.graceOnce.Do(func() {
+		graceSignal()
+	})
+	select {}
+}
+
+// Running returns whether the frame service is running.
+func (frame *Framework) Running() bool {
+	frame.lock.RLock()
+	defer frame.lock.RUnlock()
+	return frame.running
+}
+
 func (frame *Framework) run() {
 	frame.lock.Lock()
 	frame.build()
@@ -237,13 +256,6 @@ func (frame *Framework) build() {
 		// register session
 		frame.registerSession()
 	})
-}
-
-// Running returns whether the frame service is running.
-func (frame *Framework) Running() bool {
-	frame.lock.RLock()
-	defer frame.lock.RUnlock()
-	return frame.running
 }
 
 // shutdown closes the frame service gracefully.

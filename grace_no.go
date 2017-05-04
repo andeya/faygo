@@ -24,11 +24,15 @@ import (
 
 func graceSignal() {
 	// subscribe to SIGINT signals
-	stopChan := make(chan os.Signal)
-	signal.Notify(stopChan, os.Interrupt, os.Kill)
-	<-stopChan // wait for SIGINT
+	ch := make(chan os.Signal)
+	signal.Notify(ch, os.Interrupt, os.Kill)
+	defer func() {
+		signal.Stop(ch)
+		time.Sleep(time.Second)
+		os.Exit(0)
+	}()
+	<-ch // wait for SIGINT
 	Shutdown()
-	signal.Stop(stopChan)
 }
 
 // Reboot all the frame services gracefully.

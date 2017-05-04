@@ -90,6 +90,7 @@ func Run() {
 	global.graceOnce.Do(func() {
 		graceSignal()
 	})
+	select {}
 }
 
 // Running returns whether the frame service is running.
