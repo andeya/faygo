@@ -37,45 +37,68 @@ type MemSessionStore struct {
 // Set value to memory session
 func (st *MemSessionStore) Set(key, value interface{}) error {
 	st.lock.Lock()
-	defer st.lock.Unlock()
 	st.value[key] = value
+	st.lock.Unlock()
 	return nil
 }
 
 // Get value from memory session by key
 func (st *MemSessionStore) Get(key interface{}) interface{} {
 	st.lock.RLock()
-	defer st.lock.RUnlock()
 	if v, ok := st.value[key]; ok {
+		st.lock.RUnlock()
 		return v
 	}
+	st.lock.RUnlock()
 	return nil
 }
 
 // Delete in memory session by key
 func (st *MemSessionStore) Delete(key interface{}) error {
 	st.lock.Lock()
-	defer st.lock.Unlock()
 	delete(st.value, key)
+	st.lock.Unlock()
 	return nil
 }
 
 // Flush clear all values in memory session
 func (st *MemSessionStore) Flush() error {
 	st.lock.Lock()
-	defer st.lock.Unlock()
 	st.value = make(map[interface{}]interface{})
+	st.lock.Unlock()
 	return nil
 }
 
 // SessionID get this id of memory session store
 func (st *MemSessionStore) SessionID() string {
+	st.lock.RLock()
+	defer st.lock.RUnlock()
 	return st.sid
 }
 
 // SessionRelease Implement method.
-func (st *MemSessionStore) SessionRelease(w http.ResponseWriter) {
+func (st *MemSessionStore) SessionRelease(_ http.ResponseWriter) {
+	st.lock.Lock()
 	st.timeAccessed = time.Now()
+	st.lock.Unlock()
+}
+
+func (st *MemSessionStore) getSid() string {
+	st.lock.RLock()
+	defer st.lock.RUnlock()
+	return st.sid
+}
+
+func (st *MemSessionStore) setSid(sid string) {
+	st.lock.Lock()
+	st.sid = sid
+	st.lock.Unlock()
+}
+
+func (st *MemSessionStore) timeAccessedUnix() int64 {
+	st.lock.RLock()
+	defer st.lock.RUnlock()
+	return st.timeAccessed.Unix()
 }
 
 // MemProvider Implement the provider interface
@@ -128,7 +151,7 @@ func (pder *MemProvider) SessionRegenerate(oldsid, sid string) (Store, error) {
 		go pder.sessionUpdate(oldsid)
 		pder.lock.RUnlock()
 		pder.lock.Lock()
-		element.Value.(*MemSessionStore).sid = sid
+		element.Value.(*MemSessionStore).setSid(sid)
 		pder.sessions[sid] = element
 		delete(pder.sessions, oldsid)
 		pder.lock.Unlock()
@@ -163,11 +186,11 @@ func (pder *MemProvider) SessionGC() {
 		if element == nil {
 			break
 		}
-		if (element.Value.(*MemSessionStore).timeAccessed.Unix() + pder.maxlifetime) < time.Now().Unix() {
+		if (element.Value.(*MemSessionStore).timeAccessedUnix() + pder.maxlifetime) < time.Now().Unix() {
 			pder.lock.RUnlock()
 			pder.lock.Lock()
 			pder.list.Remove(element)
-			delete(pder.sessions, element.Value.(*MemSessionStore).sid)
+			delete(pder.sessions, element.Value.(*MemSessionStore).getSid())
 			pder.lock.Unlock()
 			pder.lock.RLock()
 		} else {
@@ -187,7 +210,7 @@ func (pder *MemProvider) sessionUpdate(sid string) error {
 	pder.lock.Lock()
 	defer pder.lock.Unlock()
 	if element, ok := pder.sessions[sid]; ok {
-		element.Value.(*MemSessionStore).timeAccessed = time.Now()
+		element.Value.(*MemSessionStore).SessionRelease(nil)
 		pder.list.MoveToFront(element)
 		return nil
 	}
