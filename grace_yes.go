@@ -21,9 +21,13 @@ import (
 	"os/signal"
 	"syscall"
 	"time"
+
+	"github.com/henrylee2cn/faygo/utils"
 )
 
 func graceSignal() {
+	utils.WritePid(LogDir() + "app.pid")
+	// subscribe to SIGINT signals
 	ch := make(chan os.Signal)
 	signal.Notify(ch, syscall.SIGINT, syscall.SIGTERM, syscall.SIGUSR2)
 	defer func() {
