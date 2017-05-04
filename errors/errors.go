@@ -6,10 +6,46 @@ import (
 	"runtime"
 )
 
-const (
-	// Version current version number
-	Version = "0.0.3"
+import (
+	"strconv"
+	"strings"
 )
+
+var (
+	// MultiPrefix the multiple errors prefix
+	MultiPrefix = "MultiError:\n"
+)
+
+// multiError multiple errors
+type multiError []error
+
+// Errors merge multiple errors.
+func Errors(errs []error) error {
+	count := len(errs)
+	if count == 0 {
+		return nil
+	}
+	merged := make(multiError, 0, count)
+	for _, err := range errs {
+		if err == nil {
+			continue
+		}
+		merged = append(merged, err)
+	}
+	if len(merged) == 0 {
+		return nil
+	}
+	return merged
+}
+
+// Error implement error interface.
+func (m multiError) Error() string {
+	var errMsg = MultiPrefix
+	for i, err := range m {
+		errMsg += strconv.Itoa(i+1) + ". " + strings.Trim(err.Error(), "\n") + "\n"
+	}
+	return errMsg
+}
 
 var (
 	// Prefix the error prefix, applies to each error's message
@@ -36,48 +72,48 @@ func New(errMsg string) *Error {
 }
 
 // String returns the error message
-func (e Error) String() string {
+func (e *Error) String() string {
 	return e.message
 }
 
 // Error returns the message of the actual error
 // implements the error
-func (e Error) Error() string {
+func (e *Error) Error() string {
 	return e.String()
 }
 
 // Format returns a formatted new error based on the arguments
 // it does NOT change the original error's message
-func (e Error) Format(a ...interface{}) Error {
+func (e Error) Format(a ...interface{}) *Error {
 	e.message = fmt.Sprintf(e.message, a...)
-	return e
+	return &e
 }
 
 // Append adds a message to the predefined error message and returns a new error
 // it does NOT change the original error's message
-func (e Error) Append(format string, a ...interface{}) Error {
+func (e Error) Append(format string, a ...interface{}) *Error {
 	// eCp := *e
 	if NewLine {
 		format += "\n"
 	}
 	e.message += fmt.Sprintf(format, a...)
 	e.appended = true
-	return e
+	return &e
 }
 
 // AppendErr adds an error's message to the predefined error message and returns a new error
 // it does NOT change the original error's message
-func (e Error) AppendErr(err error) Error {
+func (e *Error) AppendErr(err error) *Error {
 	return e.Append(err.Error())
 }
 
 // IsAppended returns true if the Error instance is created using original's Error.Append/AppendErr func
-func (e Error) IsAppended() bool {
+func (e *Error) IsAppended() bool {
 	return e.appended
 }
 
 // With does the same thing as Format but it receives an error type which if it's nil it returns a nil error
-func (e Error) With(err error) error {
+func (e *Error) With(err error) error {
 	if err == nil {
 		return nil
 	}
@@ -86,17 +122,15 @@ func (e Error) With(err error) error {
 }
 
 // Panic output the message and after panics
-func (e Error) Panic() {
+func (e *Error) Panic() {
 	_, fn, line, _ := runtime.Caller(1)
-	errMsg := e.message
-	errMsg = "\nCaller was: " + fmt.Sprintf("%s:%d", fn, line)
+	errMsg := e.message + "\nCaller was: " + fmt.Sprintf("%s:%d", fn, line)
 	panic(errMsg)
 }
 
 // Panicf output the formatted message and after panics
-func (e Error) Panicf(args ...interface{}) {
+func (e *Error) Panicf(args ...interface{}) {
 	_, fn, line, _ := runtime.Caller(1)
-	errMsg := e.Format(args...).Error()
-	errMsg = "\nCaller was: " + fmt.Sprintf("%s:%d", fn, line)
+	errMsg := e.Format(args...).Error() + "\nCaller was: " + fmt.Sprintf("%s:%d", fn, line)
 	panic(errMsg)
 }

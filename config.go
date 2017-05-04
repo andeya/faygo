@@ -204,7 +204,7 @@ var globalConfig = func() GlobalConfig {
 
 	err := SyncINI(
 		&background,
-		func() error {
+		func(existed bool, saveOnce func() error) error {
 			if !(background.Log.ConsoleEnable || background.Log.FileEnable) {
 				background.Log.ConsoleEnable = true
 				background.warnMsg = "config: log::enable_console and log::enable_file can not be disabled at the same time, so automatically open console log."
@@ -271,7 +271,7 @@ func newConfig(filename string) Config {
 
 	err := SyncINI(
 		&background,
-		func() error {
+		func(existed bool, saveOnce func() error) error {
 			// switch background.RunMode {
 			// case RUNMODE_DEV, RUNMODE_PROD:
 			// default:

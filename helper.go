@@ -23,7 +23,9 @@ import (
 	"path/filepath"
 	"reflect"
 	"strings"
+	"sync"
 
+	fayerrors "github.com/henrylee2cn/faygo/errors"
 	"github.com/henrylee2cn/faygo/ini"
 	"github.com/henrylee2cn/faygo/utils"
 )
@@ -35,7 +37,7 @@ func JoinStatic(shortFilename string) string {
 
 // SyncINI quickly create your own configuration files.
 // Struct tags reference `https://github.com/go-ini/ini`
-func SyncINI(structPointer interface{}, callback func() error, filename ...string) error {
+func SyncINI(structPointer interface{}, callback func(existed bool, saveOnce func() error) error, filename ...string) error {
 	t := reflect.TypeOf(structPointer)
 	if t.Kind() != reflect.Ptr {
 		return errors.New("SyncINI's param must be struct pointer type.")
@@ -56,7 +58,7 @@ func SyncINI(structPointer interface{}, callback func() error, filename ...strin
 	}
 	var cfg *ini.File
 	var err error
-	var exist bool
+	var existed bool
 	cfg, err = ini.Load(fname)
 	if err != nil {
 		os.MkdirAll(filepath.Dir(fname), 0777)
@@ -65,7 +67,7 @@ func SyncINI(structPointer interface{}, callback func() error, filename ...strin
 			return err
 		}
 	} else {
-		exist = true
+		existed = true
 	}
 
 	err = cfg.MapTo(structPointer)
@@ -73,18 +75,30 @@ func SyncINI(structPointer interface{}, callback func() error, filename ...strin
 		return err
 	}
 
+	var once sync.Once
+	var saveOnce = func() error {
+		var err error
+		once.Do(func() {
+			err = cfg.ReflectFrom(structPointer)
+			if err != nil {
+				return
+			}
+			err = cfg.SaveTo(fname)
+			if err != nil {
+				return
+			}
+		})
+		return err
+	}
+
 	if callback != nil {
-		if err = callback(); err != nil {
+		if err = callback(existed, saveOnce); err != nil {
 			return err
 		}
 	}
 
-	if !exist {
-		err = cfg.ReflectFrom(structPointer)
-		if err != nil {
-			return err
-		}
-		return cfg.SaveTo(fname)
+	if !existed {
+		return saveOnce()
 	}
 	return nil
 }
@@ -225,7 +239,7 @@ var RandomString = utils.RandomString
 
 // Errors merge multiple errors.
 //  func Errors(errs []error) error
-var Errors = utils.Errors
+var Errors = fayerrors.Errors
 
 /**
  * define internal middlewares.
