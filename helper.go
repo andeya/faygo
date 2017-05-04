@@ -220,7 +220,12 @@ var CleanPath = utils.CleanPath
 // random string. It will panic if the system's secure random number generator
 // fails to function correctly.
 // The length n must be an integer multiple of 4, otherwise the last character will be padded with `=`.
+//  func RandomString(n int) string
 var RandomString = utils.RandomString
+
+// Errors merge multiple errors.
+//  func Errors(errs []error) error
+var Errors = utils.Errors
 
 /**
  * define internal middlewares.
