@@ -105,6 +105,9 @@ func SyncINI(structPointer interface{}, callback func(existed bool, saveOnce fun
 
 // RemoveUseless when there's not frame instance, remove files: config, log, static and upload .
 func RemoveUseless() {
+	if len(AllFrames()) > 0 {
+		return
+	}
 	var files []string
 	filepath.Walk(CONFIG_DIR, func(retpath string, f os.FileInfo, err error) error {
 		if err != nil {
