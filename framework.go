@@ -91,13 +91,21 @@ var _ http.Handler = new(Framework)
 func newFramework(name string, version ...string) *Framework {
 	mutexNewApp.Lock()
 	defer mutexNewApp.Unlock()
-	configFileName, ver := createConfigFilenameAndVersion(name, version...)
-	frame := &Framework{
-		name:           name,
-		version:        ver,
-		muxesForRouter: nil,
+	var frame = new(Framework)
+
+	frame.name = name
+	if len(version) > 0 && len(version[0]) > 0 {
+		frame.version = version[0]
 	}
-	frame.setConfig(newConfig(configFileName))
+
+	id := frame.NameWithVersion()
+	if _, ok := GetFrame(id); ok {
+		Fatalf("There are two applications with exactly the same name and version: %s", id)
+	}
+
+	configFilename := frame.ConfigFilename()
+	frame.setConfig(newConfig(configFilename))
+
 	frame.redirectTrailingSlash = frame.config.Router.RedirectTrailingSlash
 	frame.redirectFixedPath = frame.config.Router.RedirectFixedPath
 	frame.handleMethodNotAllowed = frame.config.Router.HandleMethodNotAllowed
@@ -118,12 +126,7 @@ func newFramework(name string, version ...string) *Framework {
 	frame.initBizLogger()
 	frame.MuxAPI = newMuxAPI(frame, "root", "", "/")
 
-	id := frame.NameWithVersion()
-	if _, ok := GetFrame(id); ok {
-		Fatalf("There are two applications with exactly the same name and version: %s", id)
-	}
 	addFrame(frame)
-
 	return frame
 }
 
@@ -154,20 +157,15 @@ func (frame *Framework) NameWithVersion() string {
 	return frame.name + "_" + frame.version
 }
 
-// Config returns framework's config copy.
+// Config returns the framework's config copy.
 func (frame *Framework) Config() Config {
 	return frame.config
 }
 
-// // Run starts web services.
-// func (frame *Framework) Run() {
-// 	global.framesLock.Lock()
-// 	frame.lock.Lock()
-// 	frame.running = true
-// 	frame.lock.Unlock()
-// 	global.framesLock.Unlock()
-// 	frame.run()
-// }
+// ConfigFilename returns the framework's config file name.
+func (frame *Framework) ConfigFilename() string {
+	return CONFIG_DIR + "/" + frame.NameWithVersion() + ".ini"
+}
 
 func (frame *Framework) run() {
 	frame.lock.Lock()
@@ -648,14 +646,4 @@ func panicHandler(ctx *Context, rcv interface{}) {
 	}
 	stack = bytes.TrimRight(stack, "\n")
 	global.errorFunc(ctx, fmt.Sprintf("%v\n[TRACE]\n%s\n", rcv, stack), http.StatusInternalServerError)
-}
-
-func createConfigFilenameAndVersion(name string, version ...string) (fileName string, ver string) {
-	if len(version) > 0 && len(version[0]) > 0 {
-		ver = version[0]
-		fileName = CONFIG_DIR + "/" + name + "_" + ver + ".ini"
-	} else {
-		fileName = CONFIG_DIR + "/" + name + ".ini"
-	}
-	return
 }

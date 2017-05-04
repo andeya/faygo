@@ -15,9 +15,9 @@ func main() {
 	go pprofServer()
 
 	faygo.SetShutdown(time.Minute, func() error {
-		faygo.Debug("finalizer 等待3s...")
+		faygo.Debug("finalizer wait 3s...")
 		time.Sleep(3 * time.Second)
-		faygo.Debug("finalizer 3s到时！")
+		faygo.Debug("finalizer 3s end!")
 		return nil
 	})
 	faygo.SetUpload("./upload/0", false, false)
