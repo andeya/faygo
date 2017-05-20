@@ -40,11 +40,11 @@ func TestRandomString(t *testing.T) {
 	m := map[string]bool{}
 	var lock sync.Mutex
 	var group sync.WaitGroup
-	count := 100000
+	count := 10000
 	group.Add(count)
 	for i := 0; i < count; i++ {
 		go func() {
-			id := RandomString(16)
+			id := RandomString(10)
 			lock.Lock()
 			m[id] = true
 			lock.Unlock()
@@ -56,6 +56,7 @@ func TestRandomString(t *testing.T) {
 		t.Fail()
 	}
 	var i int
+	t.Log("print the top ten...")
 	for id := range m {
 		i++
 		if i > 10 {
