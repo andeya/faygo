@@ -40,7 +40,7 @@ func TestRandomString(t *testing.T) {
 	m := map[string]bool{}
 	var lock sync.Mutex
 	var group sync.WaitGroup
-	count := 10000
+	count := 100000
 	group.Add(count)
 	for i := 0; i < count; i++ {
 		go func() {

@@ -24,7 +24,7 @@ func RandomBytes(n int) []byte {
 // The length n must be an integer multiple of 4, otherwise the last character will be padded with `=`.
 func RandomString(n int) string {
 	d := base64.URLEncoding.DecodedLen(n)
-	buf := make([]byte, base64.URLEncoding.EncodedLen(d), n)
+	buf := make([]byte, base64.URLEncoding.EncodedLen(d))
 	base64.URLEncoding.Encode(buf, RandomBytes(d))
 	for i := n - len(buf); i > 0; i-- {
 		buf = append(buf, byte((base64.StdPadding)))
