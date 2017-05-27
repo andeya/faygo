@@ -706,9 +706,3 @@ func (ctx *Context) BodyBytes() []byte {
 	ctx.limitedRequestBody = limitedRequestBody
 	return limitedRequestBody
 }
-
-// Session returns current session item value by a given key.
-// if non-existed, return nil.
-func (ctx *Context) Session(key interface{}) interface{} {
-	return ctx.CruSession.Get(key)
-}
