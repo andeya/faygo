@@ -244,6 +244,15 @@ var RandomString = utils.RandomString
 //  func Errors(errs []error) error
 var Errors = fayerrors.Errors
 
+// Byte2String convert []byte type to string type.
+//  func Bytes2String(b []byte) string
+var Bytes2String = utils.Bytes2String
+
+// String2Bytes convert *string type to []byte type.
+// NOTE: panic if modify the member value of the []byte.
+//  func String2Bytes(s *string) []byte
+var String2Bytes = utils.String2Bytes
+
 /**
  * define internal middlewares.
  */
