@@ -17,6 +17,7 @@
 package faygo
 
 import (
+	"context"
 	"os"
 	"os/signal"
 	"syscall"
@@ -51,39 +52,62 @@ func Reboot(timeout ...time.Duration) {
 	global.framesLock.Lock()
 	defer global.framesLock.Unlock()
 	defer CloseLog()
-	Print("\x1b[46m[SYS]\x1b[0m rebooting servers...")
+	Print("\x1b[46m[SYS]\x1b[0m rebooting services...")
 
-	ppid := os.Getppid()
+	var (
+		ppid     = os.Getppid()
+		graceful = true
+	)
+	contextExec(timeout, "reboot", func(ctxTimeout context.Context) <-chan struct{} {
+		endCh := make(chan struct{})
+		go func() {
+			defer close(endCh)
 
-	// Starts a new process passing it the active listeners. It
-	// doesn't fork, but starts a new process using the same environment and
-	// arguments as when it was originally started. This allows for a newly
-	// deployed binary to be started.
-	_, err := grace.StartProcess()
-	if err != nil {
-		Error(err.Error())
-		Print("\x1b[46m[SYS]\x1b[0m reboot servers failed, so close parent.")
-		return
-	}
+			var reboot = true
 
-	// Shut down gracefully, but wait no longer than global.shutdownTimeout before halting
-	if len(timeout) > 0 {
-		SetShutdown(timeout[0], global.finalizers...)
-	}
-	graceful := shutdown(global.shutdownTimeout)
+			if global.preCloseFunc != nil {
+				if err := global.preCloseFunc(); err != nil {
+					Errorf("[reboot-preClose] %s", err.Error())
+					graceful = false
+				}
+			}
+
+			// Starts a new process passing it the active listeners. It
+			// doesn't fork, but starts a new process using the same environment and
+			// arguments as when it was originally started. This allows for a newly
+			// deployed binary to be started.
+			_, err := grace.StartProcess()
+			if err != nil {
+				Errorf("[reboot-startNewProcess] %s", err.Error())
+				reboot = false
+			}
+
+			// shut down
+			graceful = shutdown(ctxTimeout, "reboot") && graceful
+			if !reboot {
+				if graceful {
+					Fatalf("services reboot failed, but shut down gracefully!")
+				} else {
+					Fatalf("services reboot failed, and did not shut down gracefully!")
+				}
+				os.Exit(-1)
+			}
+		}()
+
+		return endCh
+	})
 
 	// Close the parent if we inherited and it wasn't init that started us.
 	if ppid != 1 {
 		if err := syscall.Kill(ppid, syscall.SIGTERM); err != nil {
-			Error("failed to close parent: %s", err.Error())
-			Print("\x1b[46m[SYS]\x1b[0m servers reboot failed, so close parent.")
-			return
+			Errorf("[reboot-killOldProcess] %s", err.Error())
+			graceful = false
 		}
 	}
 
 	if graceful {
-		Print("\x1b[46m[SYS]\x1b[0m servers are rebooted gracefully.")
+		Print("\x1b[46m[SYS]\x1b[0m services are rebooted gracefully.")
 	} else {
-		Print("\x1b[46m[SYS]\x1b[0m servers are rebooted, but not gracefully.")
+		Print("\x1b[46m[SYS]\x1b[0m services are rebooted, but not gracefully.")
 	}
 }

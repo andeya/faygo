@@ -16,11 +16,17 @@ func main() {
 	go pprofServer()
 
 	faygo.SetShutdown(time.Minute, func() error {
-		faygo.Debug("finalizer wait 3s...")
-		time.Sleep(3 * time.Second)
-		faygo.Debug("finalizer 3s end!")
+		faygo.Debug("Before services close: wait 1s...")
+		time.Sleep(1 * time.Second)
+		faygo.Debug("Before services close: 1s end!")
+		return nil
+	}, func() error {
+		faygo.Debug("After services are closed: wait 2s...")
+		time.Sleep(2 * time.Second)
+		faygo.Debug("After services are closed: 2s end!")
 		return nil
 	})
+
 	faygo.SetUpload("./upload/0", false, false)
 	// faygo.SetStatic("./static", false, false)
 	{
@@ -41,11 +47,17 @@ func main2() {
 	go pprofServer()
 
 	faygo.SetShutdown(time.Minute, func() error {
-		faygo.Debug("finalizer wait 3s...")
-		time.Sleep(3 * time.Second)
-		faygo.Debug("finalizer 3s end!")
+		faygo.Debug("Before services close: wait 1s...")
+		time.Sleep(1 * time.Second)
+		faygo.Debug("Before services close: 1s end!")
+		return nil
+	}, func() error {
+		faygo.Debug("After services are closed: wait 2s...")
+		time.Sleep(2 * time.Second)
+		faygo.Debug("After services are closed: 2s end!")
 		return nil
 	})
+
 	faygo.SetUpload("./upload/0", false, false)
 	// faygo.SetStatic("./static", false, false)
 	{

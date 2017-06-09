@@ -45,9 +45,6 @@ const (
       / / \_/\\ \  / \_ / \__/ 
      / /        / /  _\ \      
     \_/        \_/  \_\_/   VERSION ` + VERSION + "  URL https://github.com/henrylee2cn/faygo\n"
-
-	// SHUTDOWN_TIMEOUT the default time-out period for the service shutdown
-	SHUTDOWN_TIMEOUT = 1 * time.Minute
 )
 
 // New uses the faygo web framework to create a new application.
@@ -102,43 +99,79 @@ func Running(name string, version ...string) bool {
 	return frame.Running()
 }
 
+// MinShutdownTimeout the default time-out period for the services shutdown.
+const MinShutdownTimeout = 1 * time.Minute
+
 // SetShutdown sets the function which is called after the services shutdown,
-// and the time-out period for the service shutdown.
-// If parameter timeout is 0, automatically use default `SHUTDOWN_TIMEOUT`(60s).
-// If parameter timeout less than 0, it is indefinite period.
-// The finalizer function is executed before the shutdown deadline, but it is not guaranteed to be completed.
-func SetShutdown(timeout time.Duration, finalizers ...func() error) {
-	if timeout == 0 {
-		timeout = SHUTDOWN_TIMEOUT
-	} else if timeout < 0 {
-		timeout = 1<<63 - 1
+// and the time-out period for the services shutdown.
+// If 0<=timeout<60s, automatically use 'MinShutdownTimeout'(60s).
+// If timeout<0, indefinite period.
+// 'preCloseFunc' is executed before closing services, but not guaranteed to be completed.
+// 'postCloseFunc' is executed after services are closed, but not guaranteed to be completed.
+func SetShutdown(timeout time.Duration, preCloseFunc, postCloseFunc func() error) {
+	if timeout < 0 {
+		global.shutdownTimeout = 1<<63 - 1
+	} else if timeout < MinShutdownTimeout {
+		global.shutdownTimeout = MinShutdownTimeout
+	} else {
+		global.shutdownTimeout = timeout
 	}
-	global.shutdownTimeout = timeout
-	global.finalizers = finalizers
+	global.preCloseFunc = preCloseFunc
+	global.postCloseFunc = postCloseFunc
 }
 
 // Shutdown closes all the frame services gracefully.
-// Parameter timeout is used to reset time-out period for the service shutdown.
+// Parameter timeout is used to reset time-out period for the services shutdown.
 func Shutdown(timeout ...time.Duration) {
 	global.framesLock.Lock()
 	defer global.framesLock.Unlock()
 	defer CloseLog()
-	Print("\x1b[46m[SYS]\x1b[0m shutting down servers...")
+	Print("\x1b[46m[SYS]\x1b[0m shutting down services...")
+
+	contextExec(timeout, "shutdown", func(ctxTimeout context.Context) <-chan struct{} {
+		endCh := make(chan struct{})
+		go func() {
+			defer close(endCh)
+
+			var graceful = true
+
+			if global.preCloseFunc != nil {
+				if err := global.preCloseFunc(); err != nil {
+					Errorf("[shutdown-preClose] %s", err.Error())
+					graceful = false
+				}
+			}
+
+			graceful = shutdown(ctxTimeout, "shutdown") && graceful
+
+			if graceful {
+				Print("\x1b[46m[SYS]\x1b[0m services are shutted down gracefully!")
+			} else {
+				Print("\x1b[46m[SYS]\x1b[0m services are shutted down, but not gracefully!")
+			}
+		}()
+		return endCh
+	})
+}
+
+func contextExec(timeout []time.Duration, action string, deferCallback func(ctxTimeout context.Context) <-chan struct{}) {
 	if len(timeout) > 0 {
-		SetShutdown(timeout[0], global.finalizers...)
+		SetShutdown(timeout[0], global.preCloseFunc, global.postCloseFunc)
 	}
-	graceful := shutdown(global.shutdownTimeout)
-	if graceful {
-		Print("\x1b[46m[SYS]\x1b[0m servers are shutted down gracefully.")
-	} else {
-		Print("\x1b[46m[SYS]\x1b[0m servers are shutted down, but not gracefully.")
+	ctxTimeout, _ := context.WithTimeout(context.Background(), global.shutdownTimeout)
+	select {
+	case <-ctxTimeout.Done():
+		if err := ctxTimeout.Err(); err != nil {
+			Errorf("[%s-timeout] %s", action, err.Error())
+		}
+	case <-deferCallback(ctxTimeout):
 	}
 }
 
-func shutdown(timeout time.Duration) bool {
-	ctxTimeout, _ := context.WithTimeout(context.Background(), timeout)
-	count := new(sync.WaitGroup)
+func shutdown(ctxTimeout context.Context, action string) bool {
 	var flag int32 = 1
+
+	count := new(sync.WaitGroup)
 	for _, frame := range global.frames {
 		count.Add(1)
 		go func(fm *Framework) {
@@ -151,35 +184,13 @@ func shutdown(timeout time.Duration) bool {
 	}
 	count.Wait()
 
-	fchan := make(chan bool)
-	var idx int32
-	go func() {
-		for i, finalizer := range global.finalizers {
-			atomic.StoreInt32(&idx, int32(i))
-			if finalizer == nil {
-				continue
-			}
-			select {
-			case <-ctxTimeout.Done():
-				break
-			default:
-				if err := finalizer(); err != nil {
-					atomic.StoreInt32(&flag, 0)
-					Errorf("[shutdown-finalizer%d] %s", i, err.Error())
-				}
-			}
-		}
-		fchan <- true
-	}()
-	select {
-	case <-ctxTimeout.Done():
-		if err := ctxTimeout.Err(); err != nil {
+	if global.postCloseFunc != nil {
+		if err := global.postCloseFunc(); err != nil {
 			atomic.StoreInt32(&flag, 0)
-			Errorf("[shutdown-finalizer%d] %s", atomic.LoadInt32(&idx), err.Error())
+			Errorf("[%s-postClose] %s", action, err.Error())
 		}
-	case <-fchan:
-		close(fchan)
 	}
+
 	return flag == 1
 }
 
@@ -434,12 +445,12 @@ type (
 		syslog *logging.Logger
 		bizlog *logging.Logger
 
-		// the time-out period for the service shutdown.
+		// the time-out period for the services shutdown.
 		shutdownTimeout time.Duration
-
-		// finalizers are called after the services shutdown.
-		// It is executed before the shutdown deadline, but it is not guaranteed to be completed.
-		finalizers []func() error
+		// executed before closing services, but not guaranteed to be completed.
+		preCloseFunc func() error
+		// executed after services are closed, but not guaranteed to be completed.
+		postCloseFunc func() error
 
 		graceOnce sync.Once
 	}
@@ -471,7 +482,7 @@ var (
 			upload:          defaultUpload,
 			static:          defaultStatic,
 			logDir:          defaultLogDir,
-			shutdownTimeout: SHUTDOWN_TIMEOUT,
+			shutdownTimeout: MinShutdownTimeout,
 		}
 		if globalConfig.Cache.Enable {
 			global.render = newRender(func(name string) (http.File, error) {
