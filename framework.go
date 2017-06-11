@@ -93,9 +93,9 @@ func newFramework(name string, version ...string) *Framework {
 	defer mutexNewApp.Unlock()
 	var frame = new(Framework)
 
-	frame.name = name
+	frame.name = strings.TrimSpace(name)
 	if len(version) > 0 && len(version[0]) > 0 {
-		frame.version = version[0]
+		frame.version = strings.TrimSpace(version[0])
 	}
 
 	id := frame.NameWithVersion()
