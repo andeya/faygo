@@ -527,17 +527,24 @@ func (ctx *Context) SaveFile(key string, cover bool, newfname ...string) (savedF
 		}
 	}()
 
+	var filename string
+	if os.PathSeparator == '/' {
+		filename = filepath.Base(strings.Replace(fh.Filename, "\\", "/", -1))
+	} else {
+		filename = filepath.Base(strings.Replace(fh.Filename, "/", "\\", -1))
+	}
+
 	// Sets the full file name
 	var fullname string
 	if len(newfname) == 0 {
-		fullname = filepath.Join(UploadDir(), fh.Filename)
+		fullname = filepath.Join(UploadDir(), filename)
 	} else {
 		if strings.Contains(newfname[0], "?") {
-			fullname = filepath.Join(UploadDir(), strings.Replace(newfname[0], "?", fh.Filename, -1))
+			fullname = filepath.Join(UploadDir(), strings.Replace(newfname[0], "?", filename, -1))
 		} else {
 			fname := strings.TrimRight(newfname[0], ".")
 			if filepath.Ext(fname) == "" {
-				fullname = filepath.Join(UploadDir(), fname+filepath.Ext(fh.Filename))
+				fullname = filepath.Join(UploadDir(), fname+filepath.Ext(filename))
 			} else {
 				fullname = filepath.Join(UploadDir(), fname)
 			}
@@ -598,17 +605,24 @@ func (ctx *Context) SaveFiles(key string, cover bool, newfname ...string) (saved
 			}
 		}()
 
+		var filename string
+		if os.PathSeparator == '/' {
+			filename = filepath.Base(strings.Replace(fh.Filename, "\\", "/", -1))
+		} else {
+			filename = filepath.Base(strings.Replace(fh.Filename, "/", "\\", -1))
+		}
+
 		// Sets the full file name
 		var fullname string
 		if !hasFilename {
-			fullname = filepath.Join(UploadDir(), fh.Filename)
+			fullname = filepath.Join(UploadDir(), filename)
 		} else {
 			if strings.Contains(newfname[0], "?") {
-				fullname = filepath.Join(UploadDir(), strings.Replace(newfname[0], "?", fh.Filename, -1))
+				fullname = filepath.Join(UploadDir(), strings.Replace(newfname[0], "?", filename, -1))
 			} else {
 				fname := strings.TrimRight(newfname[0], ".")
 				if filepath.Ext(fname) == "" {
-					fullname = filepath.Join(UploadDir(), fname+filepath.Ext(fh.Filename))
+					fullname = filepath.Join(UploadDir(), fname+filepath.Ext(filename))
 				} else {
 					fullname = filepath.Join(UploadDir(), fname)
 				}
