@@ -47,7 +47,7 @@ func TestRange(t *testing.T) {
 			t.Errorf("%s => expected %v, got %v", c.expr, c.err, err)
 		}
 		if len(c.err) == 0 && err != nil {
-			t.Error("%s => unexpected error %v", c.expr, err)
+			t.Errorf("%s => unexpected error %v", c.expr, err)
 		}
 		if actual != c.expected {
 			t.Errorf("%s => expected %d, got %d", c.expr, c.expected, actual)
@@ -174,6 +174,10 @@ func TestParse(t *testing.T) {
 		{
 			expr: "* * * *",
 			err:  "Expected 5 to 6 fields",
+		},
+		{
+			expr: "",
+			err:  "Empty spec string",
 		},
 	}
 
