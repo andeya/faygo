@@ -1,48 +1,49 @@
 <!DOCTYPE html>
 <html>
- <head lang="en"> 
-  <meta charset="UTF-8" /> 
-  <title>Cross Origin AJAX</title> 
-  <script type="text/javascript" src="/static/jQuery-2.1.4.min.js"></script> 
- </head> 
- <body> 
-  <h1>XMLHttpRequest - Ajax Request</h1> 
-  <input type="button" onclick="XhrGetRequest();" value="Send Get Request" /> 
-  <input type="button" onclick="XhrPostRequest();" value="Send Post Request" /> 
-  <h1>jquery - Ajax Request</h1> 
-  <input type="button" onclick="JqGetRequest();" value="Send Get Request" /> 
-  <input type="button" onclick="JqPostRequest();" value="Send Post Request" /> 
-  <script type="text/javascript">
 
-        function GetXHR(){
+<head lang="en">
+    <meta charset="UTF-8" />
+    <title>Cross Origin AJAX</title>
+    <script type="text/javascript" src="/static/jQuery-2.1.4.min.js"></script>
+</head>
+
+<body>
+    <h1>XMLHttpRequest - Ajax Request</h1>
+    <input type="button" onclick="XhrGetRequest();" value="Send Get Request" />
+    <input type="button" onclick="XhrPostRequest();" value="Send Post Request" />
+    <h1>jquery - Ajax Request</h1>
+    <input type="button" onclick="JqGetRequest();" value="Send Get Request" />
+    <input type="button" onclick="JqPostRequest();" value="Send Post Request" />
+    <script type="text/javascript">
+        function GetXHR() {
             var xhr = null;
-            if(XMLHttpRequest){
+            if (XMLHttpRequest) {
                 xhr = new XMLHttpRequest();
-            }else{
+            } else {
                 xhr = new ActiveXObject("Microsoft.XMLHTTP");
             }
             return xhr;
 
         }
 
-        function XhrPostRequest(){
+        function XhrPostRequest() {
             var xhr = GetXHR();
-            xhr.onreadystatechange = function(){
-                if(xhr.readyState == 4){
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState == 4) {
                     var data = xhr.responseText;
                     alert(data);
                 }
             };
             xhr.open('POST', "http://172.16.1.231:8080/home/param/1/post?n=1&title=t1", true);
-            xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded; charset-UTF-8');
+            xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8');
             xhr.send('n1=1;n2=2;');
         }
 
-        function XhrGetRequest(){
+        function XhrGetRequest() {
             var xhr = GetXHR();
             // 定义回调函数
-            xhr.onreadystatechange = function(){
-                if(xhr.readyState == 4){
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState == 4) {
                     var data = xhr.responseText;
                     alert(data);
                 }
@@ -51,29 +52,30 @@
             xhr.send();
         }
 
-function JqGetRequest(){
+        function JqGetRequest() {
 
-$.ajax({
-    type:"get",
-    url:"http://172.16.1.231:8080/home/param/2/get?n=2&title=t2",
-    contentType:'application/x-www-form-urlencoded; charset-UTF-8', 
-    success: function(data) {
+            $.ajax({
+                type: "get",
+                url: "http://172.16.1.231:8080/home/param/2/get?n=2&title=t2",
+                contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
+                success: function(data) {
                     alert(JSON.stringify(data));
-    },
-});
-}
+                },
+            });
+        }
 
-function JqPostRequest(){
+        function JqPostRequest() {
 
-$.ajax({
-    type:"post",   
-    url:"http://172.16.1.231:8080/home/param/2/post?n=1&title=t1",
-    contentType:'application/x-www-form-urlencoded; charset-UTF-8',   
-    success: function(data) {
-        alert(JSON.stringify(data));
-    },
-});
-}
-    </script>  
- </body>
+            $.ajax({
+                type: "post",
+                url: "http://172.16.1.231:8080/home/param/2/post?n=1&title=t1",
+                contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
+                success: function(data) {
+                    alert(JSON.stringify(data));
+                },
+            });
+        }
+    </script>
+</body>
+
 </html>
