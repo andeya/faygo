@@ -255,5 +255,5 @@ func (c *Cron) entrySnapshot() []*Entry {
 
 // now returns current time in c location
 func (c *Cron) now() time.Time {
-	return time.Now().In(c.location)
+	return time.Now().In(c.location).Round(time.Second)
 }
