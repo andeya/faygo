@@ -61,7 +61,7 @@ func Config(name ...string) (DBConfig, bool) {
 }
 
 // Callback uses the `default` database for non-transactional operations.
-func Callback(fn func(DBTX) error, tx ...*sqlx.Tx) error {
+func Callback(fn func(DbOrTx) error, tx ...*sqlx.Tx) error {
 	if fn == nil {
 		return nil
 	}
@@ -72,7 +72,7 @@ func Callback(fn func(DBTX) error, tx ...*sqlx.Tx) error {
 }
 
 // CallbackByName uses the specified database for non-transactional operations.
-func CallbackByName(dbName string, fn func(DBTX) error, tx ...*sqlx.Tx) error {
+func CallbackByName(dbName string, fn func(DbOrTx) error, tx ...*sqlx.Tx) error {
 	if fn == nil {
 		return nil
 	}
@@ -144,8 +144,8 @@ func TransactCallbackByName(dbName string, fn func(*sqlx.Tx) error, tx ...*sqlx.
 	return
 }
 
-// DBTX contains all the exportable methods of * sqlx.TX
-type DBTX interface {
+// DbOrTx contains all the exportable methods of *sqlx.DB
+type DbOrTx interface {
 	BindNamed(query string, arg interface{}) (string, []interface{}, error)
 	DriverName() string
 	Get(dest interface{}, query string, args ...interface{}) error
