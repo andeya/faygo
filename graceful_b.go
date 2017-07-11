@@ -32,15 +32,13 @@ func graceSignal() {
 	ch := make(chan os.Signal)
 	signal.Notify(ch, syscall.SIGINT, syscall.SIGTERM, syscall.SIGUSR2)
 	defer func() {
-		signal.Stop(ch)
-		time.Sleep(time.Second)
 		os.Exit(0)
 	}()
 	sig := <-ch
+	signal.Stop(ch)
 	switch sig {
 	case syscall.SIGINT, syscall.SIGTERM:
 		Shutdown()
-		return
 	case syscall.SIGUSR2:
 		Reboot()
 	}

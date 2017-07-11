@@ -100,11 +100,11 @@ func Running(name string, version ...string) bool {
 }
 
 // MinShutdownTimeout the default time-out period for the services shutdown.
-const MinShutdownTimeout = 1 * time.Minute
+const MinShutdownTimeout = 5 * time.Second
 
 // SetShutdown sets the function which is called after the services shutdown,
 // and the time-out period for the services shutdown.
-// If 0<=timeout<60s, automatically use 'MinShutdownTimeout'(60s).
+// If 0<=timeout<5s, automatically use 'MinShutdownTimeout'(5s).
 // If timeout<0, indefinite period.
 // 'preCloseFunc' is executed before closing services, but not guaranteed to be completed.
 // 'postCloseFunc' is executed after services are closed, but not guaranteed to be completed.
