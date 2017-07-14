@@ -37,12 +37,11 @@ Param tag value description:
     NOTES:
         1. the binding object must be a struct pointer
         2. in addition to `*multipart.FileHeader`, the binding struct's field can not be a pointer
-        3. `regexp` or `param` tag is only usable when `param:"type(xxx)"` is exist
-        4. if the `param` tag is not exist, anonymous field will be parsed
-        5. when the param's position(`in`) is `formData` and the field's type is `*multipart.FileHeader`, `multipart.FileHeader`, `[]*multipart.FileHeader` or `[]multipart.FileHeader`, the param receives file uploaded
-        6. if param's position(`in`) is `cookie`, field's type must be `*http.Cookie` or `http.Cookie`
-        7. param tags `in(formData)` and `in(body)` can not exist at the same time
-        8. there should not be more than one `in(body)` param tag
+        3. if the `param` tag is not exist, anonymous field will be parsed
+        4. when the param's position(`in`) is `formData` and the field's type is `*multipart.FileHeader`, `multipart.FileHeader`, `[]*multipart.FileHeader` or `[]multipart.FileHeader`, the param receives file uploaded
+        5. if param's position(`in`) is `cookie`, field's type must be `*http.Cookie` or `http.Cookie`
+        6. param tags `in(formData)` and `in(body)` can not exist at the same time
+        7. there should not be more than one `in(body)` param tag
 
 List of supported param value types:
     base    |   slice    | special

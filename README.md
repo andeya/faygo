@@ -377,7 +377,6 @@ param |   err    |    no    |(e.g.`incorrect password format`)| the custom error
 **NOTES**:
 * the binding object must be a struct pointer
 * in addition to `*multipart.FileHeader`, the binding struct's field can not be a pointer
-* `regexp` or `param` tag is only usable when `param:"type(xxx)"` is exist
 * if the `param` tag is not exist, anonymous field will be parsed
 * when the param's position(`in`) is `formData` and the field's type is `*multipart.FileHeader`, `multipart.FileHeader`, `[]*multipart.FileHeader` or `[]multipart.FileHeader`, the param receives file uploaded
 * if param's position(`in`) is `cookie`, field's type must be `*http.Cookie` or `http.Cookie`
