@@ -839,7 +839,8 @@ func toHTTPError(err error) (msg string, httpStatus int) {
 		return "403 Forbidden", http.StatusForbidden
 	}
 	// Default:
-	return "500 Internal Server Error", http.StatusInternalServerError
+	return err.Error(), http.StatusInternalServerError
+	// return "500 Internal Server Error", http.StatusInternalServerError
 }
 
 // localRedirect gives a Moved Permanently response.

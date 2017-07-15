@@ -68,14 +68,14 @@ func (render *Render) Render(filename string, data Map) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	fbytes, err = render.RenderFromBytes(fbytes, data)
+	fbytes, err = render.RenderFromBytesWithName(filename, fbytes, data)
 	return fbytes, err
 
 }
 
-// RenderFromBytes should render the template to the io.Writer.
-func (render *Render) RenderFromBytes(fbytes []byte, data Map) ([]byte, error) {
-	template, err := render.set.FromBytes(fbytes)
+// RenderFromBytesWithName should render the template to the io.Writer.
+func (render *Render) RenderFromBytesWithName(filename string, fbytes []byte, data Map) ([]byte, error) {
+	template, err := render.set.FromBytesWithName(filename, fbytes)
 	if err != nil {
 		return nil, err
 	}
@@ -211,6 +211,6 @@ func (render *Render) renderForFS(filename string, data Map) ([]byte, os.FileInf
 	if err != nil {
 		return nil, nil, err
 	}
-	fbytes, err = render.RenderFromBytes(fbytes, data)
+	fbytes, err = render.RenderFromBytesWithName(filename, fbytes, data)
 	return fbytes, newNowFileInfo(fileInfo, int64(len(fbytes))), err
 }

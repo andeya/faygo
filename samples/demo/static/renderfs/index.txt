@@ -7,5 +7,6 @@
 <body>
    <p>title: {{title}}</p>
    <p>__PUBLIC__:{{__PUBLIC__}}</p>
+    {%include "../cross.html"%}
 </body>
 </html>
