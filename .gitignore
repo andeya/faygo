@@ -31,3 +31,5 @@ samples/*/log/*
 samples/MultiUsage/MultiUsage
 samples/directsql/directsql
 samples/demo/demo
+
+ext/services

@@ -304,18 +304,18 @@ handle_method_not_allowed = true                 # 若开启，当前请求方�
 handle_options            = true                 # 若开启，自动应答OPTIONS类请求，可在Faygo中设置默认Handler
 
 [xsrf]                                           # XSRF跨站请求伪造过滤配置区
-enable = false                                   # 是否开启
-key    = faygoxsrf                             # 加密key
-expire = 3600                                    # xsrf防伪token有效时长
+enable        = false                            # 是否开启
+key           = faygoxsrf                        # 加密key
+expire_second = 3600                             # xsrf防伪token有效时长
 
 [session]                                        # Session配置区（详情参考beego session模块）
 enable                 = false                   # 是否开启
 provider               = memory                  # 数据存储方式
 name                   = faygosessionID        # 客户端存储cookie的名字
 provider_config        =                         # 配置信息，根据不同的引擎设置不同的配置信息
-cookie_lifetime        = 0                       # 客户端存储的cookie的时间，默认值是0，即浏览器生命周期
-gc_lifetime            = 300                     # 触发GC的时间
-max_lifetime           = 3600                    # 会话的最大生命周期
+cookie_life_second     = 0                       # 客户端存储的cookie的时间，默认值是0，即浏览器生命周期
+gc_life_second         = 300                     # 触发GC的时间
+max_life_second        = 3600                    # 会话的最大生命周期
 auto_setcookie         = true                    # 是否自动设置关于session的cookie值，一般默认true
 domain                 =                         # 可以访问此cookie的域名
 enable_sid_in_header   = false                   # 是否将session ID写入Header
@@ -339,9 +339,9 @@ license_url =                                    # 协议内容URL
 
 ```
 [cache]                                          # 文件内存缓存配置区
-enable  = false                                  # 是否开启
-size_mb = 32                                     # 允许缓存使用的最大内存（单位MB），为0时系统自动设置为512KB
-expire  = 60                                     # 缓存最大时长
+enable         = false                           # 是否开启
+size_mb        = 32                              # 允许缓存使用的最大内存（单位MB），为0时系统自动设置为512KB
+expire_second  = 60                              # 缓存最大时长
 
 [gzip]                                           # gzip压缩配置区
 enable         = false                           # 是否开启
@@ -351,9 +351,9 @@ methods        = GET                             # 允许压缩的请求方法�
 
 [log]                                            # 日志配置区
 console_enable = true                            # 是否启用控制台日志
-console_level  = debug                           # 控制台日志打印水平
+console_level  = debug                           # 控制台日志打印水平：critical | error | warning | notice | info | debug
 file_enable    = true                            # 是否启用文件日志
-file_level     = debug                           # 文件日志打印水平
+file_level     = debug                           # 文件日志打印水平：critical | error | warning | notice | info | debug
 async_len      = 0                               # 0表示同步打印，大于0表示异步缓存长度
 ```
 

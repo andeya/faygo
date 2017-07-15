@@ -37,7 +37,7 @@ func JoinStatic(shortFilename string) string {
 
 // SyncINI quickly create your own configuration files.
 // Struct tags reference `https://github.com/go-ini/ini`
-func SyncINI(structPointer interface{}, callback func(existed bool, saveOnce func() error) error, filename ...string) error {
+func SyncINI(structPointer interface{}, callback func(existed bool, mustSave func() error) error, filename ...string) error {
 	t := reflect.TypeOf(structPointer)
 	if t.Kind() != reflect.Ptr {
 		return errors.New("SyncINI's param must be struct pointer type.")
@@ -76,7 +76,7 @@ func SyncINI(structPointer interface{}, callback func(existed bool, saveOnce fun
 	}
 
 	var once sync.Once
-	var saveOnce = func() error {
+	var mustSave = func() error {
 		var err error
 		once.Do(func() {
 			err = cfg.ReflectFrom(structPointer)
@@ -92,13 +92,13 @@ func SyncINI(structPointer interface{}, callback func(existed bool, saveOnce fun
 	}
 
 	if callback != nil {
-		if err = callback(existed, saveOnce); err != nil {
+		if err = callback(existed, mustSave); err != nil {
 			return err
 		}
 	}
 
 	if !existed {
-		return saveOnce()
+		return mustSave()
 	}
 	return nil
 }

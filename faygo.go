@@ -475,7 +475,7 @@ var (
 			paramNameMapper: defaultParamNameMapper,
 			fsManager: newFileServerManager(
 				globalConfig.Cache.SizeMB*1024*1024,
-				globalConfig.Cache.Expire,
+				globalConfig.Cache.ExpireSecond,
 				globalConfig.Cache.Enable,
 				globalConfig.Gzip.Enable,
 			),

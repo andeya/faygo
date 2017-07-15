@@ -154,7 +154,7 @@ func (ctx *Context) XSRFToken(specifiedExpiration ...int) string {
 			if len(specifiedExpiration) > 0 && specifiedExpiration[0] > 0 {
 				ctx.xsrfExpire = specifiedExpiration[0]
 			} else if ctx.xsrfExpire == 0 {
-				ctx.xsrfExpire = ctx.frame.config.XSRF.Expire
+				ctx.xsrfExpire = ctx.frame.config.XSRF.ExpireSecond
 			}
 		}
 		ctx._xsrfToken = token

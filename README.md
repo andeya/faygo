@@ -301,22 +301,22 @@ handle_method_not_allowed = true                 # Returns 405 if the requested 
 handle_options            = true                 # Automatic response OPTIONS request, you can set the default Handler in Faygo
 
 [xsrf]                                           # XSRF security section
-enable = false                                   # Whether enabled or not
-key    = faygoxsrf                             # Encryption key
-expire = 3600                                    # Expire of XSRF token
+enable        = false                            # Whether enabled or not
+key           = faygoxsrf                        # Encryption key
+expire_second = 3600                             # Expire of XSRF token
 
 [session]                                        # Session section
 enable                 = false                   # Whether enabled or not
 provider               = memory                  # Data storage
-name                   = faygosessionID        # The client stores the name of the cookie
+name                   = faygosessionID          # The client stores the name of the cookie
 provider_config        =                         # According to the different engine settings different configuration information
-cookie_lifetime        = 0                       # The default value is 0, which is the lifetime of the browser
-gc_lifetime            = 300                     # The interval between triggering the GC
-max_lifetime           = 3600                    # The session max lefetime
+cookie_life_second     = 0                       # The default value is 0, which is the lifetime of the browser
+gc_life_second         = 300                     # The interval between triggering the GC
+max_life_second        = 3600                    # The session max lefetime
 auto_setcookie         = true                    # Automatically set on the session cookie value, the general default true
 domain                 =                         # The domain name that is allowed to access this cookie
 enable_sid_in_header   = false                   # Whether to write a session ID to the header
-name_in_header         = Faygosessionid        # The name of the header when the session ID is written to the header
+name_in_header         = Faygosessionid          # The name of the header when the session ID is written to the header
 enable_sid_in_urlquery = false                   # Whether to write the session ID to the URL Query params
 
 [apidoc]                                         # API documentation section
@@ -324,7 +324,7 @@ enable      = true                               # Whether enabled or not
 path        = /apidoc                            # The URL path
 nolimit     = false                              # If true, access is not restricted
 real_ip     = false                              # If true, means verifying the real IP of the visitor
-whitelist   = 192.*|202.122.246.170              # `whitelist=192.*|202.122.246.170` means: only IP addresses that are prefixed with `192 'or equal to` 202.122.246.170' are allowed
+whitelist   = 192.*|202.122.246.170              # `whitelist=192.*|202.122.246.170` means: only IP addresses that are prefixed with `192.` or equal to `202.122.246.170` are allowed
 desc        =                                    # Description of the application
 email       =                                    # Technician's Email
 terms_url   =                                    # Terms of service
@@ -336,9 +336,9 @@ license_url =                                    # The URL of the protocol conte
 
 ```
 [cache]                                          # Cache section
-enable  = false                                  # Whether enabled or not
-size_mb = 32                                     # Max size by MB for file cache, the cache size will be set to 512KB at minimum.
-expire  = 60                                     # Maximum duration for caching
+enable         = false                           # Whether enabled or not
+size_mb        = 32                              # Max size by MB for file cache, the cache size will be set to 512KB at minimum.
+expire_second  = 60                              # Maximum duration for caching
 
 [gzip]                                           # compression section
 enable         = false                           # Whether enabled or not
@@ -348,9 +348,9 @@ methods        = GET                             # List of HTTP methods to compr
 
 [log]                                            # Log section
 console_enable = true                            # Whether enabled or not console logger
-console_level  = debug                           # Console logger level
+console_level  = debug                           # Console logger level: critical | error | warning | notice | info | debug
 file_enable    = true                            # Whether enabled or not file logger
-file_level     = debug                           # File logger level
+file_level     = debug                           # File logger level: critical | error | warning | notice | info | debug
 async_len      = 0                               # The length of asynchronous buffer, 0 means synchronization
 ```
 
