@@ -290,9 +290,10 @@ tls_certfile           =                         # TLS certificate file path
 tls_keyfile            =                         # TLS key file path
 letsencrypt_dir        =                         # Let's Encrypt TLS certificate cache directory
 unix_filemode          = 438                     # File permissions for UNIX listener (438 equivalent to 0666)
-read_timeout           = 0                       # Maximum duration for reading the full request (including body)
-write_timeout          = 0                       # Maximum duration for writing the full response (including body)
+read_timeout           = 0s                      # Maximum duration for reading the full; ns|µs|ms|s|m|h request (including body)
+write_timeout          = 0s                      # Maximum duration for writing the full; ns|µs|ms|s|m|h response (including body)
 multipart_maxmemory_mb = 32                      # Maximum size of memory that can be used when receiving uploaded files
+slow_response_threshold = 0s                     # When response time > slow_response_threshold, log level = 'WARNING'; 0 means not limited; ns|µs|ms|s|m|h
 
 [router]                                         # Routing configuration section
 redirect_trailing_slash   = true                 # Automatic redirection (for example, `/foo/` -> `/foo`)

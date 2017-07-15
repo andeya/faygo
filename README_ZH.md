@@ -293,9 +293,10 @@ tls_certfile           =                         # TLS证书文件路径
 tls_keyfile            =                         # TLS密钥文件路径
 letsencrypt_dir        =                         # Let's Encrypt TLS证书缓存目录
 unix_filemode          = 438                     # UNIX listener的文件权限（438即0666）
-read_timeout           = 0                       # 读取请求数据超时
-write_timeout          = 0                       # 写入响应数据超时
+read_timeout           = 0s                      # 读取请求数据超时；ns|µs|ms|s|m|h
+write_timeout          = 0s                      # 写入响应数据超时；ns|µs|ms|s|m|h
 multipart_maxmemory_mb = 32                      # 接收上传文件时允许使用的最大内存
+slow_response_threshold = 0s                     # 当响应时长 > slow_response_threshold时, 日志级别调整为 'WARNING'；0 表示不限；ns|µs|ms|s|m|h
 
 [router]                                         # 路由配置区
 redirect_trailing_slash   = true                 # 当前请求的URL含`/`后缀如`/foo/`且相应路由不存在时，如存在`/foo`，则自动跳转至`/foo`
