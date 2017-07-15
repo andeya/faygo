@@ -524,7 +524,12 @@ func (frame *Framework) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	default:
 		code = color.Green(n)
 	}
-	frame.syslog.Infof("[I] %15s %7s  %3s %10d %12s %-30s | ", ctx.RealIP(), method, code, ctx.Size(), time.Since(start), u)
+	cost := time.Since(start)
+	if cost < frame.config.slowResponseThreshold {
+		frame.syslog.Infof("[I] %15s %7s  %3s %10d %12s %-30s | ", ctx.RealIP(), method, code, ctx.Size(), cost, u)
+	} else {
+		frame.syslog.Warningf(color.Yellow("[W]")+" %15s %7s  %3s %10d %12s(slow) %-30s | ", ctx.RealIP(), method, code, ctx.Size(), cost, u)
+	}
 }
 
 func (frame *Framework) serveHTTP(ctx *Context) {

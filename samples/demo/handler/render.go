@@ -23,7 +23,7 @@ func init() {
 
 func Index() faygo.HandlerFunc {
 	return func(ctx *faygo.Context) error {
-		// time.Sleep(10e9)
+		// time.Sleep(2e9)
 		return ctx.Render(200, "../../_syso/index.html", faygo.Map{
 			"TITLE":   "faygo",
 			"VERSION": faygo.VERSION,

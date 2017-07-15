@@ -16,6 +16,7 @@ package faygo
 
 import (
 	"fmt"
+	"math"
 	"os"
 	"sort"
 	"strings"
@@ -50,13 +51,15 @@ type (
 		// Maximum duration for writing the full response (including body).
 		//
 		// By default response write timeout is unlimited.
-		WriteTimeout         time.Duration `ini:"write_timeout" comment:"Maximum duration for writing the full response (including body), ns|µs|ms|s|m|h"`
-		MultipartMaxMemoryMB int64         `ini:"multipart_maxmemory_mb" comment:"Maximum size of memory that can be used when receiving uploaded files"`
-		multipartMaxMemory   int64         `ini:"-"`
-		Router               RouterConfig  `ini:"router" comment:"Routing configuration section"`
-		XSRF                 XSRFConfig    `ini:"xsrf" comment:"XSRF security section"`
-		Session              SessionConfig `ini:"session" comment:"Session section"`
-		APIdoc               APIdocConfig  `ini:"apidoc" comment:"API documentation section"`
+		WriteTimeout          time.Duration `ini:"write_timeout" comment:"Maximum duration for writing the full response (including body), ns|µs|ms|s|m|h"`
+		MultipartMaxMemoryMB  int64         `ini:"multipart_maxmemory_mb" comment:"Maximum size of memory that can be used when receiving uploaded files"`
+		multipartMaxMemory    int64         `ini:"-"`
+		Router                RouterConfig  `ini:"router" comment:"Routing configuration section"`
+		XSRF                  XSRFConfig    `ini:"xsrf" comment:"XSRF security section"`
+		Session               SessionConfig `ini:"session" comment:"Session section"`
+		SlowResponseThreshold time.Duration `ini:"slow_response_threshold" comment:"When response time > slow_response_threshold, log level = 'WARNING'; 0 means not limited, ns|µs|ms|s|m|h"`
+		slowResponseThreshold time.Duration `ini:"-"`
+		APIdoc                APIdocConfig  `ini:"apidoc" comment:"API documentation section"`
 	}
 	// RouterConfig is the configuration about router
 	RouterConfig struct {
@@ -290,6 +293,11 @@ func newConfig(filename string) Config {
 				}
 			}
 			background.multipartMaxMemory = background.MultipartMaxMemoryMB * MB
+			if background.SlowResponseThreshold <= 0 {
+				background.slowResponseThreshold = time.Duration(math.MaxInt64)
+			} else {
+				background.slowResponseThreshold = background.SlowResponseThreshold
+			}
 			background.APIdoc.Comb()
 			return mustSave()
 		},
