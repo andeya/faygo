@@ -7,10 +7,11 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/go-xorm/core"
 	"reflect"
 	"strconv"
 	"time"
+
+	"github.com/go-xorm/core"
 )
 
 //-------解析参数的函数------------
@@ -29,7 +30,7 @@ func trimBefore(s string, c byte, n int) string {
 }
 
 // 将s 根据从右边第一个出现的c进行分割成两个stirng,比如 'aa / bb / cc' -> 'aa / bb','cc'
-func splitRight(s string, c byte) (left, right string) {
+func SplitRight(s string, c byte) (left, right string) {
 	for i := len(s) - 1; i >= 0; i-- {
 		if s[i] == c {
 			return s[:i], s[i+1:]
@@ -45,7 +46,7 @@ func trimBeforeSplitRight(s string, c byte, n int) (left, right string) {
 	for i := 0; i <= len(s)-1; i++ {
 		if s[i] == c {
 			if r == n {
-				return splitRight(s[i+1:], c)
+				return SplitRight(s[i+1:], c)
 			}
 			r++
 		}

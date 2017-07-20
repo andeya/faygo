@@ -4,22 +4,29 @@
 * date   : 2016.12.13
 * desc   :
 * history:
- */
+           2017.05.28
+		    -增加 对主从表的使用id的处理--待测试
+           2017.03.22
+			-增加两种类型的sql，处理二进制对象保存到数据库和从数据库获取：
+         	 ST_GETBLOB  //10 获取BLOB (binary large object)，二进制大对象从数据库
+	         ST_SETBLOB  //11 保存BLOB (binary large object)，二进制大对象到数据库
+*/
 package directsql
 
 import (
 	"encoding/xml"
 	"errors"
-	"github.com/fsnotify/fsnotify"
-	"github.com/go-xorm/core"
-	"github.com/henrylee2cn/faygo"
-	faygoxorm "github.com/henrylee2cn/faygo/ext/db/xorm"
-	confpkg "github.com/henrylee2cn/faygo/ini"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
 	"sync"
+
+	"github.com/fsnotify/fsnotify"
+	"github.com/go-xorm/core"
+	"github.com/henrylee2cn/faygo"
+	faygoxorm "github.com/henrylee2cn/faygo/ext/db/xorm"
+	confpkg "github.com/henrylee2cn/faygo/ini"
 )
 
 //var modelsqls map[string]*TModel
@@ -94,6 +101,8 @@ const (
 	ST_IMPORT                         //7 导入数据的SQL：通过xlsx导入数据配置的SQL
 	ST_EXPORT                         //8 导出数据的SQL：导出excel格式文件数据
 	ST_REPORT                         //9 报表用的SQL：通过xlsx模板创建报表的SQL
+	ST_GETBLOB                        //10 获取BLOB (binary large object)，二进制大对象从数据库
+	ST_SETBLOB                        //11 保存BLOB (binary large object)，二进制大对象到数据库
 )
 
 //TSqlParameter 参数校验定义
@@ -109,6 +118,7 @@ type TSqlParameter struct {
 	Defaultstr  string       `xml:"default,attr"`  // 默认值 undefined/uuid/userid/usercode/username/rootgroupid/rootgroupname/groupid/groupname/nowdate/nowtime
 	Default     TDefaultType `-`                   //数值类型
 	Return      bool         `xml:"return,attr"`   //服务端生成的默认值是否返回到客户端： 0(false)=默认，不返回   1(true)=返回到客户端
+	Parentid    bool         `xml:"parentid,attr"` //是否作为从表的关联本表（主表）的id的值
 }
 
 //参数类型：string/number/email/date/datetime/time
@@ -135,7 +145,7 @@ const (
 	DT_NOWDATETIME                     //3=当前日期时间 now datetime
 	DT_NOW_UNIX                        //4=当前时间的unix值 int64 now date
 	DT_CUSTOM                          //5=自定义，采用注册自定义变量实现
-
+	DT_PARENTID                        //6=关联的主表的Id的值
 )
 
 //---------------------------------------------------------------------------------------------------
@@ -299,6 +309,10 @@ func (ms *TModels) parseTModel(msqlfile string) (*TModel, error) {
 			se.Sqltype = ST_EXPORT
 		case "report":
 			se.Sqltype = ST_REPORT
+		case "getblob":
+			se.Sqltype = ST_GETBLOB
+		case "setblob":
+			se.Sqltype = ST_SETBLOB
 		default:
 			faygo.Error(errors.New("错误：配置文件[ " + msqlfile + " ]中存在无效的sql节点类型[ " + se.Sqltypestr + " ]!"))
 		}
@@ -335,6 +349,8 @@ func (ms *TModels) parseTModel(msqlfile string) (*TModel, error) {
 					para.Default = DT_NOWDATETIME //当前时间
 				case "nowunix":
 					para.Default = DT_NOW_UNIX //=当前日期时间unix值 int64 now datetime
+				case "parentid":
+					para.Default = DT_PARENTID //主表的id的值 （parentid value）
 				default:
 					if len(strings.TrimSpace(para.Paratypestr)) > 0 {
 						para.Default = DT_CUSTOM

@@ -4,8 +4,9 @@
 * date   : 2016.12.13
 * desc   :
 * history :
-
- */
+          2017.05.28
+		  - 增加主从表关联id的服务端处理。完成，未测试
+*/
 package directsql
 
 import (
@@ -128,10 +129,20 @@ func dealwithParameter(paras []*TSqlParameter, mp map[string]interface{}, ctx *f
 				} else {
 					faygo.Error("Error: sql default parameter error,", err)
 				}
+				//如果是parentid则从 临时缓存的取值。
+			case DT_PARENTID:
+				mp[para.Name] = ctx.Data("__directsql__parentid")
+				faygo.Debug("Read parentid value:", mp[para.Name])
 			}
 			//如果需要返回
 			if para.Return {
 				result[para.Name] = mp[para.Name]
+			}
+			//如果作为从表的关联主表的id使用，则将值临时放到ctx，以便从表取值时用。
+			if para.Parentid {
+				ctx.SetData("__directsql__parentid", mp[para.Name])
+				faygo.Debug("Write parentid value:", mp[para.Name])
+
 			}
 			//如果不是从客户的传入的并且有默认值设置则后边的验证规则不执行了，如果是从客户的传入的则需要进行进行后边的默认值校验
 			continue

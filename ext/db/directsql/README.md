@@ -1,5 +1,10 @@
 # directSQL 使用说明
 
+## 升级:
+   增加两种类型的sql，处理二进制对象保存到数据库和从数据库获取
+   - getblob: ST_GETBLOB 获取BLOB (binary large object)，二进制大对象从数据库
+   - setblob: ST_SETBLOB 保存BLOB (binary large object)，二进制大对象到数据库
+   
 ## 简介
     directSQL通过配置sql映射文件，配置路由后可直接执行配置的sql并返回结果到客户端。
 
@@ -48,9 +53,11 @@
     - batchexec/batchinsert        ST_BATCHEXEC                     //5=批量插入，配置一个sql，根据参数循环执行(单数据集批量插入)
                 batchupdate        ST_BATCHEXEC                     //  批量更新，配置一个sql，根据参数循环执行(单数据集批量更新)
     - batchmultiexec/batchcomplex  ST_BATCHMULTIEXEC                //6=批量复合SQL，配置多个sql(一般多数据集批量插入或更新)
+    - getblob                      ST_GETBLOB                       //从数据库获取二进制内容
+    - setblob                      ST_SETBLOB                       //保存二进制内容到数据库
 
 ## 客户端传入参数
-    - select/pagingselect/multiselect/exec(delete/insert/update)参数,简单json参数 
+    - select/pagingselect/multiselect/exec(delete/insert/update/getblob/setblob)参数,简单json参数 
          {"id":"001","name":"aaaaa"}
         其中参数中可包含：
          - "callback":"可选参数，不为空时返回JSONP"（仅适用于 select/pagingselect/multiselect）,
@@ -83,12 +90,15 @@
          - cached : 是否缓存结果，0=不缓存 1=缓存，缓存的时间由cachetime确定（如果没有配置cachetime则自动为30分钟），只对 select，multiselect，pagingselect(第一页)有效
          - cachetime ：缓存有效时间，不配置或配置为0时 默认为directsql.config的参数分钟，-1为一直有效，-2为一月，-3为一周，单位为分钟。 
          - return: 是否返回，0或不配置为不返回，1为返回该值到客户端，(只适用于带有服务端默认值的才起作用)
+         - parentid 是否是作为parentid 使用，0或不配置则不作为父id使用，配置为1则作为从表的与主表关联的父id使用，在SQL类型为batchcomplexc 的作为主从表（一主多从，主表只有一条记录）的从表的父id使用，从表的 SQL参数中需要配置 default类的取值为 parentid，则系统自动用主表的这个值设置到从表的这个参数值中  
          - default: 服务端默认值：如果存在服务端默认值定义则客户端传入参数时可以不传由服务端处理并不执行验证规则（如果客户端传入了则使用客户端的值，并执行服务端的规则验证），
             默认参数取值如下：
-             - uuid: 生成新的uuid，并返回到客户端
+             - uuid: 生成新的uuid
              - nowdate: 当前服务器日期
              - now: 当前服务器日期时间 
-             - nowunix: 当前服务器日期时间 unix格式(64位整数)  
+             - nowunix: 当前服务器日期时间 unix格式(64位整数)
+             - parentid :父id，在SQL类型为batchcomplexc 的作为主从表（一主多从，主表只有一条记录）的从表的父id使用
+                             
             默认参数取值扩展定义并使用
                1）编写函数 参数必须为*faygo.Context:
                   func name(ctx *faygo.Context) interface{

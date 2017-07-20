@@ -3,6 +3,7 @@
 * author:畅雨
 * date:  2016.10.27
 * history:
+         2017.03.22  增加 单独的获取与保存二进制文件到数据库配置项
          2016.10.17：优化 select与pagingselect返回结果，当数据为空时返回[]
 *
 */
@@ -11,7 +12,9 @@ package directsql
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"html/template"
+	"io/ioutil"
 
 	"github.com/henrylee2cn/faygo"
 )
@@ -200,20 +203,6 @@ func DirectSQL() faygo.HandlerFunc {
 			}
 			//发送JSON(P)响应
 			return sendJSON(ctx, callback, jsonb)
-			//如果没有结果集则输出[]
-			/*if len(data) == 0 {
-				_, err := ctx.Write([]byte("[]"))
-				if err != nil {
-					return err
-				}
-				return nil
-			}
-			//
-			if len(callback) > 0 {
-				return ctx.JSONP(200, callback, data)
-			}
-			return ctx.JSON(200, data)*/
-
 		case ST_MULTISELECT: //返回多結果集選擇
 			//.1 获取POST参数並轉換
 			var jsonpara map[string]interface{}
@@ -428,6 +417,98 @@ func DirectSQL() faygo.HandlerFunc {
 			} else {
 				return ctx.JSONMsg(200, 200, "Bacth Multi Exec sql ok!")
 			}
+		case ST_GETBLOB: //执行sql从数据库中获取BLOB字段的二进制流
+			//faygo.Info("Info: getblob sql")
+			var jsonpara map[string]interface{}
+			// query paramaters
+			sp := ctx.QueryParamAll()
+			jsonpara = make(map[string]interface{})
+			for i, v := range sp {
+				jsonpara[i] = v[0]
+			}
+			//参数验证并处理
+			_, err := dealwithParameter(se.Cmds[0].Parameters, jsonpara, ctx)
+			if err != nil {
+				faygo.Error(err.Error())
+				return ctx.JSONMsg(400, 400, err.Error())
+			}
+			//執行並返回結果
+			data, err := m.getBLOB(se, jsonpara)
+			if err != nil {
+				faygo.Error(err.Error())
+				return ctx.JSONMsg(404, 404, err.Error())
+			}
+			//faygo.Debug("getblob  :", data)
+			//流方式返回二进制结果
+			err = ctx.Bytes(200, "application/octet-stream", data)
+			if err != nil {
+				faygo.Error(err.Error())
+				return ctx.JSONMsg(404, 404, err.Error())
+			}
+			return nil
+
+		case ST_SETBLOB: //执行sql保存二进制流到数据库BLOB字段
+			//faygo.Info("Info: setblob sql")
+			// 如果不存在提交的文件
+			if !ctx.HasFormFile("inputfile") {
+				//faygo.Error(err.Error())
+				return ctx.JSONMsg(404, 404, errors.New("error: Not has inputfile tag!"))
+			}
+			//获取提交的二进制数据
+			f, _, err := ctx.R.FormFile("inputfile")
+			if err != nil {
+				faygo.Error(err.Error())
+				return ctx.JSONMsg(400, 400, err.Error())
+			}
+			defer func() {
+				err2 := f.Close()
+				if err2 != nil && err == nil {
+					err = err2
+				}
+			}()
+			//将文件内容读取到[]Bytes
+			blobdata, err := ioutil.ReadAll(f)
+			if err != nil {
+				faygo.Error(err.Error())
+				return ctx.JSONMsg(400, 400, err.Error())
+			}
+			var jsonpara map[string]interface{}
+			// query paramaters
+			sp := ctx.QueryParamAll()
+			jsonpara = make(map[string]interface{})
+			for i, v := range sp {
+				jsonpara[i] = v[0]
+			}
+			//循环处理参数,将第一个blob类型参数的值设置为二进制文件
+			//faygo.Debug("setblob sql paras:", se.Cmds[0].Parameters)
+			for _, para := range se.Cmds[0].Parameters {
+				if para.Paratype == PT_BLOB {
+					faygo.Debug("setblob sql blob para :", para.Name)
+					jsonpara[para.Name] = blobdata
+					break
+				}
+			}
+			//参数验证并处理
+			result, err := dealwithParameter(se.Cmds[0].Parameters, jsonpara, ctx)
+			if err != nil {
+				faygo.Error(err.Error())
+				return ctx.JSONMsg(400, 400, err.Error())
+			}
+
+			//jsonpara["doc"] = blobdata
+			//faygo.Debug("setblob para:", jsonpara)
+			//执行 setBLOB 操作，保存数据。
+			err = m.setBLOB(se, jsonpara)
+			if err != nil {
+				faygo.Error(err.Error())
+				return ctx.JSONMsg(404, 404, err.Error())
+			}
+			//如果存在服务端生成并需要返回的参数的则返回到客户端
+			if (result != nil) && (len(result) > 0) {
+				return ctx.JSONMsg(200, 200, result)
+			}
+			return ctx.JSONMsg(200, 200, "Exec setBLOB sql ok!")
+
 		}
 		return ctx.JSONMsg(404, 404, "Undefined sqltype!")
 	}

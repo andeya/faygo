@@ -4,7 +4,11 @@
 * date   : 2016.06.13
 * desc   : 关联关系全部通Id进行关联
 * history :
-        -2016.11.20 将执行sql的execMap修改该可以执行多个配置的cmd，采用相同的参数
+           2017.03.22
+			-增加两种类型的sql，处理二进制对象保存到数据库和从数据库获取：
+         	 ST_GETBLOB  //10 获取BLOB (binary large object)，二进制大对象从数据库
+	         ST_SETBLOB  //11 保存BLOB (binary large object)，二进制大对象到数据库
+         -2016.11.20 将执行sql的execMap修改该可以执行多个配置的cmd，采用相同的参数
 */
 package directsql
 
@@ -182,6 +186,51 @@ func (m *TModel) bacthMultiExecMap(se *TSql, mp map[string][]map[string]interfac
 		}
 		return nil
 	})
+}
+
+/* / BinaryData的类型是blob/longblob
+func addData(db *sql.DB, data []byte) error {
+    _, err := db.Exec("INSERT INTO MyTable(BinaryData) VALUES(?)", data)
+    return err
+}*/
+func (m *TModel) setBLOB(se *TSql, mp map[string]interface{}) error {
+	faygo.Debug("setBLOB :" + se.Cmds[0].Sql)
+	_, err := m.DB.ExecMap(se.Cmds[0].Sql, &mp)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+//执行普通的查询SQL返回一个二进制字段的值   mp 是MAP类型命名参数 map[string]interface{},返回结果 []byte
+func (m *TModel) getBLOB(se *TSql, mp map[string]interface{}) ([]byte, error) {
+	faygo.Debug("getBLOB parameters :", mp)
+	//执行sql
+	rows, err := m.DB.QueryMap(se.Cmds[0].Sql, &mp)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	//字段slice
+	fields, err := rows.Columns()
+	if err != nil {
+		faygo.Error(err)
+		return nil, err
+	}
+	//只能返回一个字段，即要获取的二进制字段
+	if len(fields) != 1 {
+		return nil, errors.New("error: getBLOB sql only return one field")
+	}
+	if rows.Next() {
+		blobvalue := make([]byte, 1024)
+		err = rows.Scan(&blobvalue)
+		if err != nil {
+			faygo.Error(err)
+			return nil, err
+		}
+		return blobvalue, nil
+	}
+	return nil, errors.New("error: getBLOB sql result is empty!")
 }
 
 //ransaction handler 封装在一个事务中执行多个SQL语句
