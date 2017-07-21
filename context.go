@@ -120,7 +120,7 @@ type (
 	Context struct {
 		R                  *http.Request // the *http.Request
 		W                  *Response     // the *Response cooked by the http.ResponseWriter
-		CruSession         session.Store
+		CurSession         session.Store
 		limitedRequestBody []byte // the copy of requset body(Limited by maximum length)
 		frame              *Framework
 		handlerChain       HandlerChain                // keep track all registed handlers
@@ -197,28 +197,28 @@ var errNotEnableSession = errors.New("before using the session, must set config 
 
 // StartSession starts session and load old session data info this controller.
 func (ctx *Context) StartSession() (session.Store, error) {
-	if ctx.CruSession != nil {
-		return ctx.CruSession, nil
+	if ctx.CurSession != nil {
+		return ctx.CurSession, nil
 	}
 	if !ctx.enableSession {
 		return nil, errNotEnableSession
 	}
 	var err error
-	ctx.CruSession, err = ctx.frame.sessionManager.SessionStart(ctx.W, ctx.R)
-	return ctx.CruSession, err
+	ctx.CurSession, err = ctx.frame.sessionManager.SessionStart(ctx.W, ctx.R)
+	return ctx.CurSession, err
 }
 
 // GetSessionStore return SessionStore.
 func (ctx *Context) GetSessionStore() (session.Store, error) {
-	if ctx.CruSession != nil {
-		return ctx.CruSession, nil
+	if ctx.CurSession != nil {
+		return ctx.CurSession, nil
 	}
 	if !ctx.enableSession {
 		return nil, errNotEnableSession
 	}
 	var err error
-	ctx.CruSession, err = ctx.frame.sessionManager.GetSessionStore(ctx.W, ctx.R)
-	return ctx.CruSession, err
+	ctx.CurSession, err = ctx.frame.sessionManager.GetSessionStore(ctx.W, ctx.R)
+	return ctx.CurSession, err
 }
 
 // SetSession puts value into session.
@@ -227,7 +227,7 @@ func (ctx *Context) SetSession(key interface{}, value interface{}) {
 		ctx.Log().Warning(err.Error())
 		return
 	}
-	ctx.CruSession.Set(key, value)
+	ctx.CurSession.Set(key, value)
 }
 
 // GetSession gets value from session.
@@ -236,7 +236,7 @@ func (ctx *Context) GetSession(key interface{}) interface{} {
 		ctx.Log().Debug(err.Error())
 		return nil
 	}
-	return ctx.CruSession.Get(key)
+	return ctx.CurSession.Get(key)
 }
 
 // DelSession removes value from session.
@@ -245,7 +245,7 @@ func (ctx *Context) DelSession(key interface{}) {
 		ctx.Log().Debug(err.Error())
 		return
 	}
-	ctx.CruSession.Delete(key)
+	ctx.CurSession.Delete(key)
 }
 
 // SessionRegenerateID regenerates session id for this session.
@@ -255,8 +255,8 @@ func (ctx *Context) SessionRegenerateID() {
 		ctx.Log().Debug(err.Error())
 		return
 	}
-	ctx.CruSession.SessionRelease(ctx.W)
-	ctx.CruSession = ctx.frame.sessionManager.SessionRegenerateID(ctx.W, ctx.R)
+	ctx.CurSession.SessionRelease(ctx.W)
+	ctx.CurSession = ctx.frame.sessionManager.SessionRegenerateID(ctx.W, ctx.R)
 }
 
 // DestroySession cleans session data and session cookie.
@@ -265,8 +265,8 @@ func (ctx *Context) DestroySession() {
 		ctx.Log().Debug(err.Error())
 		return
 	}
-	ctx.CruSession.Flush()
-	ctx.CruSession = nil
+	ctx.CurSession.Flush()
+	ctx.CurSession = nil
 	ctx.frame.sessionManager.SessionDestroy(ctx.W, ctx.R)
 }
 
@@ -426,9 +426,9 @@ func (ctx *Context) beforeWriteHeader() {
 		ctx.SetSecureCookie(ctx.frame.config.XSRF.Key, "_xsrf", ctx._xsrfToken, ctx.xsrfExpire)
 	}
 	if ctx.enableSession {
-		if ctx.CruSession != nil {
-			ctx.CruSession.SessionRelease(ctx.W)
-			ctx.CruSession = nil
+		if ctx.CurSession != nil {
+			ctx.CurSession.SessionRelease(ctx.W)
+			ctx.CurSession = nil
 		}
 	}
 }
