@@ -17,7 +17,7 @@ func Route1(frame *faygo.Framework) {
 			frame.NewGroup("home",
 				frame.NewNamedGET("html", "render", &handler.Render{}),
 				frame.NewNamedAPI("params", "GET POST", "param/:id/*additional", &handler.Param{
-					Paragraph: []string{"abc"},
+					Paragraph: []string{"default_paragraph"},
 				}),
 			),
 			frame.NewNamedGET("websocket", "/ws", handler.WebsocketPage()),

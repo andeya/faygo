@@ -116,88 +116,18 @@ func ParseTags(tag string) map[string]string {
 	return values
 }
 
-// func ParseTags(s string) map[string]string {
-// 	c := strings.Split(s, ",")
-// 	m := make(map[string]string)
-// 	for _, v := range c {
-// 		a := strings.IndexByte(v, '(')
-// 		b := strings.LastIndexByte(v, ')')
-// 		if a != -1 && b != -1 {
-// 			m[v[:a]] = v[a+1 : b]
-// 			continue
-// 		}
-// 		m[v] = ""
-// 	}
-// 	return m
-// }
-
-// ParseTags returns the key-value in the tag string.
-// If the tag does not have the conventional format,
-// the value returned by ParseTags is unspecified.
-// func ParseTags(tag string) map[string]string {
-// 	var values = map[string]string{}
-
-// 	for tag != "" {
-// 		// Skip leading space.
-// 		i := 0
-// 		for i < len(tag) && (tag[i] == ' ' || tag[i] == ',') {
-// 			i++
-// 		}
-// 		tag = tag[i:]
-// 		if tag == "" {
-// 			break
-// 		}
-
-// 		// Scan to colon. A space, a quote or a control character is a syntax error.
-// 		// Strictly speaking, control chars include the range [0x7f, 0x9f], not just
-// 		// [0x00, 0x1f], but in practice, we ignore the multi-byte control characters
-// 		// as it is simpler to inspect the tag's bytes than the tag's runes.
-// 		i = 0
-// 		for i < len(tag) && tag[i] > ' ' && tag[i] != '<' && tag[i] != ',' && tag[i] != 0x7f {
-// 			i++
-// 		}
-// 		if i == 0 || i+1 >= len(tag) || (tag[i] != '<' && tag[i] != ' ' && tag[i] != ',') {
-// 			break
-// 		}
-// 		name := string(tag[:i])
-// 		tag = tag[i:]
-// 		if tag[0] == ' ' || tag[0] == ',' {
-// 			values[name] = ""
-// 			continue
-// 		}
-// 		// Scans a string in parentheses to find the value..
-// 		i = 1
-// 		for i < len(tag) && tag[i] != '>' {
-// 			if tag[i] == '\\' {
-// 				i++
-// 				// Remove the escape character of `(` or `)`
-// 				if tag[i] == '<' || tag[i] == '>' {
-// 					tag = tag[:i-1] + tag[i:]
-// 					continue
-// 				}
-// 			}
-// 			i++
-// 		}
-// 		if i >= len(tag) {
-// 			break
-// 		}
-// 		values[name] = string(tag[1:i])
-// 		tag = tag[i+1:]
-// 	}
-// 	return values
-// }
-
 // Param use the struct field to define a request parameter model
 type Param struct {
-	apiName    string // ParamsAPI name
-	name       string // param name
-	indexPath  []int
-	isRequired bool              // file is required or not
-	isFile     bool              // is file param or not
-	tags       map[string]string // struct tags for this param
-	rawTag     reflect.StructTag // the raw tag
-	rawValue   reflect.Value     // the raw tag value
-	err        error             // the custom error for binding or validating
+	apiName     string // ParamsAPI name
+	name        string // param name
+	indexPath   []int
+	isRequired  bool              // file is required or not
+	isFile      bool              // is file param or not
+	tags        map[string]string // struct tags for this param
+	verifyFuncs []func(reflect.Value) error
+	rawTag      reflect.StructTag // the raw tag
+	rawValue    reflect.Value     // the raw tag value
+	err         error             // the custom error for binding or validating
 }
 
 const (
@@ -260,22 +190,9 @@ func (param *Param) IsFile() bool {
 	return param.isFile
 }
 
-func (param *Param) validate(value reflect.Value) error {
-	if value.Kind() != reflect.Slice {
-		return param.validateElem(value)
-	}
-	var err error
-	for i, count := 0, value.Len(); i < count; i++ {
-		if err = param.validateElem(value.Index(i)); err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
-// Validate tests if the param conforms to it's validation constraints specified
+// validate tests if the param conforms to it's validation constraints specified
 // int the KEY_REGEXP struct tag
-func (param *Param) validateElem(value reflect.Value) (err error) {
+func (param *Param) validate(value reflect.Value) (err error) {
 	defer func() {
 		p := recover()
 		if param.err != nil {
@@ -286,38 +203,55 @@ func (param *Param) validateElem(value reflect.Value) (err error) {
 			err = fmt.Errorf("%v", p)
 		}
 	}()
-	// range
-	if tuple, ok := param.tags[KEY_RANGE]; ok {
-		var f64 float64
-		switch value.Kind() {
-		case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
-			f64 = float64(value.Int())
-		case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
-			f64 = float64(value.Uint())
-		case reflect.Float32, reflect.Float64:
-			f64 = value.Float()
-		}
-		if err = validateRange(f64, tuple, param.name); err != nil {
+	for _, fn := range param.verifyFuncs {
+		if err = fn(value); err != nil {
 			return err
 		}
 	}
-	obj := value.Interface()
-	// nonzero
-	if _, ok := param.tags["nonzero"]; ok {
-		if value.Kind() != reflect.Struct && obj == reflect.Zero(value.Type()).Interface() {
-			return NewValidationError(ValidationErrorValueNotSet, param.name)
+	return nil
+}
+
+func (param *Param) makeVerifyFuncs() (err error) {
+	defer func() {
+		p := recover()
+		if param.err != nil {
+			if err != nil {
+				err = param.err
+			}
+		} else if p != nil {
+			err = fmt.Errorf("%v", p)
+		}
+	}()
+	// length
+	if tuple, ok := param.tags[KEY_LEN]; ok {
+		if fn, err := validateLen(tuple, param.name); err == nil {
+			param.verifyFuncs = append(param.verifyFuncs, fn)
+		} else {
+			return err
 		}
 	}
-	s, isString := obj.(string)
-	// length
-	if tuple, ok := param.tags[KEY_LEN]; ok && isString {
-		if err = validateLen(s, tuple, param.name); err != nil {
+	// range
+	if tuple, ok := param.tags[KEY_RANGE]; ok {
+		if fn, err := validateRange(tuple, param.name); err == nil {
+			param.verifyFuncs = append(param.verifyFuncs, fn)
+		} else {
+			return err
+		}
+	}
+	// nonzero
+	if _, ok := param.tags[KEY_NONZERO]; ok {
+		if fn, err := validateNonZero(param.name); err == nil {
+			param.verifyFuncs = append(param.verifyFuncs, fn)
+		} else {
 			return err
 		}
 	}
 	// regexp
-	if reg, ok := param.tags[KEY_REGEXP]; ok && isString {
-		if err = validateRegexp(s, reg, param.name); err != nil {
+	if reg, ok := param.tags[KEY_REGEXP]; ok {
+		var isStrings = param.rawValue.Kind() == reflect.Slice
+		if fn, err := validateRegexp(isStrings, reg, param.name); err == nil {
+			param.verifyFuncs = append(param.verifyFuncs, fn)
+		} else {
 			return err
 		}
 	}
@@ -350,61 +284,111 @@ func parseTuple(tuple string) (string, string) {
 	panic("invalid validation tuple")
 }
 
-func validateLen(s, tuple, paramName string) error {
-	a, b := parseTuple(tuple)
-	if len(a) > 0 {
-		min, err := strconv.Atoi(a)
-		if err != nil {
-			panic(err)
+func validateNonZero(paramName string) (func(value reflect.Value) error, error) {
+	return func(value reflect.Value) error {
+		obj := value.Interface()
+		if obj == reflect.Zero(value.Type()).Interface() {
+			return NewValidationError(ValidationErrorValueNotSet, paramName)
 		}
-		if len(s) < min {
-			return NewValidationError(ValidationErrorValueTooShort, paramName)
+		return nil
+	}, nil
+}
+
+func validateLen(tuple, paramName string) (func(value reflect.Value) error, error) {
+	var a, b = parseTuple(tuple)
+	var min, max int
+	var err error
+	if len(a) > 0 {
+		min, err = strconv.Atoi(a)
+		if err != nil {
+			return nil, err
 		}
 	}
 	if len(b) > 0 {
-		max, err := strconv.Atoi(b)
+		max, err = strconv.Atoi(b)
 		if err != nil {
-			panic(err)
-		}
-		if len(s) > max {
-			return NewValidationError(ValidationErrorValueTooLong, paramName)
+			return nil, err
 		}
 	}
-	return nil
+	return func(value reflect.Value) error {
+		length := value.Len()
+		if len(a) > 0 {
+			if length < min {
+				return NewValidationError(ValidationErrorValueTooShort, paramName)
+			}
+		}
+		if len(b) > 0 {
+			if length > max {
+				return NewValidationError(ValidationErrorValueTooLong, paramName)
+			}
+		}
+		return nil
+	}, nil
 }
 
 const accuracy = 0.0000001
 
-func validateRange(f64 float64, tuple, paramName string) error {
-	a, b := parseTuple(tuple)
+func validateRange(tuple, paramName string) (func(value reflect.Value) error, error) {
+	var a, b = parseTuple(tuple)
+	var min, max float64
+	var err error
 	if len(a) > 0 {
-		min, err := strconv.ParseFloat(a, 64)
+		min, err = strconv.ParseFloat(a, 64)
 		if err != nil {
-			return err
-		}
-		if math.Min(f64, min) == f64 && math.Abs(f64-min) > accuracy {
-			return NewValidationError(ValidationErrorValueTooSmall, paramName)
+			return nil, err
 		}
 	}
 	if len(b) > 0 {
-		max, err := strconv.ParseFloat(b, 64)
+		max, err = strconv.ParseFloat(b, 64)
 		if err != nil {
-			return err
-		}
-		if math.Max(f64, max) == f64 && math.Abs(f64-max) > accuracy {
-			return NewValidationError(ValidationErrorValueTooBig, paramName)
+			return nil, err
 		}
 	}
-	return nil
+	return func(value reflect.Value) error {
+		var f64 float64
+		switch value.Kind() {
+		case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+			f64 = float64(value.Int())
+		case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+			f64 = float64(value.Uint())
+		case reflect.Float32, reflect.Float64:
+			f64 = value.Float()
+		}
+		if len(a) > 0 {
+			if math.Min(f64, min) == f64 && math.Abs(f64-min) > accuracy {
+				return NewValidationError(ValidationErrorValueTooSmall, paramName)
+			}
+		}
+		if len(b) > 0 {
+			if math.Max(f64, max) == f64 && math.Abs(f64-max) > accuracy {
+				return NewValidationError(ValidationErrorValueTooBig, paramName)
+			}
+		}
+		return nil
+	}, nil
 }
 
-func validateRegexp(s, reg, paramName string) error {
-	matched, err := regexp.MatchString(reg, s)
-	if err != nil {
-		return err
-	}
-	if !matched {
-		return NewValidationError(ValidationErrorValueNotMatch, paramName)
-	}
-	return nil
+func validateRegexp(isStrings bool, reg, paramName string) (func(value reflect.Value) error, error) {
+	return func(value reflect.Value) error {
+		if !isStrings {
+			matched, err := regexp.MatchString(reg, value.String())
+			if err != nil {
+				return err
+			}
+			if !matched {
+				return NewValidationError(ValidationErrorValueNotMatch, paramName+": ["+reg+"]")
+			}
+		} else {
+			for _, s := range value.Interface().([]string) {
+				matched, err := regexp.MatchString(reg, s)
+				if err != nil {
+					return err
+				}
+				if !matched {
+					return NewValidationError(ValidationErrorValueNotMatch, paramName+": ["+reg+"]")
+				}
+			}
+		}
+		return nil
+	}, nil
 }

@@ -6,8 +6,8 @@ import (
 )
 
 type Render struct {
-	Title     string   `param:"<in:query> <nonzero>"`
-	Paragraph []string `param:"<in:query> <name:p> <len: 1:10> <regexp: ^[\\w]*$>"`
+	Title     string `param:"<in:query> <nonzero>"`
+	Paragraph string `param:"<in:query> <name:p> <len: 1:10> <regexp: ^[\\w]*$>"`
 }
 
 func (r *Render) Serve(ctx *faygo.Context) error {

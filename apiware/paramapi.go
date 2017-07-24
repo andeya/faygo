@@ -15,6 +15,8 @@
 package apiware
 
 import (
+	"bytes"
+	"encoding/gob"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -36,6 +38,8 @@ type (
 		structType reflect.Type
 		//the raw struct pointer
 		rawStructPointer interface{}
+		// rawStructPointer value bytes
+		defaultValues []byte
 		// create param name from struct field name
 		paramNameMapper ParamNameMapper
 		// decode params from request body
@@ -102,6 +106,14 @@ func NewParamsAPI(
 	err := paramsAPI.addFields([]int{}, paramsAPI.structType, v)
 	if err != nil {
 		return nil, err
+	}
+
+	if !reflect.DeepEqual(reflect.New(paramsAPI.structType).Interface(), paramsAPI.rawStructPointer) {
+		buf := bytes.NewBuffer(nil)
+		err = gob.NewEncoder(buf).EncodeValue(v)
+		if err == nil {
+			paramsAPI.defaultValues = buf.Bytes()
+		}
 	}
 	defaultSchema.set(paramsAPI)
 	return paramsAPI, nil
@@ -195,8 +207,12 @@ func (paramsAPI *ParamsAPI) addFields(parentIndexPath []int, t reflect.Type, v r
 				return NewError(t.String(), field.Name, "invalid tag `in` value, refer to the following: `path`, `query`, `formData`, `body`, `header` or `cookie`")
 			}
 		}
-		if _, ok := parsedTags[KEY_LEN]; ok && paramTypeString != "string" && paramTypeString != "[]string" {
-			return NewError(t.String(), field.Name, "invalid `len` tag for non-string field")
+		if _, ok := parsedTags[KEY_LEN]; ok {
+			switch paramTypeString {
+			case "string", "[]string", "[]int", "[]int8", "[]int16", "[]int32", "[]int64", "[]uint", "[]uint8", "[]uint16", "[]uint32", "[]uint64", "[]float32", "[]float64":
+			default:
+				return NewError(t.String(), field.Name, "invalid `len` tag for non-string or non-basetype-slice field")
+			}
 		}
 		if _, ok := parsedTags[KEY_RANGE]; ok {
 			switch paramTypeString {
@@ -247,10 +263,9 @@ func (paramsAPI *ParamsAPI) addFields(parentIndexPath []int, t reflect.Type, v r
 			fd.isRequired = true
 		}
 
-		// err = fd.validate(v)
-		// if err != nil {
-		// 	return NewError( t.String(),field.Name, "the initial value failed validation:"+err.Error())
-		// }
+		if err = fd.makeVerifyFuncs(); err != nil {
+			return NewError(t.String(), field.Name, "initial validation failed:"+err.Error())
+		}
 
 		paramsAPI.params = append(paramsAPI.params, fd)
 	}
@@ -323,6 +338,14 @@ func (paramsAPI *ParamsAPI) SetMaxMemory(maxMemory int64) {
 // NewReceiver creates a new struct pointer and the field's values  for its receive parameterste it.
 func (paramsAPI *ParamsAPI) NewReceiver() (interface{}, []reflect.Value) {
 	object := reflect.New(paramsAPI.structType)
+	if len(paramsAPI.defaultValues) > 0 {
+		// fmt.Printf("setting default value: %s\n", paramsAPI.structType.String())
+		de := gob.NewDecoder(bytes.NewReader(paramsAPI.defaultValues))
+		err := de.DecodeValue(object.Elem())
+		if err != nil {
+			panic(err)
+		}
+	}
 	return object.Interface(), paramsAPI.fieldsForBinding(object.Elem())
 }
 

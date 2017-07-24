@@ -390,29 +390,10 @@ func (ctx *Context) Next() {
 	ctx.pos++
 	//run the next
 	if ctx.pos < ctx.handlerChainLen {
-		switch h := ctx.handlerChain[ctx.pos].(type) {
-		case *apiHandler:
-			h = h.new()
-			err := h.bind(ctx.R, ctx.pathParams)
-			defer h.reset()
-			if err != nil {
-				global.binderrorFunc(ctx, err)
-				ctx.Stop()
-				return
-			}
-			err = h.Serve(ctx)
-			if err != nil {
-				global.errorFunc(ctx, err.Error(), http.StatusInternalServerError)
-				ctx.Stop()
-				return
-			}
-		default:
-			err := h.Serve(ctx)
-			if err != nil {
-				global.errorFunc(ctx, err.Error(), http.StatusInternalServerError)
-				ctx.Stop()
-				return
-			}
+		if err := ctx.handlerChain[ctx.pos].Serve(ctx); err != nil {
+			global.errorFunc(ctx, err.Error(), http.StatusInternalServerError)
+			ctx.Stop()
+			return
 		}
 		// If the next one exists, it is executed automatically.
 		ctx.Next()

@@ -16,7 +16,6 @@ package faygo
 
 import (
 	"errors"
-	"net/http"
 	"reflect"
 	"sort"
 
@@ -78,10 +77,7 @@ type (
 	}
 	// apiHandler is an intelligent Handler of binding parameters.
 	apiHandler struct {
-		paramsAPI   *apiware.ParamsAPI
-		paramTypes  []reflect.Type
-		paramValues []reflect.Value
-		handler     Handler
+		paramsAPI *apiware.ParamsAPI
 	}
 	// HandlerFunc type is an adapter to allow the use of
 	// ordinary functions as HTTP handlers.  If f is a function
@@ -132,16 +128,9 @@ func ToAPIHandler(handler Handler) (*apiHandler, error) {
 		return nil, ErrNoParamHandler
 	}
 
-	_, paramValues := paramsAPI.NewReceiver()
-	var paramTypes = make([]reflect.Type, len(paramValues))
-	for i, v := range paramValues {
-		paramTypes[i] = v.Type()
-	}
 	// Reduce the creation of unnecessary field paramValues.
 	return &apiHandler{
-		paramsAPI:  paramsAPI,
-		paramTypes: paramTypes,
-		handler:    structPointer.(Handler),
+		paramsAPI: paramsAPI,
 	}, nil
 }
 
@@ -163,15 +152,23 @@ func IsHandlerWithoutPath(handler Handler) bool {
 	return true
 }
 
-// Serve implements the APIHandler, is like ServeHTTP but for Faygo
+// Serve implements the APIHandler.
+// creates a new `*apiHandler`;
+// binds the request path params to `apiHandler.handler`;
+// calls Handler.Serve() method.
 func (h *apiHandler) Serve(ctx *Context) error {
-	return h.handler.Serve(ctx)
+	obj, err := h.paramsAPI.BindNew(ctx.R, ctx.pathParams)
+	if err != nil {
+		global.binderrorFunc(ctx, err)
+		return nil
+	}
+	return obj.(Handler).Serve(ctx)
 }
 
 // Doc returns the API's note, result or parameters information.
 func (h *apiHandler) Doc() Doc {
 	var doc Doc
-	if d, ok := h.handler.(APIDoc); ok {
+	if d, ok := h.paramsAPI.Raw().(APIDoc); ok {
 		doc = d.Doc()
 	}
 	for _, param := range h.paramsAPI.Params() {
@@ -195,30 +192,6 @@ func (h *apiHandler) Doc() Doc {
 		}
 	}
 	return doc
-}
-
-// Create a new `*apiHandler` by itself.
-func (h *apiHandler) new() *apiHandler {
-	h2 := &apiHandler{
-		paramsAPI:  h.paramsAPI,
-		paramTypes: h.paramTypes,
-	}
-	var object interface{}
-	object, h2.paramValues = h.paramsAPI.NewReceiver()
-	h2.handler = object.(Handler)
-	return h2
-}
-
-// Bind the request path params to `apiHandler.handler`.
-func (h *apiHandler) bind(req *http.Request, pathParams PathParams) error {
-	return h.paramsAPI.BindFields(h.paramValues, req, pathParams)
-}
-
-// Reset all fields to a value of zero
-func (h *apiHandler) reset() {
-	for i, typ := range h.paramTypes {
-		h.paramValues[i].Set(reflect.Zero(typ))
-	}
 }
 
 // Get distinct and sorted parameters information.
