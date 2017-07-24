@@ -191,6 +191,13 @@ func (param *Param) IsFile() bool {
 	return param.isFile
 }
 
+func (param *Param) myError(reason string) error {
+	if param.err != nil {
+		return param.err
+	}
+	return NewError(param.apiName, param.name, reason)
+}
+
 // validate tests if the param conforms to it's validation constraints specified
 // int the KEY_REGEXP struct tag
 func (param *Param) validate(value reflect.Value) (err error) {
@@ -251,13 +258,6 @@ func (param *Param) makeVerifyFuncs() (err error) {
 		}
 	}
 	return
-}
-
-func (param *Param) myError(reason string) error {
-	if param.err != nil {
-		return param.err
-	}
-	return NewError(param.apiName, param.name, reason)
 }
 
 func parseTuple(tuple string) (string, string) {
