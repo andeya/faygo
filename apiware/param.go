@@ -15,6 +15,7 @@
 package apiware
 
 import (
+	"errors"
 	"fmt"
 	"math"
 	"reflect"
@@ -195,12 +196,10 @@ func (param *Param) IsFile() bool {
 func (param *Param) validate(value reflect.Value) (err error) {
 	defer func() {
 		p := recover()
-		if param.err != nil {
-			if err != nil {
-				err = param.err
-			}
-		} else if p != nil {
-			err = fmt.Errorf("%v", p)
+		if p != nil {
+			err = param.myError(fmt.Sprint(p))
+		} else if err != nil {
+			err = param.myError(err.Error())
 		}
 	}()
 	for _, fn := range param.verifyFuncs {
@@ -214,17 +213,13 @@ func (param *Param) validate(value reflect.Value) (err error) {
 func (param *Param) makeVerifyFuncs() (err error) {
 	defer func() {
 		p := recover()
-		if param.err != nil {
-			if err != nil {
-				err = param.err
-			}
-		} else if p != nil {
+		if p != nil {
 			err = fmt.Errorf("%v", p)
 		}
 	}()
 	// length
 	if tuple, ok := param.tags[KEY_LEN]; ok {
-		if fn, err := validateLen(tuple, param.name); err == nil {
+		if fn, err := validateLen(tuple); err == nil {
 			param.verifyFuncs = append(param.verifyFuncs, fn)
 		} else {
 			return err
@@ -232,7 +227,7 @@ func (param *Param) makeVerifyFuncs() (err error) {
 	}
 	// range
 	if tuple, ok := param.tags[KEY_RANGE]; ok {
-		if fn, err := validateRange(tuple, param.name); err == nil {
+		if fn, err := validateRange(tuple); err == nil {
 			param.verifyFuncs = append(param.verifyFuncs, fn)
 		} else {
 			return err
@@ -240,7 +235,7 @@ func (param *Param) makeVerifyFuncs() (err error) {
 	}
 	// nonzero
 	if _, ok := param.tags[KEY_NONZERO]; ok {
-		if fn, err := validateNonZero(param.name); err == nil {
+		if fn, err := validateNonZero(); err == nil {
 			param.verifyFuncs = append(param.verifyFuncs, fn)
 		} else {
 			return err
@@ -249,7 +244,7 @@ func (param *Param) makeVerifyFuncs() (err error) {
 	// regexp
 	if reg, ok := param.tags[KEY_REGEXP]; ok {
 		var isStrings = param.rawValue.Kind() == reflect.Slice
-		if fn, err := validateRegexp(isStrings, reg, param.name); err == nil {
+		if fn, err := validateRegexp(isStrings, reg); err == nil {
 			param.verifyFuncs = append(param.verifyFuncs, fn)
 		} else {
 			return err
@@ -284,17 +279,17 @@ func parseTuple(tuple string) (string, string) {
 	panic("invalid validation tuple")
 }
 
-func validateNonZero(paramName string) (func(value reflect.Value) error, error) {
+func validateNonZero() (func(value reflect.Value) error, error) {
 	return func(value reflect.Value) error {
 		obj := value.Interface()
 		if obj == reflect.Zero(value.Type()).Interface() {
-			return NewValidationError(ValidationErrorValueNotSet, paramName)
+			return errors.New("not set")
 		}
 		return nil
 	}, nil
 }
 
-func validateLen(tuple, paramName string) (func(value reflect.Value) error, error) {
+func validateLen(tuple string) (func(value reflect.Value) error, error) {
 	var a, b = parseTuple(tuple)
 	var min, max int
 	var err error
@@ -314,12 +309,12 @@ func validateLen(tuple, paramName string) (func(value reflect.Value) error, erro
 		length := value.Len()
 		if len(a) > 0 {
 			if length < min {
-				return NewValidationError(ValidationErrorValueTooShort, paramName)
+				return fmt.Errorf("shorter than %s: %v", a, value.Interface())
 			}
 		}
 		if len(b) > 0 {
 			if length > max {
-				return NewValidationError(ValidationErrorValueTooLong, paramName)
+				return fmt.Errorf("longer than %s: %v", b, value.Interface())
 			}
 		}
 		return nil
@@ -328,7 +323,7 @@ func validateLen(tuple, paramName string) (func(value reflect.Value) error, erro
 
 const accuracy = 0.0000001
 
-func validateRange(tuple, paramName string) (func(value reflect.Value) error, error) {
+func validateRange(tuple string) (func(value reflect.Value) error, error) {
 	var a, b = parseTuple(tuple)
 	var min, max float64
 	var err error
@@ -356,27 +351,28 @@ func validateRange(tuple, paramName string) (func(value reflect.Value) error, er
 		}
 		if len(a) > 0 {
 			if math.Min(f64, min) == f64 && math.Abs(f64-min) > accuracy {
-				return NewValidationError(ValidationErrorValueTooSmall, paramName)
+				return fmt.Errorf("smaller than %s: %v", a, value.Interface())
 			}
 		}
 		if len(b) > 0 {
 			if math.Max(f64, max) == f64 && math.Abs(f64-max) > accuracy {
-				return NewValidationError(ValidationErrorValueTooBig, paramName)
+				return fmt.Errorf("bigger than %s: %v", b, value.Interface())
 			}
 		}
 		return nil
 	}, nil
 }
 
-func validateRegexp(isStrings bool, reg, paramName string) (func(value reflect.Value) error, error) {
+func validateRegexp(isStrings bool, reg string) (func(value reflect.Value) error, error) {
 	return func(value reflect.Value) error {
 		if !isStrings {
-			matched, err := regexp.MatchString(reg, value.String())
+			s := value.String()
+			matched, err := regexp.MatchString(reg, s)
 			if err != nil {
 				return err
 			}
 			if !matched {
-				return NewValidationError(ValidationErrorValueNotMatch, paramName+": ["+reg+"]")
+				return fmt.Errorf("not match %s: %v", reg, s)
 			}
 		} else {
 			for _, s := range value.Interface().([]string) {
@@ -385,7 +381,7 @@ func validateRegexp(isStrings bool, reg, paramName string) (func(value reflect.V
 					return err
 				}
 				if !matched {
-					return NewValidationError(ValidationErrorValueNotMatch, paramName+": ["+reg+"]")
+					return fmt.Errorf("not match %s: %v", reg, s)
 				}
 			}
 		}
