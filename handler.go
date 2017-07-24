@@ -160,6 +160,7 @@ func (h *apiHandler) Serve(ctx *Context) error {
 	obj, err := h.paramsAPI.BindNew(ctx.R, ctx.pathParams)
 	if err != nil {
 		global.binderrorFunc(ctx, err)
+		ctx.Stop()
 		return nil
 	}
 	return obj.(Handler).Serve(ctx)
