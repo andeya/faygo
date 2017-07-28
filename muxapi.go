@@ -11,6 +11,47 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+//
+//
+//
+// The registered path, against which the router matches incoming requests, can
+// contain two types of parameters:
+//  Syntax    Type
+//  :name     named parameter
+//  *name     catch-all parameter
+//
+// Named parameters are dynamic path segments. They match anything until the
+// next '/' or the path end:
+//  Path: /blog/:category/:post
+//
+//  Requests:
+//   /blog/go/request-routers            match: category="go", post="request-routers"
+//   /blog/go/request-routers/           no match, but the router would redirect
+//   /blog/go/                           no match
+//   /blog/go/request-routers/comments   no match
+//
+// Catch-all parameters match anything until the path end, including the
+// directory index (the '/' before the catch-all). Since they match anything
+// until the end, catch-all parameters must always be the final path element.
+//  Path: /files/*filepath
+//
+//  Requests:
+//   /files/                             match: filepath="/"
+//   /files/LICENSE                      match: filepath="/LICENSE"
+//   /files/templates/article.html       match: filepath="/templates/article.html"
+//   /files                              no match, but the router would redirect
+//
+// The value of parameters is saved as a slice of the Param struct, consisting
+// each of a key and a value. The slice is passed to the Handle func as a third
+// parameter.
+// There are two ways to retrieve the value of a parameter:
+//  // by the name of the parameter
+//  user := ps.ByName("user") // defined by :user or *user
+//
+//  // by the index of the parameter. This way you can also get the name (key)
+//  thirdKey   := ps[2].Key   // the name of the 3rd parameter
+//  thirdValue := ps[2].Value // the value of the 3rd parameter
+//
 
 package faygo
 
