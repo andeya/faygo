@@ -65,10 +65,10 @@ func (global *GlobalVariables) initLogger() {
 	// switch frame.config.RunMode {
 	// case RUNMODE_DEV:
 	consoleFormatString = "[%{time:2006/01/02 15:04:05.000}] %{color}[%{level:.1s}]%{color:reset} %{message} <%{longfile}>"
-	fileFormatString = "[%{time:2006/01/02T15:04:05.999Z07:00}] [%{level:.1s}] %{message} <%{longfile}>"
+	fileFormatString = "[%{time:2006/01/02T15:04:05.000Z07:00}] [%{level:.1s}] %{message} <%{longfile}>"
 	// case RUNMODE_PROD:
 	// consoleFormat = "[%{time:2006/01/02 15:04:05.000}] %{color}[%{level:.1s}]%{color:reset} %{message} <%{module} #%{longfile}>"
-	// fileFormat = "[%{time:2006/01/02T15:04:05.999Z07:00}] [%{level:.1s}] %{message} <%{module} #%{longfile}>"
+	// fileFormat = "[%{time:2006/01/02T15:04:05.000Z07:00}] [%{level:.1s}] %{message} <%{module} #%{longfile}>"
 	// }
 	global.bizlog = global.newLogger(
 		"globalbiz",
@@ -84,10 +84,10 @@ func (frame *Framework) initSysLogger() {
 	// switch frame.config.RunMode {
 	// case RUNMODE_DEV:
 	consoleFormat = "[%{time:2006/01/02 15:04:05.000}] %{message} <%{module}>"
-	fileFormat = "[%{time:2006/01/02T15:04:05.999Z07:00}] %{message} <%{module}>"
+	fileFormat = "[%{time:2006/01/02T15:04:05.000Z07:00}] %{message} <%{module}>"
 	// case RUNMODE_PROD:
 	// consoleFormat = "[%{time:2006/01/02 15:04:05.000}] \x1b[46m[SYS]\x1b[0m %{message} <%{module}>"
-	// fileFormat = "[%{time:2006/01/02T15:04:05.999Z07:00}] [SYS] %{message} <%{module}>"
+	// fileFormat = "[%{time:2006/01/02T15:04:05.000Z07:00}] [SYS] %{message} <%{module}>"
 	// }
 	frame.syslog = global.newLogger(
 		strings.ToLower(frame.NameWithVersion()),
@@ -102,10 +102,10 @@ func (frame *Framework) initBizLogger() {
 	// switch frame.config.RunMode {
 	// case RUNMODE_DEV:
 	consoleFormat = "[%{time:2006/01/02 15:04:05.000}] %{color}[%{level:.1s}]%{color:reset} %{message} <%{module} #%{longfile}>"
-	fileFormat = "[%{time:2006/01/02T15:04:05.999Z07:00}] [%{level:.1s}] %{message} <%{module} #%{longfile}>"
+	fileFormat = "[%{time:2006/01/02T15:04:05.000Z07:00}] [%{level:.1s}] %{message} <%{module} #%{longfile}>"
 	// case RUNMODE_PROD:
 	// consoleFormat = "[%{time:2006/01/02 15:04:05.000}] %{color}[%{level:.1s}]%{color:reset} %{message} <%{module} #%{longfile}>"
-	// fileFormat = "[%{time:2006/01/02T15:04:05.999Z07:00}] [%{level:.1s}] %{message} <%{module} #%{longfile}>"
+	// fileFormat = "[%{time:2006/01/02T15:04:05.000Z07:00}] [%{level:.1s}] %{message} <%{module} #%{longfile}>"
 	// }
 	frame.bizlog = global.newLogger(
 		strings.ToLower(frame.NameWithVersion()),
