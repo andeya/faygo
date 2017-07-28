@@ -17,7 +17,7 @@ package faygo
 import (
 	"errors"
 	"mime"
-	"net/http"
+	"net/url"
 	"os"
 	"path"
 	"path/filepath"
@@ -253,53 +253,15 @@ var BytesToString = utils.BytesToString
 //  func StringToBytes(s string) []byte
 var StringToBytes = utils.StringToBytes
 
-/**
- * define internal middlewares.
- */
+// JsQueryEscape escapes the string in javascript standard so it can be safely placed
+// inside a URL query.
+func JsQueryEscape(s string) string {
+	return strings.Replace(url.QueryEscape(s), "+", "%20", -1)
+}
 
-// newIPFilter creates middleware that intercepts the specified IP prefix.
-func newIPFilter(whitelist []string, realIP bool) HandlerFunc {
-	var noAccess bool
-	var match []string
-	var prefix []string
-
-	if len(whitelist) == 0 {
-		noAccess = true
-	} else {
-		for _, s := range whitelist {
-			if strings.HasSuffix(s, "*") {
-				prefix = append(prefix, s[:len(s)-1])
-			} else {
-				match = append(match, s)
-			}
-		}
-	}
-
-	return func(ctx *Context) error {
-		if noAccess {
-			ctx.Error(http.StatusForbidden, "no access")
-			return nil
-		}
-
-		var ip string
-		if realIP {
-			ip = ctx.RealIP()
-		} else {
-			ip = ctx.IP()
-		}
-		for _, ipMatch := range match {
-			if ipMatch == ip {
-				ctx.Next()
-				return nil
-			}
-		}
-		for _, ipPrefix := range prefix {
-			if strings.HasPrefix(ip, ipPrefix) {
-				ctx.Next()
-				return nil
-			}
-		}
-		ctx.Error(http.StatusForbidden, "not allow to access: "+ip)
-		return nil
-	}
+// JsQueryUnescape does the inverse transformation of JsQueryEscape, converting
+// %AB into the byte 0xAB and '+' into ' ' (space). It returns an error if
+// any % is not followed by two hexadecimal digits.
+func JsQueryUnescape(s string) (string, error) {
+	return url.QueryUnescape(strings.Replace(s, "%20", "+", -1))
 }
