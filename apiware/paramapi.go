@@ -22,6 +22,7 @@ import (
 	"io/ioutil"
 	"mime/multipart"
 	"net/http"
+	"net/textproto"
 	"net/url"
 	"reflect"
 	"strconv"
@@ -253,6 +254,9 @@ func (paramsAPI *ParamsAPI) addFields(parentIndexPath []int, t reflect.Type, v r
 
 		if fd.name, ok = parsedTags[KEY_NAME]; !ok {
 			fd.name = paramsAPI.paramNameMapper(field.Name)
+		}
+		if paramPosition == "header" {
+			fd.name = textproto.CanonicalMIMEHeaderKey(fd.name)
 		}
 
 		fd.isFile = paramTypeString == fileTypeString || paramTypeString == filesTypeString || paramTypeString == fileTypeString2 || paramTypeString == filesTypeString2
