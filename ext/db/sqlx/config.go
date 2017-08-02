@@ -16,7 +16,6 @@ type DBConfig struct {
 	Connstring   string `ini:"connstring"`
 	MaxOpenConns int    `ini:"max_open_conns"`
 	MaxIdleConns int    `ini:"max_idle_conns"`
-	ShowSql      bool   `ini:"show_sql"`
 	ColumnSnake  bool   `ini:"column_snake"` // the column name uses the snake style or remains unchanged
 	StructTag    string `ini:"struct_tag"`   // default is 'db'
 }
