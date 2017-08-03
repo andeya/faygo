@@ -300,6 +300,8 @@ redirect_trailing_slash   = true                 # Automatic redirection (for ex
 redirect_fixed_path       = true                 # Tries to fix the current request path, if no handle is registered for it
 handle_method_not_allowed = true                 # Returns 405 if the requested method does not exist, otherwise returns 404
 handle_options            = true                 # Automatic response OPTIONS request, you can set the default Handler in Faygo
+default_upload            = true                 # Automatically register the default router: /upload/*filepath
+default_static            = true                 # Automatically register the default router: /static/*filepath
 
 [xsrf]                                           # XSRF security section
 enable        = false                            # Whether enabled or not
@@ -353,6 +355,7 @@ console_level  = debug                           # Console logger level: critica
 file_enable    = true                            # Whether enabled or not file logger
 file_level     = debug                           # File logger level: critical | error | warning | notice | info | debug
 async_len      = 0                               # The length of asynchronous buffer, 0 means synchronization
+print_body     = false                           # Form requests are printed in JSON format, but other types are printed as-is
 ```
 
 ## Handler struct tags

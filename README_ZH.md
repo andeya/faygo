@@ -303,6 +303,8 @@ redirect_trailing_slash   = true                 # 当前请求的URL含`/`后�
 redirect_fixed_path       = true                 # 自动修复URL，如`/FOO` `/..//Foo`均被跳转至`/foo`（依赖redirect_trailing_slash=true）
 handle_method_not_allowed = true                 # 若开启，当前请求方法不存在时返回405，否则返回404
 handle_options            = true                 # 若开启，自动应答OPTIONS类请求，可在Faygo中设置默认Handler
+default_upload            = true                 # 自动注册默认静态路由: /upload/*filepath
+default_static            = true                 # 自动注册默认静态路由: /static/*filepath
 
 [xsrf]                                           # XSRF跨站请求伪造过滤配置区
 enable        = false                            # 是否开启
@@ -356,6 +358,7 @@ console_level  = debug                           # 控制台日志打印水平�
 file_enable    = true                            # 是否启用文件日志
 file_level     = debug                           # 文件日志打印水平：critical | error | warning | notice | info | debug
 async_len      = 0                               # 0表示同步打印，大于0表示异步缓存长度
+print_body     = false                           # 以JSON格式打印表单请求的body，其它类型请求原样打印body
 ```
 
 ## Handler结构体字段标签说明
