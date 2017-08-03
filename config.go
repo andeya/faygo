@@ -89,6 +89,8 @@ type (
 		// If enabled, the router automatically replies to OPTIONS requests.
 		// Custom OPTIONS handlers take priority over automatic replies.
 		HandleOPTIONS bool `ini:"handle_options" comment:"Automatic response OPTIONS request, you can set the default Handler in faygo"`
+		DefaultUpload bool `ini:"default_upload" comment:"Automatically register the default router: /upload/*filepath"`
+		DefaultStatic bool `ini:"default_static" comment:"Automatically register the default router: /static/*filepath"`
 	}
 	// GzipConfig is the configuration about gzip
 	GzipConfig struct {
@@ -146,6 +148,7 @@ type (
 		FileEnable    bool   `ini:"file_enable" comment:"Whether enabled or not file logger"`
 		FileLevel     string `ini:"file_level" comment:"File logger level: critical|error|warning|notice|info|debug"`
 		AsyncLen      int    `ini:"async_len" comment:"The length of asynchronous buffer, 0 means synchronization"`
+		PrintBody     bool   `ini:"print_body" comment:"Form requests are printed in JSON format, but other types are printed as-is"`
 	}
 	// APIdocConfig is the configuration about API doc
 	APIdocConfig struct {
@@ -239,6 +242,8 @@ func newConfig(filename string) Config {
 			RedirectFixedPath:      true,
 			HandleMethodNotAllowed: true,
 			HandleOPTIONS:          true,
+			DefaultUpload:          true,
+			DefaultStatic:          true,
 		},
 		XSRF: XSRFConfig{
 			Enable:       false,

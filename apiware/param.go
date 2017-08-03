@@ -364,27 +364,26 @@ func validateRange(tuple string) (func(value reflect.Value) error, error) {
 }
 
 func validateRegexp(isStrings bool, reg string) (func(value reflect.Value) error, error) {
-	return func(value reflect.Value) error {
-		if !isStrings {
+	re, err := regexp.Compile(reg)
+	if err != nil {
+		return nil, err
+	}
+	if !isStrings {
+		return func(value reflect.Value) error {
 			s := value.String()
-			matched, err := regexp.MatchString(reg, s)
-			if err != nil {
-				return err
+			if !re.MatchString(s) {
+				return fmt.Errorf("not match %s: %s", reg, s)
 			}
-			if !matched {
-				return fmt.Errorf("not match %s: %v", reg, s)
-			}
-		} else {
+			return nil
+		}, nil
+	} else {
+		return func(value reflect.Value) error {
 			for _, s := range value.Interface().([]string) {
-				matched, err := regexp.MatchString(reg, s)
-				if err != nil {
-					return err
-				}
-				if !matched {
-					return fmt.Errorf("not match %s: %v", reg, s)
+				if !re.MatchString(s) {
+					return fmt.Errorf("not match %s: %s", reg, s)
 				}
 			}
-		}
-		return nil
-	}, nil
+			return nil
+		}, nil
+	}
 }

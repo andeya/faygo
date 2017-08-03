@@ -10,9 +10,9 @@ import (
 
 type Param struct {
 	Id           int                   `param:"<in:path> <required> <desc:ID> <range: 0:10>"`
-	Num          float32               `param:"<in:query> <required> <name:n> <range: 0.1:10> <err: query param 'n' must be number in 0.1~10>"`
 	Title        string                `param:"<in:query> <nonzero>"`
-	Paragraph    []string              `param:"<in:query> <name:p> <len: 1:10> <regexp: ^[\\w]*$>"`
+	Num          float32               `param:"<in:formData> <required> <name:n> <range: 0.1:10> <err: query param 'n' must be number in 0.1~10>"`
+	Paragraph    []string              `param:"<in:formData> <name:p> <len: 1:20> <regexp: ^[\\w&=]*$>"`
 	Picture      *multipart.FileHeader `param:"<in:formData> <name:pic> <maxmb:30>"`
 	Cookie       *http.Cookie          `param:"<in:cookie> <name:faygo>"`
 	CookieString string                `param:"<in:cookie> <name:faygo>"`
