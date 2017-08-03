@@ -520,6 +520,7 @@ func (frame *Framework) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 		ctx.HeaderParam("Content-Type") != "multipart/form-data" &&
 		(ctx.IsPost() || ctx.IsPut() || ctx.IsPatch()) {
 		newBody = wrapBody(req)
+		defer newBody.free()
 	}
 
 	frame.serveHTTP(ctx)
@@ -560,6 +561,7 @@ var bodyCopyPool = sync.Pool{
 
 func wrapBody(req *http.Request) *BodyCopy {
 	newBody := bodyCopyPool.Get().(*BodyCopy)
+	newBody.copyBuf.Reset()
 	newBody.reader = io.TeeReader(req.Body, newBody.copyBuf)
 	newBody.closer = req.Body
 	req.Body = newBody
@@ -578,12 +580,19 @@ func (b *BodyCopy) Read(p []byte) (int, error) {
 
 // Close implement body closer.
 func (b *BodyCopy) Close() error {
-	err := b.closer.Close()
+	return b.closer.Close()
+}
+
+func (b *BodyCopy) free() {
+	b.closer.Close()
+	b.copyBuf.Reset()
 	bodyCopyPool.Put(b)
-	return err
 }
 
 func recordBody(ctx *Context, newBody *BodyCopy) []byte {
+	if newBody == nil {
+		return nil
+	}
 	var b []byte
 	if formValues := ctx.FormParamAll(); len(formValues) > 0 ||
 		(ctx.R.MultipartForm != nil && len(ctx.R.MultipartForm.File) > 0) {
@@ -591,7 +600,7 @@ func recordBody(ctx *Context, newBody *BodyCopy) []byte {
 			Value: formValues,
 			File:  ctx.R.MultipartForm.File,
 		})
-	} else if newBody != nil {
+	} else {
 		b = newBody.Bytes()
 	}
 	if len(b) > 0 {
