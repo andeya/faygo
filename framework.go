@@ -516,9 +516,7 @@ func (frame *Framework) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	}
 
 	var newBody *BodyCopy
-	if global.config.Log.PrintBody &&
-		ctx.HeaderParam("Content-Type") != "multipart/form-data" &&
-		(ctx.IsPost() || ctx.IsPut() || ctx.IsPatch()) {
+	if global.config.Log.PrintBody && (ctx.IsPost() || ctx.IsPut() || ctx.IsPatch()) {
 		newBody = wrapBody(req)
 		defer newBody.free()
 	}
