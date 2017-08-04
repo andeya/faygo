@@ -269,6 +269,11 @@ func (ctx *Context) SetData(key, val interface{}) {
 	ctx.data[key] = val
 }
 
+// Del delete data by key.
+func (ctx *Context) Del(key interface{}) {
+	delete(ctx.data, key)
+}
+
 // Param returns the first value for the kinds of parameters.
 // priority:
 // path parameters > POST and PUT body parameters > URL query string values > header > cookie.Value.
