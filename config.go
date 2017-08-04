@@ -59,6 +59,7 @@ type (
 		Session               SessionConfig `ini:"session" comment:"Session section"`
 		SlowResponseThreshold time.Duration `ini:"slow_response_threshold" comment:"When response time > slow_response_threshold, log level = 'WARNING'; 0 means not limited; ns|µs|ms|s|m|h"`
 		slowResponseThreshold time.Duration `ini:"-"`
+		PrintBody             bool          `ini:"print_body" comment:"Form requests are printed in JSON format, but other types are printed as-is"`
 		APIdoc                APIdocConfig  `ini:"apidoc" comment:"API documentation section"`
 	}
 	// RouterConfig is the configuration about router
@@ -148,7 +149,6 @@ type (
 		FileEnable    bool   `ini:"file_enable" comment:"Whether enabled or not file logger"`
 		FileLevel     string `ini:"file_level" comment:"File logger level: critical|error|warning|notice|info|debug"`
 		AsyncLen      int    `ini:"async_len" comment:"The length of asynchronous buffer, 0 means synchronization"`
-		PrintBody     bool   `ini:"print_body" comment:"Form requests are printed in JSON format, but other types are printed as-is"`
 	}
 	// APIdocConfig is the configuration about API doc
 	APIdocConfig struct {

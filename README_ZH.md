@@ -296,7 +296,8 @@ unix_filemode          = 438                     # UNIX listener的文件权限�
 read_timeout           = 0s                      # 读取请求数据超时；ns|µs|ms|s|m|h
 write_timeout          = 0s                      # 写入响应数据超时；ns|µs|ms|s|m|h
 multipart_maxmemory_mb = 32                      # 接收上传文件时允许使用的最大内存
-slow_response_threshold = 0s                     # 当响应时长 > slow_response_threshold时, 日志级别调整为 'WARNING'；0 表示不限；ns|µs|ms|s|m|h
+slow_response_threshold= 0s                     # 当响应时长 > slow_response_threshold时, 日志级别调整为 'WARNING'；0 表示不限；ns|µs|ms|s|m|h
+print_body             = false                           # 以JSON格式打印表单请求的body，其它类型请求原样打印body
 
 [router]                                         # 路由配置区
 redirect_trailing_slash   = true                 # 当前请求的URL含`/`后缀如`/foo/`且相应路由不存在时，如存在`/foo`，则自动跳转至`/foo`
@@ -358,7 +359,6 @@ console_level  = debug                           # 控制台日志打印水平�
 file_enable    = true                            # 是否启用文件日志
 file_level     = debug                           # 文件日志打印水平：critical | error | warning | notice | info | debug
 async_len      = 0                               # 0表示同步打印，大于0表示异步缓存长度
-print_body     = false                           # 以JSON格式打印表单请求的body，其它类型请求原样打印body
 ```
 
 ## Handler结构体字段标签说明

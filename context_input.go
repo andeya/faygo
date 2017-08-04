@@ -703,8 +703,12 @@ func (ctx *Context) BindXML(xmlObject interface{}) error {
 	return xml.Unmarshal(rawData, &xmlObject)
 }
 
-// BodyBytes returns the raw request body data as bytes.
-func (ctx *Context) BodyBytes() []byte {
+// LimitedBodyBytes returns the raw request body data as bytes.
+// Note:
+//  1.limited by maximum length;
+//  2.if frame.config.PrintBody==false and ctx.R.Body is readed, returns nil;
+//  3.if ctx.IsUpload()==true and ctx.R.Body is readed, returns nil.
+func (ctx *Context) LimitedBodyBytes() []byte {
 	if ctx.limitedRequestBody != nil {
 		return ctx.limitedRequestBody
 	}
@@ -713,10 +717,9 @@ func (ctx *Context) BodyBytes() []byte {
 		return ctx.limitedRequestBody
 	}
 	safe := &io.LimitedReader{R: ctx.R.Body, N: ctx.frame.config.multipartMaxMemory}
-	limitedRequestBody, _ := ioutil.ReadAll(safe)
-	ctx.R.Body.Close()
-	bf := bytes.NewBuffer(limitedRequestBody)
-	ctx.R.Body = ioutil.NopCloser(bf)
-	ctx.limitedRequestBody = limitedRequestBody
-	return limitedRequestBody
+	buf := bytes.NewBuffer(make([]byte, 0, bytes.MinRead))
+	buf.ReadFrom(safe)
+	ctx.limitedRequestBody = buf.Bytes()
+	ctx.R.Body = ioutil.NopCloser(io.MultiReader(buf, ctx.R.Body))
+	return ctx.limitedRequestBody
 }

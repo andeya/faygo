@@ -17,10 +17,7 @@ package faygo
 import (
 	"bytes"
 	"context"
-	"encoding/json"
 	"fmt"
-	"io"
-	"mime/multipart"
 	"net/http"
 	"runtime"
 	"strings"
@@ -128,7 +125,6 @@ func newFramework(name string, version ...string) *Framework {
 	frame.initSysLogger()
 	frame.initBizLogger()
 	frame.MuxAPI = newMuxAPI(frame, "root", "", "/")
-
 	addFrame(frame)
 	return frame
 }
@@ -515,12 +511,6 @@ func (frame *Framework) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 		u = "/"
 	}
 
-	var newBody *BodyCopy
-	if global.config.Log.PrintBody && (ctx.IsPost() || ctx.IsPut() || ctx.IsPatch()) {
-		newBody = wrapBody(req)
-		defer newBody.free()
-	}
-
 	frame.serveHTTP(ctx)
 	var n = ctx.Status()
 	var code string
@@ -536,79 +526,10 @@ func (frame *Framework) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	}
 	cost := time.Since(start)
 	if cost < frame.config.slowResponseThreshold {
-		frame.syslog.Infof("[I] %15s %7s  %3s %10d %12s %-30s | %s", ctx.RealIP(), method, code, ctx.Size(), cost, u, recordBody(ctx, newBody))
+		frame.syslog.Infof("[I] %15s %7s  %3s %10d %12s %-30s | %s", ctx.RealIP(), method, code, ctx.Size(), cost, u, ctx.recordBody())
 	} else {
-		frame.syslog.Warningf(color.Yellow("[W]")+" %15s %7s  %3s %10d %12s(slow) %-30s | %s", ctx.RealIP(), method, code, ctx.Size(), cost, u, recordBody(ctx, newBody))
+		frame.syslog.Warningf(color.Yellow("[W]")+" %15s %7s  %3s %10d %12s(slow) %-30s | %s", ctx.RealIP(), method, code, ctx.Size(), cost, u, ctx.recordBody())
 	}
-}
-
-// BodyCopy a request body wrapper, which can return bytes.
-type BodyCopy struct {
-	reader  io.Reader
-	closer  io.Closer
-	copyBuf *bytes.Buffer
-}
-
-var bodyCopyPool = sync.Pool{
-	New: func() interface{} {
-		return &BodyCopy{
-			copyBuf: bytes.NewBuffer(nil),
-		}
-	},
-}
-
-func wrapBody(req *http.Request) *BodyCopy {
-	newBody := bodyCopyPool.Get().(*BodyCopy)
-	newBody.copyBuf.Reset()
-	newBody.reader = io.TeeReader(req.Body, newBody.copyBuf)
-	newBody.closer = req.Body
-	req.Body = newBody
-	return newBody
-}
-
-// Bytes returns body bytes.
-func (b *BodyCopy) Bytes() []byte {
-	return b.copyBuf.Bytes()
-}
-
-// Read implement body reader.
-func (b *BodyCopy) Read(p []byte) (int, error) {
-	return b.reader.Read(p)
-}
-
-// Close implement body closer.
-func (b *BodyCopy) Close() error {
-	return b.closer.Close()
-}
-
-func (b *BodyCopy) free() {
-	b.closer.Close()
-	b.copyBuf.Reset()
-	bodyCopyPool.Put(b)
-}
-
-func recordBody(ctx *Context, newBody *BodyCopy) []byte {
-	if newBody == nil {
-		return nil
-	}
-	var b []byte
-	if formValues := ctx.FormParamAll(); len(formValues) > 0 ||
-		(ctx.R.MultipartForm != nil && len(ctx.R.MultipartForm.File) > 0) {
-		b, _ = json.Marshal(multipart.Form{
-			Value: formValues,
-			File:  ctx.R.MultipartForm.File,
-		})
-	} else {
-		b = newBody.Bytes()
-	}
-	if len(b) > 0 {
-		bb := make([]byte, len(b)+2)
-		bb[0] = '\n'
-		copy(bb[1:], b)
-		bb[len(bb)-1] = '\n'
-		return bb
-	}
-	return b
 }
 
 func (frame *Framework) serveHTTP(ctx *Context) {

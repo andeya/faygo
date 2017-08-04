@@ -293,7 +293,8 @@ unix_filemode          = 438                     # File permissions for UNIX lis
 read_timeout           = 0s                      # Maximum duration for reading the full; ns|µs|ms|s|m|h request (including body)
 write_timeout          = 0s                      # Maximum duration for writing the full; ns|µs|ms|s|m|h response (including body)
 multipart_maxmemory_mb = 32                      # Maximum size of memory that can be used when receiving uploaded files
-slow_response_threshold = 0s                     # When response time > slow_response_threshold, log level = 'WARNING'; 0 means not limited; ns|µs|ms|s|m|h
+slow_response_threshold= 0s                     # When response time > slow_response_threshold, log level   = 'WARNING'; 0 means not limited; ns|µs|ms|s|m|h
+print_body             = false                           # Form requests are printed in JSON format, but other types are printed as-is
 
 [router]                                         # Routing configuration section
 redirect_trailing_slash   = true                 # Automatic redirection (for example, `/foo/` -> `/foo`)
@@ -355,7 +356,6 @@ console_level  = debug                           # Console logger level: critica
 file_enable    = true                            # Whether enabled or not file logger
 file_level     = debug                           # File logger level: critical | error | warning | notice | info | debug
 async_len      = 0                               # The length of asynchronous buffer, 0 means synchronization
-print_body     = false                           # Form requests are printed in JSON format, but other types are printed as-is
 ```
 
 ## Handler struct tags

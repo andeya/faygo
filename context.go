@@ -15,9 +15,11 @@
 package faygo
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"math"
+	"mime/multipart"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
@@ -429,29 +431,45 @@ func (ctx *Context) IsBreak() bool {
 	return ctx.pos == stopExecutionposition
 }
 
-/*
-// reset ctx.
-// Note: Never reset `ctx.frame`, `ctx.W`, `ctx.enableGzip`, `ctx.enableSession` and `ctx.enableXSRF`!
-func (ctx *Context) reset(w http.ResponseWriter, r *http.Request) {
-	ctx.limitedRequestBody = nil
-	ctx.data = nil
-	ctx.queryParams = nil
-	ctx._xsrfToken = ""
-	ctx._xsrfTokenReset = false
-	ctx.W.reset(w)
-	ctx.R = r
+func (ctx *Context) recordBody() []byte {
+	if !ctx.frame.config.PrintBody {
+		return nil
+	}
+	var b []byte
+	formValues := ctx.FormParamAll()
+	if len(formValues) > 0 || ctx.IsUpload() {
+		b, _ = json.Marshal(multipart.Form{
+			Value: formValues,
+			File:  ctx.R.MultipartForm.File,
+		})
+	} else {
+		b = ctx.LimitedBodyBytes()
+	}
+	if len(b) > 0 {
+		bb := make([]byte, len(b)+2)
+		bb[0] = '\n'
+		copy(bb[1:], b)
+		bb[len(bb)-1] = '\n'
+		return bb
+	}
+	return b
 }
-*/
 
 func (frame *Framework) getContext(w http.ResponseWriter, r *http.Request) *Context {
 	ctx := frame.contextPool.Get().(*Context)
 	ctx.R = r
 	ctx.W.reset(w)
 	ctx.data = make(map[interface{}]interface{})
+	if frame.config.PrintBody && !ctx.IsUpload() {
+		ctx.LimitedBodyBytes()
+	}
 	return ctx
 }
 
 func (frame *Framework) putContext(ctx *Context) {
+	if ctx.R.Body != nil {
+		ctx.R.Body.Close()
+	}
 	ctx.R = nil
 	ctx.W.writer = nil
 	ctx.limitedRequestBody = nil
