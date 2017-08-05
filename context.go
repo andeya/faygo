@@ -28,7 +28,6 @@ import (
 
 	"github.com/henrylee2cn/faygo/logging"
 	"github.com/henrylee2cn/faygo/session"
-	"github.com/henrylee2cn/faygo/utils"
 )
 
 // Headers
@@ -152,7 +151,7 @@ func (ctx *Context) XSRFToken(specifiedExpiration ...int) string {
 		token, ok := ctx.SecureCookieParam(ctx.frame.config.XSRF.Key, "_xsrf")
 		if !ok {
 			ctx._xsrfTokenReset = true
-			token = utils.RandomString(32)
+			token = RandomString(32)
 			if len(specifiedExpiration) > 0 && specifiedExpiration[0] > 0 {
 				ctx.xsrfExpire = specifiedExpiration[0]
 			} else if ctx.xsrfExpire == 0 {

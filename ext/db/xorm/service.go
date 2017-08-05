@@ -15,7 +15,6 @@ import (
 	// _ "github.com/mattn/go-sqlite3"      //sqlite
 
 	"github.com/henrylee2cn/faygo"
-	"github.com/henrylee2cn/faygo/utils"
 )
 
 // DBService is a database engine object.
@@ -95,7 +94,7 @@ var dbService = func() (serv *DBService) {
 			}
 		}
 
-		if conf.Driver == "sqlite3" && !utils.FileExists(conf.Connstring) {
+		if conf.Driver == "sqlite3" && !faygo.FileExists(conf.Connstring) {
 			os.MkdirAll(filepath.Dir(conf.Connstring), 0777)
 			f, err := os.Create(conf.Connstring)
 			if err != nil {

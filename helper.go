@@ -15,19 +15,19 @@
 package faygo
 
 import (
-	"errors"
+	"fmt"
+	"io/ioutil"
 	"mime"
-	"net/url"
 	"os"
 	"path"
 	"path/filepath"
 	"reflect"
 	"strings"
-	"sync"
 
-	fayerrors "github.com/henrylee2cn/faygo/errors"
-	"github.com/henrylee2cn/faygo/ini"
-	"github.com/henrylee2cn/faygo/utils"
+	"github.com/henrylee2cn/ini"
+
+	"github.com/henrylee2cn/goutil"
+	"github.com/henrylee2cn/goutil/errors"
 )
 
 // JoinStatic adds the static directory prefix to the file name.
@@ -37,8 +37,8 @@ func JoinStatic(shortFilename string) string {
 
 // SyncINI quickly create your own configuration files.
 // Struct tags reference `https://github.com/go-ini/ini`
-func SyncINI(structPointer interface{}, callback func(existed bool, mustSave func() error) error, filename ...string) error {
-	t := reflect.TypeOf(structPointer)
+func SyncINI(structPtr interface{}, f func(onecUpdateFunc func() error) error, filename ...string) error {
+	t := reflect.TypeOf(structPtr)
 	if t.Kind() != reflect.Ptr {
 		return errors.New("SyncINI's param must be struct pointer type.")
 	}
@@ -53,54 +53,10 @@ func SyncINI(structPointer interface{}, callback func(existed bool, mustSave fun
 	} else {
 		fname = strings.TrimSuffix(t.Name(), "Config")
 		fname = strings.TrimSuffix(fname, "INI")
-		fname = utils.SnakeString(fname) + ".ini"
+		fname = goutil.SnakeString(fname) + ".ini"
 		fname = filepath.Join(CONFIG_DIR, fname)
 	}
-	var cfg *ini.File
-	var err error
-	var existed bool
-	cfg, err = ini.Load(fname)
-	if err != nil {
-		os.MkdirAll(filepath.Dir(fname), 0777)
-		cfg, err = ini.LooseLoad(fname)
-		if err != nil {
-			return err
-		}
-	} else {
-		existed = true
-	}
-
-	err = cfg.MapTo(structPointer)
-	if err != nil {
-		return err
-	}
-
-	var once sync.Once
-	var mustSave = func() error {
-		var err error
-		once.Do(func() {
-			err = cfg.ReflectFrom(structPointer)
-			if err != nil {
-				return
-			}
-			err = cfg.SaveTo(fname)
-			if err != nil {
-				return
-			}
-		})
-		return err
-	}
-
-	if callback != nil {
-		if err = callback(existed, mustSave); err != nil {
-			return err
-		}
-	}
-
-	if !existed {
-		return mustSave()
-	}
-	return nil
+	return ini.SyncINI(structPtr, f, fname)
 }
 
 // RemoveUseless when there's not frame instance, remove files: config, log, static and upload .
@@ -171,97 +127,206 @@ func ContentTypeByExtension(ext string) string {
 	return MIMEOctetStream
 }
 
+// WritePid write pid to the specified file.
+func WritePid(pidFilename string) error {
+	abs, err := filepath.Abs(pidFilename)
+	if err != nil {
+		return err
+	}
+	dir := filepath.Dir(abs)
+	os.MkdirAll(dir, 0777)
+	pid := os.Getpid()
+	return ioutil.WriteFile(abs, []byte(fmt.Sprintf("%d\n", pid)), 0666)
+}
+
+// CleanToURL is the URL version of path.Clean, it returns a canonical URL path
+// for p, eliminating . and .. elements.
+//
+// The following rules are applied iteratively until no further processing can
+// be done:
+//	1. Replace multiple slashes with a single slash.
+//	2. Eliminate each . path name element (the current directory).
+//	3. Eliminate each inner .. path name element (the parent directory)
+//	   along with the non-.. element that precedes it.
+//	4. Eliminate .. elements that begin a rooted path:
+//	   that is, replace "/.." by "/" at the beginning of a path.
+//
+// If the result of this process is an empty string, "/" is returned
+func CleanToURL(p string) string {
+	// Turn empty string into "/"
+	if p == "" {
+		return "/"
+	}
+
+	n := len(p)
+	var buf []byte
+
+	// Invariants:
+	//      reading from path; r is index of next byte to process.
+	//      writing to buf; w is index of next byte to write.
+
+	// path must start with '/'
+	r := 1
+	w := 1
+
+	if p[0] != '/' {
+		r = 0
+		buf = make([]byte, n+1)
+		buf[0] = '/'
+	}
+
+	trailing := n > 2 && p[n-1] == '/'
+
+	// A bit more clunky without a 'lazybuf' like the path package, but the loop
+	// gets completely inlined (bufApp). So in contrast to the path package this
+	// loop has no expensive function calls (except 1x make)
+
+	for r < n {
+		switch {
+		case p[r] == '/':
+			// empty path element, trailing slash is added after the end
+			r++
+
+		case p[r] == '.' && r+1 == n:
+			trailing = true
+			r++
+
+		case p[r] == '.' && p[r+1] == '/':
+			// . element
+			r++
+
+		case p[r] == '.' && p[r+1] == '.' && (r+2 == n || p[r+2] == '/'):
+			// .. element: remove to last /
+			r += 2
+
+			if w > 1 {
+				// can backtrack
+				w--
+
+				if buf == nil {
+					for w > 1 && p[w] != '/' {
+						w--
+					}
+				} else {
+					for w > 1 && buf[w] != '/' {
+						w--
+					}
+				}
+			}
+
+		default:
+			// real path element.
+			// add slash if needed
+			if w > 1 {
+				bufApp(&buf, p, w, '/')
+				w++
+			}
+
+			// copy element
+			for r < n && p[r] != '/' {
+				bufApp(&buf, p, w, p[r])
+				w++
+				r++
+			}
+		}
+	}
+
+	// re-append trailing slash
+	if trailing && w > 1 {
+		bufApp(&buf, p, w, '/')
+		w++
+	}
+
+	if buf == nil {
+		return p[:w]
+	}
+	return string(buf[:w])
+}
+
+// internal helper to lazily create a buffer if necessary
+func bufApp(buf *[]byte, s string, w int, c byte) {
+	if *buf == nil {
+		if s[w] == c {
+			return
+		}
+
+		*buf = make([]byte, len(s))
+		copy(*buf, s[:w])
+	}
+	(*buf)[w] = c
+}
+
 // SelfPath gets compiled executable file absolute path.
 //  func SelfPath() string
-var SelfPath = utils.SelfPath
+var SelfPath = goutil.SelfPath
 
 // SelfDir gets compiled executable file directory
 //  func SelfDir() string
-var SelfDir = utils.SelfDir
+var SelfDir = goutil.SelfDir
 
 // RelPath gets relative path.
 //  func RelPath() string
-var RelPath = utils.RelPath
+var RelPath = goutil.RelPath
 
 // SelfChdir switch the working path to my own path.
 //  func SelfChdir()
-var SelfChdir = utils.SelfChdir
+var SelfChdir = goutil.SelfChdir
 
 // FileExists reports whether the named file or directory exists.
 //  func FileExists(name string) bool
-var FileExists = utils.FileExists
+var FileExists = goutil.FileExists
 
 // SearchFile Search a file in paths.
 // this is often used in search config file in /etc ~/
 //  func SearchFile(filename string, paths ...string) (fullpath string, err error)
-var SearchFile = utils.SearchFile
+var SearchFile = goutil.SearchFile
 
 // GrepFile like command grep -E
 // for example: GrepFile(`^hello`, "hello.txt")
 // \n is striped while read
 //  func GrepFile(patten string, filename string) (lines []string, err error)
-var GrepFile = utils.GrepFile
+var GrepFile = goutil.GrepFile
 
 // WalkDirs traverses the directory, return to the relative path.
 // You can specify the suffix.
 //  func WalkDirs(targpath string, suffixes ...string) (dirlist []string)
-var WalkDirs = utils.WalkDirs
+var WalkDirs = goutil.WalkDirs
 
 // SnakeString converts the accepted string to a snake string (XxYy to xx_yy)
 //  func SnakeString(s string) string
-var SnakeString = utils.SnakeString
+var SnakeString = goutil.SnakeString
 
 // CamelString converts the accepted string to a camel string (xx_yy to XxYy)
 //  func CamelString(s string) string
-var CamelString = utils.CamelString
+var CamelString = goutil.CamelString
 
 // ObjectName gets the type name of the object
 //  func ObjectName(i interface{}) string
-var ObjectName = utils.ObjectName
-
-// CleanPath is the URL version of path.Clean, it returns a canonical URL path
-// for p, eliminating . and .. elements.
-//
-// The following rules are applied iteratively until no further processing can
-// be done:
-// 1. Replace multiple slashes with a single slash.
-// 2. Eliminate each . path name element (the current directory).
-// 3. Eliminate each inner .. path name element (the parent directory) along with the non-.. element that precedes it.
-// 4. Eliminate .. elements that begin a rooted path: that is, replace "/.." by "/" at the beginning of a path.
-//
-// If the result of this process is an empty string, "/" is returned.
-//  func CleanPath(p string) string
-var CleanPath = utils.CleanPath
+var ObjectName = goutil.ObjectName
 
 // RandomString returns a URL-safe, base64 encoded securely generated
 // random string. It will panic if the system's secure random number generator
 // fails to function correctly.
 // The length n must be an integer multiple of 4, otherwise the last character will be padded with `=`.
 //  func RandomString(n int) string
-var RandomString = utils.RandomString
-
-// Errors merge multiple errors.
-//  func Errors(errs []error) error
-var Errors = fayerrors.Errors
+var RandomString = goutil.RandomString
 
 // BytesToString convert []byte type to string type.
 //  func BytesToString(b []byte) string
-var BytesToString = utils.BytesToString
+var BytesToString = goutil.BytesToString
 
 // StringToBytes convert string type to []byte type.
 // NOTE: panic if modify the member value of the []byte.
 //  func StringToBytes(s string) []byte
-var StringToBytes = utils.StringToBytes
+var StringToBytes = goutil.StringToBytes
 
 // JsQueryEscape escapes the string in javascript standard so it can be safely placed
 // inside a URL query.
-func JsQueryEscape(s string) string {
-	return strings.Replace(url.QueryEscape(s), "+", "%20", -1)
-}
+//  func JsQueryEscape(s string) string
+var JsQueryEscape = goutil.JsQueryEscape
 
 // JsQueryUnescape does the inverse transformation of JsQueryEscape, converting
 // %AB into the byte 0xAB and '+' into ' ' (space). It returns an error if
 // any % is not followed by two hexadecimal digits.
-func JsQueryUnescape(s string) (string, error) {
-	return url.QueryUnescape(strings.Replace(s, "%20", "+", -1))
-}
+//  func JsQueryUnescape(s string) (string, error)
+var JsQueryUnescape = goutil.JsQueryUnescape

@@ -22,7 +22,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/henrylee2cn/faygo/errors"
 	"github.com/henrylee2cn/faygo/gracenet"
 	"github.com/henrylee2cn/faygo/logging"
 	"golang.org/x/crypto/acme/autocert"
@@ -121,14 +120,9 @@ func (server *Server) setNet() {
 	case NETTYPE_UNIX_HTTP, NETTYPE_UNIX_HTTPS, NETTYPE_UNIX_LETSENCRYPT:
 		server.net = "unix"
 	default:
-		server.log.Fatalf("Please set a valid config item net_type, refer to the following:\n%s\n", __netTypes__)
+		server.log.Fatalf("[NET] Please set a valid config item net_type, refer to the following:\n%s\n", __netTypes__)
 	}
 }
-
-var (
-	errRemoveUnix = errors.New("[NET:UNIX] Unexpected error when trying to remove unix socket file. Addr: %s | Trace: %s")
-	errChmod      = errors.New("[NET:UNIX] Cannot chmod %#o for %q: %s")
-)
 
 var grace = new(gracenet.Net)
 
@@ -163,13 +157,13 @@ func (server *Server) listen() net.Listener {
 	switch server.netType {
 	case NETTYPE_UNIX_HTTPS, NETTYPE_UNIX_LETSENCRYPT:
 		if errOs := os.Remove(server.Addr); errOs != nil && !os.IsNotExist(errOs) {
-			server.log.Fatalf("%v\n", errRemoveUnix.Format(server.Addr, errOs.Error()))
+			server.log.Fatalf("[NET:UNIX] Unexpected error when trying to remove unix socket file. Addr: %s | Trace: %s\n", server.Addr, errOs.Error())
 			return nil
 		}
 		defer func() {
 			err := os.Chmod(server.Addr, server.unixFileMode)
 			if err != nil {
-				server.log.Fatalf("%v\n", errChmod.Format(server.unixFileMode, server.Addr, err.Error()))
+				server.log.Fatalf("[NET:UNIX] Cannot chmod %#o for %q: %s\n", server.unixFileMode, server.Addr, err.Error())
 			}
 		}()
 	}

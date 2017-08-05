@@ -29,7 +29,6 @@ import (
 	"github.com/henrylee2cn/faygo/acceptencoder"
 	"github.com/henrylee2cn/faygo/apiware"
 	"github.com/henrylee2cn/faygo/logging"
-	"github.com/henrylee2cn/faygo/utils"
 )
 
 const (
@@ -530,7 +529,7 @@ var (
 	defaultBinderrorFunc = func(ctx *Context, err error) {
 		ctx.String(http.StatusBadRequest, "%v", err)
 	}
-	defaultParamNameMapper = utils.SnakeString
+	defaultParamNameMapper = SnakeString
 	// The default path for the upload files
 	defaultUpload = PresetStatic{
 		root: "./upload/",

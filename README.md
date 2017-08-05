@@ -72,16 +72,16 @@ HTTPS/HTTP2(Let's Encrypt TLS on UNIX socket) | `unix_letsencrypt`
 HTTP(UNIX socket)                             | `unix_http`
 HTTPS/HTTP2(TLS on UNIX socket)               | `unix_https`
 
-- Support single-service & single-listener, single-service & multi-listener, multi-service & multi-listener and so on. The configuration of multiple services is independent of each other.
+- Support single-service & single-listener, single-service & multi-listener, multi-service & multi-listener and so on. The config of multiple services is independent of each other.
 - The high-performance router based on `httprouter` supports both chain and tree registration styles; supports flexible static file router (such as DirFS, RenderFS, MarkdownFS, etc.).
 - Support graceful shutdown and rebooting, provide fay tools which has new projects, hot compilation , meta programming function.
 - Use the most powerful `pongo2` as the HTML rendering engine.
 - Support near-LRU memory caching. (mainly used for static file cache)
 - Support cross-platform color log system, and has two output interface(console and file).
 - Support session management.
-- Support global gzip compression configuration.
+- Support global gzip compression config.
 - Support XSRF security filtering.
-- Most features try to use simple ini configurations to avoid unnecessary recompilation, and these profiles can be automatically assigned default values.
+- Most features try to use simple ini configs to avoid unnecessary recompilation, and these profiles can be automatically assigned default values.
 - Provide `gorm`, ` xorm`, `sqlx`, ` directSQL`, `Websocket`, ` ini`, `http client` and many other commonly used expansion packages.
 
 ![faygo handler multi-usage](https://github.com/henrylee2cn/faygo/raw/master/doc/MultiUsage.png)
@@ -281,7 +281,7 @@ kill -USR2 [pid]
 
 ## Configuration
 
-- Each instance of the application has a single configuration (file name format `config/{appname}[_{version}].ini`). Refer to the following:
+- Each instance of the application has a single config (file name format `config/{appname}[_{version}].ini`). Refer to the following:
 
 ```
 net_types              = http|https              # List of network type: http | https | unix_http | unix_https | letsencrypt | unix_letsencrypt
@@ -289,14 +289,14 @@ addrs                  = 0.0.0.0:80|0.0.0.0:443  # List of multiple listening ad
 tls_certfile           =                         # TLS certificate file path
 tls_keyfile            =                         # TLS key file path
 letsencrypt_dir        =                         # Let's Encrypt TLS certificate cache directory
-unix_filemode          = 438                     # File permissions for UNIX listener (438 equivalent to 0666)
+unix_filemode          = 0666                    # File permissions for UNIX listener, requires octal number
 read_timeout           = 0s                      # Maximum duration for reading the full; ns|µs|ms|s|m|h request (including body)
 write_timeout          = 0s                      # Maximum duration for writing the full; ns|µs|ms|s|m|h response (including body)
 multipart_maxmemory_mb = 32                      # Maximum size of memory that can be used when receiving uploaded files
 slow_response_threshold= 0s                      # When response time > slow_response_threshold, log level   = 'WARNING'; 0 means not limited; ns|µs|ms|s|m|h
 print_body             = false                   # Form requests are printed in JSON format, but other types are printed as-is
 
-[router]                                         # Routing configuration section
+[router]                                         # Routing config section
 redirect_trailing_slash   = true                 # Automatic redirection (for example, `/foo/` -> `/foo`)
 redirect_fixed_path       = true                 # Tries to fix the current request path, if no handle is registered for it
 handle_method_not_allowed = true                 # Returns 405 if the requested method does not exist, otherwise returns 404
@@ -313,7 +313,7 @@ expire_second = 3600                             # Expire of XSRF token
 enable                 = false                   # Whether enabled or not
 provider               = memory                  # Data storage
 name                   = faygosessionID          # The client stores the name of the cookie
-provider_config        =                         # According to the different engine settings different configuration information
+provider_config        =                         # According to the different engine settings different config information
 cookie_life_second     = 0                       # The default value is 0, which is the lifetime of the browser
 gc_life_second         = 300                     # The interval between triggering the GC
 max_life_second        = 3600                    # The session max lefetime
@@ -336,7 +336,7 @@ license     =                                    # The license used by the API
 license_url =                                    # The URL of the protocol content page
 ```
 
-- Only one global configuration is applied (`config/__global__.ini`). Refer to the following:
+- Only one global config is applied (`config/__global__.ini`). Refer to the following:
 
 ```
 [cache]                                          # Cache section

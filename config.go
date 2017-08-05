@@ -19,20 +19,21 @@ import (
 	"math"
 	"os"
 	"sort"
+	"strconv"
 	"strings"
 	"sync/atomic"
 	"time"
 )
 
 type (
-	// GlobalConfig is global configuration
+	// GlobalConfig is global config
 	GlobalConfig struct {
 		Cache   CacheConfig `ini:"cache" comment:"Cache section"`
 		Gzip    GzipConfig  `ini:"gzip" comment:"Whether enabled or not"`
 		Log     LogConfig   `ini:"log" comment:"Whether enabled or not console logger"`
 		warnMsg string      `int:"-"`
 	}
-	// Config is the configuration information for each web instance
+	// Config is the config information for each web instance
 	Config struct {
 		// RunMode         string      `ini:"run_mode" comment:"run mode: dev|prod"`
 		NetTypes       []string    `ini:"net_types" delim:"|" comment:"List of network type: http|https|unix_http|unix_https|letsencrypt|unix_letsencrypt"`
@@ -40,7 +41,8 @@ type (
 		TLSCertFile    string      `ini:"tls_certfile" comment:"TLS certificate file path"`
 		TLSKeyFile     string      `ini:"tls_keyfile" comment:"TLS key file path"`
 		LetsencryptDir string      `ini:"letsencrypt_dir" comment:"Let's Encrypt TLS certificate cache directory"`
-		UNIXFileMode   os.FileMode `ini:"unix_filemode" comment:"File permissions for UNIX listener (438 equivalent to 0666)"`
+		UNIXFileMode   string      `ini:"unix_filemode" comment:"File permissions for UNIX listener, requires octal number"`
+		unixFileMode   os.FileMode `ini:"-"`
 		// Maximum duration for reading the full request (including body).
 		//
 		// This also limits the maximum duration for idle keep-alive
@@ -54,7 +56,7 @@ type (
 		WriteTimeout          time.Duration `ini:"write_timeout" comment:"Maximum duration for writing the full response (including body); ns|µs|ms|s|m|h"`
 		MultipartMaxMemoryMB  int64         `ini:"multipart_maxmemory_mb" comment:"Maximum size of memory that can be used when receiving uploaded files"`
 		multipartMaxMemory    int64         `ini:"-"`
-		Router                RouterConfig  `ini:"router" comment:"Routing configuration section"`
+		Router                RouterConfig  `ini:"router" comment:"Routing config section"`
 		XSRF                  XSRFConfig    `ini:"xsrf" comment:"XSRF security section"`
 		Session               SessionConfig `ini:"session" comment:"Session section"`
 		SlowResponseThreshold time.Duration `ini:"slow_response_threshold" comment:"When response time > slow_response_threshold, log level = 'WARNING'; 0 means not limited; ns|µs|ms|s|m|h"`
@@ -62,7 +64,7 @@ type (
 		PrintBody             bool          `ini:"print_body" comment:"Form requests are printed in JSON format, but other types are printed as-is"`
 		APIdoc                APIdocConfig  `ini:"apidoc" comment:"API documentation section"`
 	}
-	// RouterConfig is the configuration about router
+	// RouterConfig is the config about router
 	RouterConfig struct {
 		// Enables automatic redirection if the current route can't be matched but a
 		// handler for the path with (without) the trailing slash exists.
@@ -93,7 +95,7 @@ type (
 		DefaultUpload bool `ini:"default_upload" comment:"Automatically register the default router: /upload/*filepath"`
 		DefaultStatic bool `ini:"default_static" comment:"Automatically register the default router: /static/*filepath"`
 	}
-	// GzipConfig is the configuration about gzip
+	// GzipConfig is the config about gzip
 	GzipConfig struct {
 		// if EnableGzip, compress response content.
 		Enable bool `ini:"enable" comment:"Whether enabled or not"`
@@ -107,7 +109,7 @@ type (
 		Methods []string `ini:"methods" delim:"|" comment:"List of HTTP methods to compress. If not set, only GET requests are compressed."`
 		// StaticExtensionsToGzip []string
 	}
-	// CacheConfig is the configuration about cache
+	// CacheConfig is the config about cache
 	CacheConfig struct {
 		// Whether to enable caching static files
 		Enable bool `ini:"enable" comment:"Whether enabled or not"`
@@ -121,18 +123,18 @@ type (
 		// ExpireSecond <= 0 (second) means no expire, but it can be evicted when cache is full.
 		ExpireSecond int `ini:"expire_second" comment:"Maximum duration for caching"`
 	}
-	// XSRFConfig is the configuration about XSRF filter
+	// XSRFConfig is the config about XSRF filter
 	XSRFConfig struct {
 		Enable       bool   `ini:"enable" comment:"Whether enabled or not"`
 		Key          string `ini:"key" comment:"Encryption key"`
 		ExpireSecond int    `ini:"expire_second" comment:"Expire of XSRF token"`
 	}
-	// SessionConfig is the configuration about session
+	// SessionConfig is the config about session
 	SessionConfig struct {
 		Enable                bool   `ini:"enable" comment:"Whether enabled or not"`
 		Provider              string `ini:"provider" comment:"Data storage"`
 		Name                  string `ini:"name" comment:"The client stores the name of the cookie"`
-		ProviderConfig        string `ini:"provider_config" comment:"According to the different engine settings different configuration information"`
+		ProviderConfig        string `ini:"provider_config" comment:"According to the different engine settings different config information"`
 		CookieLifeSecond      int    `ini:"cookie_life_second" comment:"The default value is 0, which is the lifetime of the browser"`
 		GcLifeSecond          int64  `ini:"gc_life_second" comment:"The interval between triggering the GC"`
 		MaxLifeSecond         int64  `ini:"max_life_second" comment:"The session max lefetime"`
@@ -142,7 +144,7 @@ type (
 		NameInHttpHeader      string `ini:"name_in_header" comment:"The name of the header when the session ID is written to the header"`
 		EnableSidInUrlQuery   bool   `ini:"enable_sid_in_urlquery" comment:"Whether to write the session ID to the URL Query params"`
 	}
-	// LogConfig is the configuration about log
+	// LogConfig is the config about log
 	LogConfig struct {
 		ConsoleEnable bool   `ini:"console_enable" comment:"Whether enabled or not console logger"`
 		ConsoleLevel  string `ini:"console_level" comment:"Console logger level: critical|error|warning|notice|info|debug"`
@@ -150,7 +152,7 @@ type (
 		FileLevel     string `ini:"file_level" comment:"File logger level: critical|error|warning|notice|info|debug"`
 		AsyncLen      int    `ini:"async_len" comment:"The length of asynchronous buffer, 0 means synchronization"`
 	}
-	// APIdocConfig is the configuration about API doc
+	// APIdocConfig is the config about API doc
 	APIdocConfig struct {
 		Enable     bool     `ini:"enable" comment:"Whether enabled or not"`
 		Path       string   `ini:"path" comment:"The URL path"`
@@ -174,7 +176,7 @@ const (
 	defaultMultipartMaxMemoryMB = 32
 	defaultPort                 = 8080
 
-	// The path for the configuration files
+	// The path for the config files
 	CONFIG_DIR = "./config/"
 	// global config file name
 	GLOBAL_CONFIG_FILE = "__global___.ini"
@@ -209,12 +211,12 @@ var globalConfig = func() GlobalConfig {
 
 	err := SyncINI(
 		&background,
-		func(existed bool, mustSave func() error) error {
+		func(onecUpdateFunc func() error) error {
 			if !(background.Log.ConsoleEnable || background.Log.FileEnable) {
 				background.Log.ConsoleEnable = true
 				background.warnMsg = "config: log::enable_console and log::enable_file can not be disabled at the same time, so automatically open console log."
 			}
-			return mustSave()
+			return onecUpdateFunc()
 		},
 		filename,
 	)
@@ -235,7 +237,7 @@ func newConfig(filename string) Config {
 		// RunMode:              RUNMODE_DEV,
 		NetTypes:             []string{NETTYPE_HTTP},
 		Addrs:                []string{addr},
-		UNIXFileMode:         0666,
+		UNIXFileMode:         "0666",
 		MultipartMaxMemoryMB: defaultMultipartMaxMemoryMB,
 		Router: RouterConfig{
 			RedirectTrailingSlash:  true,
@@ -278,25 +280,31 @@ func newConfig(filename string) Config {
 
 	err := SyncINI(
 		&background,
-		func(existed bool, mustSave func() error) error {
+		func(onecUpdateFunc func() error) error {
 			// switch background.RunMode {
 			// case RUNMODE_DEV, RUNMODE_PROD:
 			// default:
 			// 	panic("Please set a valid config item run_mode, refer to the following:\ndev|prod")
 			// }
 			if len(background.NetTypes) != len(background.Addrs) {
-				panic("The number of configuration items `net_types` and `addrs` must be equal")
+				panic("The number of config items `net_types` and `addrs` must be equal")
 			}
 			if len(background.NetTypes) == 0 {
-				panic("The number of configuration items `net_types` and `addrs` must be greater than zero")
+				panic("The number of config items `net_types` and `addrs` must be greater than zero")
 			}
 			for _, t := range background.NetTypes {
 				switch t {
 				case NETTYPE_HTTP, NETTYPE_UNIX_HTTP, NETTYPE_HTTPS, NETTYPE_UNIX_HTTPS, NETTYPE_LETSENCRYPT, NETTYPE_UNIX_LETSENCRYPT:
 				default:
-					panic("Please set a valid config item `net_types`, refer to the following:" + __netTypes__ + "\n")
+					panic("Please set a valid config item `net_types`, refer to the following:" + __netTypes__)
 				}
 			}
+			fileMode, err := strconv.ParseUint(background.UNIXFileMode, 8, 32)
+			if err != nil {
+				panic("The config item `unix_filemode` is not a valid octal number:" + background.UNIXFileMode)
+			}
+			background.unixFileMode = os.FileMode(fileMode)
+			background.UNIXFileMode = fmt.Sprintf("%#o", fileMode)
 			background.multipartMaxMemory = background.MultipartMaxMemoryMB * MB
 			if background.SlowResponseThreshold <= 0 {
 				background.slowResponseThreshold = time.Duration(math.MaxInt64)
@@ -304,7 +312,7 @@ func newConfig(filename string) Config {
 				background.slowResponseThreshold = background.SlowResponseThreshold
 			}
 			background.APIdoc.Comb()
-			return mustSave()
+			return onecUpdateFunc()
 		},
 		filename,
 	)

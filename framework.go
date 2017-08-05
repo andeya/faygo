@@ -29,7 +29,6 @@ import (
 	"github.com/henrylee2cn/faygo/logging/color"
 	"github.com/henrylee2cn/faygo/session"
 	"github.com/henrylee2cn/faygo/swagger"
-	"github.com/henrylee2cn/faygo/utils"
 )
 
 // Framework is the faygo web framework.
@@ -241,7 +240,7 @@ func (frame *Framework) build() {
 				tlsCertFile:     frame.config.TLSCertFile,
 				tlsKeyFile:      frame.config.TLSKeyFile,
 				letsencryptDir:  frame.config.LetsencryptDir,
-				unixFileMode:    frame.config.UNIXFileMode,
+				unixFileMode:    frame.config.unixFileMode,
 				Server: &http.Server{
 					Addr:         frame.config.Addrs[i],
 					Handler:      frame,
@@ -563,7 +562,7 @@ func (frame *Framework) serveHTTP(ctx *Context) {
 			// Try to fix the request path
 			if frame.redirectFixedPath {
 				fixedPath, found := root.findCaseInsensitivePath(
-					utils.CleanPath(path),
+					CleanToURL(path),
 					frame.redirectTrailingSlash,
 				)
 				if found {

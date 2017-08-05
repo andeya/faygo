@@ -5,18 +5,18 @@ import (
 	"path/filepath"
 
 	"github.com/henrylee2cn/faygo"
-	"github.com/henrylee2cn/faygo/ini"
+	"github.com/henrylee2cn/ini"
 )
 
 // DBConfig is database connection config
 type DBConfig struct {
 	Name         string `ini:"-"`
-	Enable       bool   `ini:"enable"`
-	Driver       string `ini:"driver"` // Driver：mssql | odbc(mssql) | mysql | mymysql | postgres | sqlite3 | oci8 | goracle
-	Connstring   string `ini:"connstring"`
+	Enable       bool   `ini:"enable" comment:"Enable the config section"`
+	Driver       string `ini:"driver" comment:"mssql | odbc(mssql) | mysql | mymysql | postgres | sqlite3 | oci8 | goracle"`
+	Connstring   string `ini:"connstring" comment:"Connect String"`
 	MaxOpenConns int    `ini:"max_open_conns"`
 	MaxIdleConns int    `ini:"max_idle_conns"`
-	ShowSql      bool   `ini:"show_sql"`
+	ShowSql      bool   `ini:"show_sql" comment:"print sql"`
 }
 
 // default constant
@@ -31,7 +31,7 @@ var (
 	defaultConfig = &DBConfig{
 		Name:         DEFAULTDB_NAME,
 		Driver:       "mysql",
-		Connstring:   "root:@tcp(127.0.0.1:3306)/faygo?charset=utf8",
+		Connstring:   "root:@tcp(127.0.0.1:3306)/test?charset=utf8",
 		MaxOpenConns: 100,
 		MaxIdleConns: 100,
 		ShowSql:      false,

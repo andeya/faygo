@@ -5,26 +5,26 @@ import (
 	"path/filepath"
 
 	"github.com/henrylee2cn/faygo"
-	"github.com/henrylee2cn/faygo/ini"
+	"github.com/henrylee2cn/ini"
 )
 
 // DBConfig is database connection config
 type DBConfig struct {
 	Name         string `ini:"-"`
-	Enable       bool   `ini:"enable"`
-	Driver       string `ini:"driver"` // driver: mssql | odbc(mssql) | mysql | mymysql | postgres | sqlite3 | oci8 | goracle
-	Connstring   string `ini:"connstring"`
+	Enable       bool   `ini:"enable" comment:"Enable the config section"`
+	Driver       string `ini:"driver" comment:"mssql | odbc(mssql) | mysql | mymysql | postgres | sqlite3 | oci8 | goracle"`
+	Connstring   string `ini:"connstring" comment:"Connect String"`
 	MaxOpenConns int    `ini:"max_open_conns"`
 	MaxIdleConns int    `ini:"max_idle_conns"`
-	ShowSql      bool   `ini:"show_sql"`
-	TableFix     string `ini:"table_fix"`    // the table namespace is located in the prefix or suffix: prefix | suffix
-	TableSpace   string `ini:"table_space"`  // table namespace
-	TableSnake   bool   `ini:"table_snake"`  // the table name uses the snake style or remains unchanged
-	ColumnFix    string `ini:"column_fix"`   // column namespace is located in the prefix or suffix: prefix | suffix
-	ColumnSpace  string `ini:"column_space"` // column namespace
-	ColumnSnake  bool   `ini:"column_snake"` // the column name uses the snake style or remains unchanged
+	ShowSql      bool   `ini:"show_sql" comment:"print sql"`
+	TableFix     string `ini:"table_fix" comment:"the table namespace is located in the prefix or suffix: prefix | suffix"`
+	TableSpace   string `ini:"table_space" comment:"table namespace"`
+	TableSnake   bool   `ini:"table_snake" comment:"the table name uses the snake style or remains unchanged"`
+	ColumnFix    string `ini:"column_fix" comment:"column namespace is located in the prefix or suffix: prefix | suffix"`
+	ColumnSpace  string `ini:"column_space" comment:"column namespace"`
+	ColumnSnake  bool   `ini:"column_snake" comment:"the column name uses the snake style or remains unchanged"`
 	DisableCache bool   `ini:"disable_cache"`
-	ShowExecTime bool   `ini:"show_exec_time"`
+	ShowExecTime bool   `ini:"show_exec_time" comment:"print exec time"`
 }
 
 // default constant
@@ -39,7 +39,7 @@ var (
 	defaultConfig = &DBConfig{
 		Name:         DEFAULTDB_NAME,
 		Driver:       "mysql",
-		Connstring:   "root:@tcp(127.0.0.1:3306)/faygo?charset=utf8",
+		Connstring:   "root:@tcp(127.0.0.1:3306)/test?charset=utf8",
 		MaxOpenConns: 100,
 		MaxIdleConns: 100,
 		TableFix:     "prefix",

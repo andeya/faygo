@@ -26,7 +26,7 @@ import (
 	"github.com/go-xorm/core"
 	"github.com/henrylee2cn/faygo"
 	faygoxorm "github.com/henrylee2cn/faygo/ext/db/xorm"
-	confpkg "github.com/henrylee2cn/faygo/ini"
+	confpkg "github.com/henrylee2cn/ini"
 )
 
 //var modelsqls map[string]*TModel

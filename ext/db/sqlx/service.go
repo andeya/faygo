@@ -15,7 +15,6 @@ import (
 	// _ "github.com/mattn/go-sqlite3"      //sqlite
 
 	"github.com/henrylee2cn/faygo"
-	"github.com/henrylee2cn/faygo/utils"
 )
 
 // DBService is a database engine object.
@@ -61,13 +60,13 @@ var dbService = func() (serv *DBService) {
 
 		var strFunc = strings.ToLower
 		if conf.ColumnSnake {
-			strFunc = utils.SnakeString
+			strFunc = faygo.SnakeString
 		}
 
 		// Create a new mapper which will use the struct field tag "json" instead of "db"
 		db.Mapper = reflectx.NewMapperFunc(conf.StructTag, strFunc)
 
-		if conf.Driver == "sqlite3" && !utils.FileExists(conf.Connstring) {
+		if conf.Driver == "sqlite3" && !faygo.FileExists(conf.Connstring) {
 			os.MkdirAll(filepath.Dir(conf.Connstring), 0777)
 			f, err := os.Create(conf.Connstring)
 			if err != nil {

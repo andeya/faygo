@@ -27,7 +27,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/henrylee2cn/faygo/utils"
+	"github.com/henrylee2cn/goutil"
 )
 
 func init() {
@@ -74,7 +74,7 @@ func DecodeGob(encoded []byte) (map[interface{}]interface{}, error) {
 // A random initialization vector (http://goo.gl/zF67k) with the length of the
 // block size is prepended to the resulting ciphertext.
 func encrypt(block cipher.Block, value []byte) ([]byte, error) {
-	iv := utils.RandomBytes(block.BlockSize())
+	iv := goutil.RandomBytes(block.BlockSize())
 	if iv == nil {
 		return nil, errors.New("encrypt: failed to generate random iv")
 	}
