@@ -428,6 +428,16 @@ float64 |  []float64 |
 [任务工具](https://github.com/henrylee2cn/faygo/raw/master/ext/task)          | `github.com/henrylee2cn/faygo/ext/task`
 [HTTP客户端](https://github.com/henrylee2cn/faygo/raw/master/ext/surfer)      | `github.com/henrylee2cn/faygo/ext/surfer`
 
+## 已知案例
+
+产品名称          | Web/App 服务器 | 主页
+-----------------|---------------|-----------------
+盯房App           | App           | https://www.df-house.com
+e交易             | App           | https://fir.im/ejy
+Seven A Jewelry  | Web           | http://sevenajewelry.com
+玩付              | App           | https://fir.im/eqb
+
+*注：按拼音字母排序*
 
 ## 开源协议
 

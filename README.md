@@ -426,6 +426,18 @@ package summary  |  import path
 [http client](https://github.com/henrylee2cn/faygo/raw/master/ext/surfer)          | `github.com/henrylee2cn/faygo/ext/surfer`
 
 
+## Known Cases
+
+Product Name     | Web/App Server | Home Page
+-----------------|----------------|-----------------
+盯房App           | App          | https://www.df-house.com
+eTrade           | App          | https://fir.im/ejy
+Seven A Jewelry  | Web          | http://sevenajewelry.com
+OneFor           | App           | https://fir.im/eqb
+
+*Note: Sorted in alphabetical order*
+
+
 ## License
 
 Faygo is under Apache v2 License. See the [LICENSE](https://github.com/henrylee2cn/faygo/raw/master/LICENSE) file for the full license text
