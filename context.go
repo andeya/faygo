@@ -437,10 +437,13 @@ func (ctx *Context) recordBody() []byte {
 	var b []byte
 	formValues := ctx.FormParamAll()
 	if len(formValues) > 0 || ctx.IsUpload() {
-		b, _ = json.Marshal(multipart.Form{
+		v := multipart.Form{
 			Value: formValues,
-			File:  ctx.R.MultipartForm.File,
-		})
+		}
+		if ctx.R.MultipartForm != nil {
+			v.File = ctx.R.MultipartForm.File
+		}
+		b, _ = json.Marshal(v)
 	} else {
 		b = ctx.LimitedBodyBytes()
 	}
