@@ -437,7 +437,6 @@ OneFor           | App           | https://fir.im/eqb
 
 *Note: Sorted in alphabetical order*
 
-
 ## License
 
 Faygo is under Apache v2 License. See the [LICENSE](https://github.com/henrylee2cn/faygo/raw/master/LICENSE) file for the full license text
