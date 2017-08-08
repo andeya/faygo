@@ -432,7 +432,7 @@ float64 |  []float64 |
 
 产品名称          | Web/App 服务器 | 主页
 -----------------|---------------|-----------------
-盯房App           | App           | https://www.df-house.com
+盯房              | App           | https://www.df-house.com
 e交易             | App           | https://fir.im/ejy
 Seven A Jewelry  | Web           | http://sevenajewelry.com
 玩付              | App           | https://fir.im/eqb

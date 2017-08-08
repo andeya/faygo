@@ -426,11 +426,11 @@ package summary  |  import path
 [http client](https://github.com/henrylee2cn/faygo/raw/master/ext/surfer)          | `github.com/henrylee2cn/faygo/ext/surfer`
 
 
-## Known Cases
+##  
 
 Product Name     | Web/App Server | Home Page
 -----------------|----------------|-----------------
-盯房App           | App          | https://www.df-house.com
+盯房              | App          | https://www.df-house.com
 eTrade           | App          | https://fir.im/ejy
 Seven A Jewelry  | Web          | http://sevenajewelry.com
 OneFor           | App           | https://fir.im/eqb
