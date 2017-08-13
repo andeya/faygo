@@ -1,4 +1,4 @@
-# Faygo    [![GoDoc](https://godoc.org/github.com/tsuna/gohbase?status.png)](https://godoc.org/github.com/henrylee2cn/faygo)    ![Faygo goreportcard](https://goreportcard.com/badge/github.com/henrylee2cn/faygo)
+# Faygo [![report card](https://goreportcard.com/badge/github.com/henrylee2cn/faygo?style=flat-square)](http://goreportcard.com/report/henrylee2cn/faygo) [![github issues](https://img.shields.io/github/issues/henrylee2cn/faygo.svg?style=flat-square)](https://github.com/henrylee2cn/faygo/issues?q=is%3Aopen+is%3Aissue) [![github closed issues](https://img.shields.io/github/issues-closed-raw/henrylee2cn/faygo.svg?style=flat-square)](https://github.com/henrylee2cn/faygo/issues?q=is%3Aissue+is%3Aclosed) [![GitHub release](https://img.shields.io/github/release/henrylee2cn/faygo.svg?style=flat-square)](https://github.com/henrylee2cn/faygo/releases) [![GoDoc](https://img.shields.io/badge/godoc-reference-blue.svg?style=flat-square)](http://godoc.org/github.com/henrylee2cn/faygo)
 
 ![Faygo Favicon](https://github.com/henrylee2cn/faygo/raw/master/doc/faygo_96x96.png)
 
