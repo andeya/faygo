@@ -2,7 +2,7 @@ package router
 
 import (
 	"github.com/henrylee2cn/faygo"
-	tgMiddleware "github.com/henrylee2cn/faygo/ext/middleware"
+	mw "github.com/henrylee2cn/faygo/ext/middleware"
 	"github.com/henrylee2cn/faygo/samples/demo/handler"
 	"github.com/henrylee2cn/faygo/samples/demo/middleware"
 )
@@ -33,8 +33,8 @@ func Route1(frame *faygo.Framework) {
 			frame.NewNamedStaticFS("markdown fs test", "/md", faygo.MarkdownFS(
 				"./static/markdown",
 			)),
-			frame.NewNamedGET("reverse proxy", "/search", handler.Search(0)),
-		).Use(tgMiddleware.CrossOrigin)
+			frame.NewNamedAPI("reverse proxy", "GETOPTIONS", "/search", handler.Search(0)).Use(mw.CrossOrigin),
+		)
 }
 
 // Register the route in a chain style
@@ -53,7 +53,7 @@ func Route2(frame *faygo.Framework) {
 	frame.StaticFS("/public", faygo.DirFS("./static/public"))
 	frame.Static("/syso", "../../_syso")
 
-	frame.NamedGET("reverse proxy", "/search", handler.Search(0))
+	frame.NamedAPI("reverse proxy", "GET OPTIONS", "/search", handler.Search(0)).Use(mw.CrossOrigin)
 
 	frame.NamedStaticFS("render fs test", "/renderfs", faygo.RenderFS(
 		"./static/renderfs",
@@ -64,5 +64,4 @@ func Route2(frame *faygo.Framework) {
 	frame.NamedStaticFS("markdown fs test", "/md", faygo.MarkdownFS(
 		"./static/markdown",
 	))
-	frame.Use(tgMiddleware.CrossOrigin)
 }

@@ -20,15 +20,17 @@ import (
 	"github.com/henrylee2cn/faygo"
 )
 
-// CrossOrigin creates Cross-Domain middleware
-var CrossOrigin = faygo.HandlerFunc(func(ctx *faygo.Context) error {
+// CrossOrigin creates Cross-Domain middleware.
+// Note: The router node should add the OPTIONS method.
+var CrossOrigin faygo.HandlerFunc = func(ctx *faygo.Context) error {
 	ctx.SetHeader(faygo.HeaderAccessControlAllowOrigin, ctx.HeaderParam(faygo.HeaderOrigin))
 	ctx.SetHeader(faygo.HeaderAccessControlAllowCredentials, "true")
 	ctx.SetHeader(faygo.HeaderAccessControlAllowMethods, "POST, GET, OPTIONS, PUT, DELETE")
 	ctx.SetHeader(faygo.HeaderAccessControlAllowHeaders, "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 	ctx.SetHeader(faygo.HeaderAccessControlMaxAge, "172800")
 	if ctx.IsOptions() {
+		ctx.W.WriteHeader(204)
 		ctx.Stop()
 	}
 	return nil
-})
+}
