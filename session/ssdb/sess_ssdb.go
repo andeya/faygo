@@ -184,7 +184,7 @@ func (s *SessionStore) SessionRelease(w http.ResponseWriter) {
 	if err != nil {
 		return
 	}
-	s.client.Do("setx", s.sid, string(b), s.maxLifetime)
+	s.client.Do("setx", s.sid, goutil.BytesToString(b), s.maxLifetime)
 
 }
 func init() {

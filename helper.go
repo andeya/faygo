@@ -240,7 +240,7 @@ func CleanToURL(p string) string {
 	if buf == nil {
 		return p[:w]
 	}
-	return string(buf[:w])
+	return BytesToString(buf[:w])
 }
 
 // internal helper to lazily create a buffer if necessary

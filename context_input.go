@@ -489,7 +489,7 @@ func (ctx *Context) SecureCookieParam(secret, key string) (string, bool) {
 		return "", false
 	}
 	res, _ := base64.URLEncoding.DecodeString(vs)
-	return string(res), true
+	return BytesToString(res), true
 }
 
 // FormFile returns the first file for the provided form key.

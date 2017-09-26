@@ -313,7 +313,7 @@ func apiDesc(notes []Notes) string {
 		}
 		if n.Return != nil {
 			b, _ := json.MarshalIndent(n.Return, "", "  ")
-			desc += fmt.Sprintf("\nReturn: %s", string(b))
+			desc += fmt.Sprintf("\nReturn: %s", b)
 		} else {
 			desc += "\nReturn:"
 		}

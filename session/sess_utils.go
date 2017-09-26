@@ -126,7 +126,7 @@ func encodeCookie(block cipher.Block, hashKey, name string, value map[interface{
 	// 4. Encode to base64.
 	b = encode(b)
 	// Done.
-	return string(b), nil
+	return goutil.BytesToString(b), nil
 }
 
 func decodeCookie(block cipher.Block, hashKey, name, value string, gcmaxlifetime int64) (map[interface{}]interface{}, error) {
@@ -150,7 +150,7 @@ func decodeCookie(block cipher.Block, hashKey, name, value string, gcmaxlifetime
 	}
 	// 3. Verify date ranges.
 	var t1 int64
-	if t1, err = strconv.ParseInt(string(parts[0]), 10, 64); err != nil {
+	if t1, err = strconv.ParseInt(goutil.BytesToString(parts[0]), 10, 64); err != nil {
 		return nil, errors.New("Decode: invalid timestamp")
 	}
 	t2 := time.Now().UTC().Unix()

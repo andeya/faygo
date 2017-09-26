@@ -566,7 +566,7 @@ func (frame *Framework) serveHTTP(ctx *Context) {
 					frame.redirectTrailingSlash,
 				)
 				if found {
-					ctx.ModifyPath(string(fixedPath))
+					ctx.ModifyPath(BytesToString(fixedPath))
 					http.Redirect(ctx.W, ctx.R, ctx.URL().String(), code)
 					return
 				}
@@ -579,6 +579,7 @@ func (frame *Framework) serveHTTP(ctx *Context) {
 		if frame.handleOPTIONS {
 			if allow := frame.allowed(path, method); len(allow) > 0 {
 				ctx.SetHeader("Allow", allow)
+				ctx.W.WriteHeader(204)
 				return
 			}
 		}
