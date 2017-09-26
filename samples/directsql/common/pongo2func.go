@@ -6,8 +6,9 @@
 package common
 
 import (
-	"encoding/json"
 	"strings"
+
+	json "github.com/json-iterator/go"
 
 	"github.com/henrylee2cn/faygo"
 	"github.com/henrylee2cn/faygo/ext/db/directsql"

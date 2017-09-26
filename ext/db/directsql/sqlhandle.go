@@ -11,10 +11,11 @@ package directsql
 
 import (
 	"bytes"
-	"encoding/json"
 	"errors"
 	"html/template"
 	"io/ioutil"
+
+	json "github.com/json-iterator/go"
 
 	"github.com/henrylee2cn/faygo"
 )

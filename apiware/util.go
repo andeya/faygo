@@ -16,9 +16,10 @@ package apiware
 
 import (
 	"bytes"
-	"encoding/json"
 	"reflect"
 	"strings"
+
+	json "github.com/json-iterator/go"
 )
 
 func toSnake(s string) string {

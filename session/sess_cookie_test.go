@@ -15,11 +15,12 @@
 package session
 
 import (
-	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
+
+	json "github.com/json-iterator/go"
 )
 
 func TestCookie(t *testing.T) {

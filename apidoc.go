@@ -18,13 +18,14 @@ package faygo
 
 import (
 	"bytes"
-	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
 	"path"
 	"regexp"
 	"strings"
+
+	json "github.com/json-iterator/go"
 
 	"github.com/henrylee2cn/faygo/swagger"
 )
@@ -81,7 +82,7 @@ func newAPIdocJSONHandler() HandlerFunc {
 		}
 		ctx.frame.apidoc.Schemes = []string{ctx.Scheme()}
 		ctx.frame.apidoc.Host = ctx.R.Host
-		return ctx.JSON(200, ctx.frame.apidoc)
+		return ctx.JSON(200, ctx.frame.apidoc, true)
 	}
 }
 

@@ -16,7 +16,6 @@ package faygo
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"net/http"
 	"os"
@@ -25,6 +24,8 @@ import (
 	"sync"
 	"sync/atomic"
 	"time"
+
+	json "github.com/json-iterator/go"
 
 	"github.com/henrylee2cn/faygo/acceptencoder"
 	"github.com/henrylee2cn/faygo/apiware"

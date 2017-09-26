@@ -17,10 +17,11 @@ package session
 import (
 	"crypto/aes"
 	"crypto/cipher"
-	"encoding/json"
 	"net/http"
 	"net/url"
 	"sync"
+
+	json "github.com/json-iterator/go"
 
 	"github.com/henrylee2cn/goutil"
 )
