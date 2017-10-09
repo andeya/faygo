@@ -45,7 +45,17 @@ func (s *swaggerFS) Open(name string) (http.File, error) {
 		}
 		b = bytes.Replace(b, []byte(`"/swagger.json"`), s.jsonPath, -1)
 		info, err := swagger.AssetInfo("swagger-ui/index.html")
-		return NewFile(b, info), err
+		if err != nil {
+			return nil, err
+		}
+		return NewFile(b, &FileInfo{
+			name:    "apidoc/index.html",
+			size:    int64(len(b)),
+			mode:    info.Mode(),
+			modTime: info.ModTime(),
+			isDir:   info.IsDir(),
+			sys:     info.Sys(),
+		}), err
 	}
 	return f, err
 }
