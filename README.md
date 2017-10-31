@@ -430,10 +430,11 @@ package summary  |  import path
 
 Product Name     | Web/App Server | Home Page
 -----------------|----------------|-----------------
-盯房              | App          | https://www.df-house.com
-eTrade           | App          | https://fir.im/ejy
-Seven A Jewelry  | Web          | http://sevenajewelry.com
+盯房              | App           | https://www.df-house.com
+eTrade           | App           | https://fir.im/ejy
+Seven A Jewelry  | Web           | http://sevenajewelry.com
 OneFor           | App           | https://fir.im/eqb
+杰运好车           | App           | https://www.jieyunhaoche.com/appdown
 
 *Note: Sorted in alphabetical order*
 

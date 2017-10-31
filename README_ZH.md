@@ -436,6 +436,7 @@ float64 |  []float64 |
 e交易             | App           | https://fir.im/ejy
 Seven A Jewelry  | Web           | http://sevenajewelry.com
 玩付              | App           | https://fir.im/eqb
+杰运好车          | App            | https://www.jieyunhaoche.com/appdown
 
 *注：按拼音字母排序*
 
