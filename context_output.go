@@ -352,19 +352,19 @@ func (ctx *Context) JSONOrXML(status int, data interface{}, isIndent ...bool) er
 
 // File forces response for download file.
 // it prepares the download response header automatically.
-func (ctx *Context) File(file string, filename ...string) {
+func (ctx *Context) File(localFilename string, showFilename ...string) {
 	ctx.W.Header().Set(HeaderContentDescription, "File Transfer")
 	ctx.W.Header().Set(HeaderContentType, MIMEOctetStream)
-	if len(filename) > 0 && filename[0] != "" {
-		ctx.W.Header().Set(HeaderContentDisposition, "attachment; filename="+filename[0])
+	if len(showFilename) > 0 && showFilename[0] != "" {
+		ctx.W.Header().Set(HeaderContentDisposition, "attachment; filename="+showFilename[0])
 	} else {
-		ctx.W.Header().Set(HeaderContentDisposition, "attachment; filename="+filepath.Base(file))
+		ctx.W.Header().Set(HeaderContentDisposition, "attachment; filename="+filepath.Base(localFilename))
 	}
 	ctx.W.Header().Set(HeaderContentTransferEncoding, "binary")
 	ctx.W.Header().Set(HeaderExpires, "0")
 	ctx.W.Header().Set(HeaderCacheControl, "must-revalidate")
 	ctx.W.Header().Set(HeaderPragma, "public")
-	global.fsManager.ServeFile(ctx, file)
+	global.fsManager.ServeFile(ctx, localFilename)
 }
 
 // Render renders a template with data and sends a text/html response with status code.
