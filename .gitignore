@@ -26,6 +26,7 @@ _testmain.go
 *nohup.out
 *.sublime-project
 *.sublime-workspace
+vendor/*_test.go
 
 samples/*/log/*
 samples/MultiUsage/MultiUsage

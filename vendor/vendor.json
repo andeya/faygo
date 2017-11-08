@@ -1,12 +1,12 @@
 {
 	"comment": "",
-	"ignore": "",
+	"ignore": "test",
 	"package": [
 		{
-			"checksumSHA1": "dWjbrJtxCF4DRpQZEjQXL3Z20I4=",
+			"checksumSHA1": "9IBgkhnUGUdgdnwnyRY8zS97Jcc=",
 			"path": "github.com/json-iterator/go",
-			"revision": "b1b003864e6d16e27a543216770f74dda086fbb9",
-			"revisionTime": "2017-11-08T03:41:45Z"
+			"revision": "92772579dd0d6dbbca395ebc5db8b559ebcb1798",
+			"revisionTime": "2017-09-15T14:08:45Z"
 		}
 	],
 	"rootPath": "github.com/henrylee2cn/faygo"
