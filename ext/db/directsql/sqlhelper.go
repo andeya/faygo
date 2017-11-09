@@ -4,13 +4,12 @@
 package directsql
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"reflect"
 	"strconv"
 	"time"
-
-	json "github.com/json-iterator/go"
 
 	"github.com/go-xorm/core"
 )

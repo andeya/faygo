@@ -19,6 +19,7 @@ import (
 	"crypto/hmac"
 	"crypto/sha1"
 	"encoding/base64"
+	"encoding/json"
 	"encoding/xml"
 	"errors"
 	"fmt"
@@ -33,8 +34,6 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
-
-	json "github.com/json-iterator/go"
 
 	"github.com/henrylee2cn/faygo/apiware"
 )

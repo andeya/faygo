@@ -15,6 +15,7 @@
 package faygo
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"math"
@@ -24,8 +25,6 @@ import (
 	"net/url"
 	"path"
 	"sync"
-
-	json "github.com/json-iterator/go"
 
 	"github.com/henrylee2cn/faygo/logging"
 	"github.com/henrylee2cn/faygo/session"

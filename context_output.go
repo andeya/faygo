@@ -19,6 +19,7 @@ import (
 	"crypto/hmac"
 	"crypto/sha1"
 	"encoding/base64"
+	"encoding/json"
 	"encoding/xml"
 	"fmt"
 	"html/template"
@@ -27,8 +28,6 @@ import (
 	"strings"
 	"time"
 	"unsafe"
-
-	json "github.com/json-iterator/go"
 
 	"github.com/henrylee2cn/faygo/acceptencoder"
 )

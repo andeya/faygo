@@ -16,9 +16,8 @@ package session
 
 import (
 	"crypto/aes"
+	"encoding/json"
 	"testing"
-
-	json "github.com/json-iterator/go"
 )
 
 func Test_gob(t *testing.T) {

@@ -18,14 +18,13 @@ package faygo
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
 	"path"
 	"regexp"
 	"strings"
-
-	json "github.com/json-iterator/go"
 
 	"github.com/henrylee2cn/faygo/swagger"
 )
