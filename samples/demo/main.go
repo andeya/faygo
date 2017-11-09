@@ -3,10 +3,10 @@ package main
 import (
 	"net/http"
 	_ "net/http/pprof"
+	"time"
 
 	"github.com/henrylee2cn/faygo"
 	"github.com/henrylee2cn/faygo/samples/demo/router"
-	"time"
 )
 
 // run type 1
