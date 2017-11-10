@@ -574,7 +574,7 @@ func (ctx *Context) SaveFile(key string, cover bool, newfname ...string) (savedF
 	savedFileInfo.Url = "/" + strings.Replace(fullname, `\`, `/`, -1)
 
 	// Save the file to local
-	f2, err := os.OpenFile(fullname, os.O_CREATE|os.O_WRONLY, 0644)
+	f2, err := os.OpenFile(fullname, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0644)
 	if err != nil {
 		return
 	}
@@ -655,7 +655,7 @@ func (ctx *Context) SaveFiles(key string, cover bool, newfname ...string) (saved
 
 		// Save the file to local
 		var f2 *os.File
-		f2, err = os.OpenFile(fullname, os.O_CREATE|os.O_WRONLY, 0644)
+		f2, err = os.OpenFile(fullname, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0644)
 		if err != nil {
 			// Create the completion file path
 			p, _ := filepath.Split(fullname)
@@ -663,7 +663,7 @@ func (ctx *Context) SaveFiles(key string, cover bool, newfname ...string) (saved
 			if err != nil {
 				return
 			}
-			f2, err = os.OpenFile(fullname, os.O_CREATE|os.O_WRONLY, 0644)
+			f2, err = os.OpenFile(fullname, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0644)
 			if err != nil {
 				return
 			}

@@ -30,7 +30,7 @@ func (p *Param) Serve(ctx *faygo.Context) error {
 	})
 	ctx.Log().Infof("Get session name=%v", ctx.GetSession("name"))
 
-	info, err := ctx.SaveFile("pic", false)
+	info, err := ctx.SaveFile("pic", true)
 	if err == nil {
 		ctx.Log().Infof("ctx.SaveFile: filename %s  url %s, size %d", p.Picture.Filename, info.Url, info.Size)
 	}
