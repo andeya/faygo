@@ -289,11 +289,14 @@ func CreateProperties(obj interface{}) map[string]*Property {
 				Type:   ParamType(field.Type),
 				Format: field.Type.Name(),
 			}
-			fv := v.Field(i)
 			ft := field.Type
+			fv := v.Field(i)
 			if fv.Kind() == reflect.Ptr {
 				fv = fv.Elem()
 				ft = ft.Elem()
+			}
+			if !fv.CanInterface() {
+				continue
 			}
 			if fv.Interface() == nil {
 				fv = reflect.New(ft).Elem()
