@@ -126,10 +126,10 @@ func (pder *CookieProvider) SessionInit(maxlifetime int64, config string) error 
 		return err
 	}
 	if pder.config.BlockKey == "" {
-		pder.config.BlockKey = goutil.RandomString(16)
+		pder.config.BlockKey = goutil.URLRandomString(16)
 	}
 	if pder.config.SecurityName == "" {
-		pder.config.SecurityName = goutil.RandomString(16)
+		pder.config.SecurityName = goutil.URLRandomString(16)
 	}
 	pder.block, err = aes.NewCipher([]byte(pder.config.BlockKey))
 	if err != nil {

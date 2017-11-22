@@ -309,7 +309,7 @@ var ObjectName = goutil.ObjectName
 // fails to function correctly.
 // The length n must be an integer multiple of 4, otherwise the last character will be padded with `=`.
 //  func RandomString(n int) string
-var RandomString = goutil.RandomString
+var RandomString = goutil.URLRandomString
 
 // BytesToString convert []byte type to string type.
 //  func BytesToString(b []byte) string
