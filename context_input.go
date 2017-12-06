@@ -669,11 +669,14 @@ func (ctx *Context) SaveFiles(key string, cover bool, newfname ...string) (saved
 			}
 		}
 		info.Size, err = io.Copy(f2, f)
-		err3 := f2.Close()
-		if err3 != nil && err == nil {
-			err = err3
-			return
-		}
+		// Ensure file not locked
+		defer func(){
+			err3 := f2.Close()
+			if err3 != nil && err == nil {
+				err = err3
+				return
+			}
+		}()
 		savedFileInfos = append(savedFileInfos, info)
 	}
 	return
