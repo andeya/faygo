@@ -1,4 +1,4 @@
-# Faygo [![report card](https://goreportcard.com/badge/github.com/henrylee2cn/faygo?style=flat-square)](http://goreportcard.com/report/henrylee2cn/faygo) [![github issues](https://img.shields.io/github/issues/henrylee2cn/faygo.svg?style=flat-square)](https://github.com/henrylee2cn/faygo/issues?q=is%3Aopen+is%3Aissue) [![github closed issues](https://img.shields.io/github/issues-closed-raw/henrylee2cn/faygo.svg?style=flat-square)](https://github.com/henrylee2cn/faygo/issues?q=is%3Aissue+is%3Aclosed) [![GitHub release](https://img.shields.io/github/release/henrylee2cn/faygo.svg?style=flat-square)](https://github.com/henrylee2cn/faygo/releases) [![GoDoc](https://img.shields.io/badge/godoc-reference-blue.svg?style=flat-square)](http://godoc.org/github.com/henrylee2cn/faygo)
+# Faygo [![report card](https://goreportcard.com/badge/github.com/henrylee2cn/faygo?style=flat-square)](http://goreportcard.com/report/henrylee2cn/faygo) [![github issues](https://img.shields.io/github/issues/henrylee2cn/faygo.svg?style=flat-square)](https://github.com/henrylee2cn/faygo/issues?q=is%3Aopen+is%3Aissue) [![github closed issues](https://img.shields.io/github/issues-closed-raw/henrylee2cn/faygo.svg?style=flat-square)](https://github.com/henrylee2cn/faygo/issues?q=is%3Aissue+is%3Aclosed) [![GitHub release](https://img.shields.io/github/release/henrylee2cn/faygo.svg?style=flat-square)](https://github.com/henrylee2cn/faygo/releases) [![GoDoc](https://img.shields.io/badge/godoc-reference-blue.svg?style=flat-square)](http://godoc.org/github.com/henrylee2cn/faygo) [![view Go网络编程群](https://img.shields.io/badge/官方QQ群-Go网络编程(42730308)-27a5ea.svg?style=flat-square)](http://jq.qq.com/?_wv=1027&k=fzi4p1)
 
 ![Faygo Favicon](https://github.com/henrylee2cn/faygo/raw/master/doc/faygo_96x96.png)
 
@@ -21,7 +21,7 @@ v1.1
 
 ### Requirements
 
-Go Version ≥1.8
+Go Version ≥ 1.8
 
 ## Quick Start
 

@@ -1,12 +1,9 @@
-# Faygo [![report card](https://goreportcard.com/badge/github.com/henrylee2cn/faygo?style=flat-square)](http://goreportcard.com/report/henrylee2cn/faygo) [![github issues](https://img.shields.io/github/issues/henrylee2cn/faygo.svg?style=flat-square)](https://github.com/henrylee2cn/faygo/issues?q=is%3Aopen+is%3Aissue) [![github closed issues](https://img.shields.io/github/issues-closed-raw/henrylee2cn/faygo.svg?style=flat-square)](https://github.com/henrylee2cn/faygo/issues?q=is%3Aissue+is%3Aclosed) [![GitHub release](https://img.shields.io/github/release/henrylee2cn/faygo.svg?style=flat-square)](https://github.com/henrylee2cn/faygo/releases) [![GoDoc](https://img.shields.io/badge/godoc-reference-blue.svg?style=flat-square)](http://godoc.org/github.com/henrylee2cn/faygo)
+# Faygo [![report card](https://goreportcard.com/badge/github.com/henrylee2cn/faygo?style=flat-square)](http://goreportcard.com/report/henrylee2cn/faygo) [![github issues](https://img.shields.io/github/issues/henrylee2cn/faygo.svg?style=flat-square)](https://github.com/henrylee2cn/faygo/issues?q=is%3Aopen+is%3Aissue) [![github closed issues](https://img.shields.io/github/issues-closed-raw/henrylee2cn/faygo.svg?style=flat-square)](https://github.com/henrylee2cn/faygo/issues?q=is%3Aissue+is%3Aclosed) [![GitHub release](https://img.shields.io/github/release/henrylee2cn/faygo.svg?style=flat-square)](https://github.com/henrylee2cn/faygo/releases) [![GoDoc](https://img.shields.io/badge/godoc-reference-blue.svg?style=flat-square)](http://godoc.org/github.com/henrylee2cn/faygo) [![view Go网络编程群](https://img.shields.io/badge/官方QQ群-Go网络编程(42730308)-27a5ea.svg?style=flat-square)](http://jq.qq.com/?_wv=1027&k=fzi4p1)
 
 ![Faygo Favicon](https://github.com/henrylee2cn/faygo/raw/master/doc/faygo_96x96.png)
 
-## 概述
-
 Faygo 是一款快速、简洁的Go Web框架，可用极少的代码开发出高性能的Web应用程序（尤其是API接口）。只需定义 struct Handler，Faygo 就能自动绑定、验证请求参数并生成在线API文档。
 
-[![view Go网络编程群](https://img.shields.io/badge/官方QQ群-Go网络编程(42730308)-27a5ea.svg)](http://jq.qq.com/?_wv=1027&k=fzi4p1)
 
 [查看《用户手册》](https://github.com/henrylee2cn/faydoc)
 
@@ -24,7 +21,7 @@ v1.1
 
 ### 安装要求
 
-Go Version ≥1.8
+Go Version ≥ 1.8
 
 ## 快速使用
 
