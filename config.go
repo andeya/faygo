@@ -29,8 +29,8 @@ type (
 	// GlobalConfig is global config
 	GlobalConfig struct {
 		Cache   CacheConfig `ini:"cache" comment:"Cache section"`
-		Gzip    GzipConfig  `ini:"gzip" comment:"Whether enabled or not"`
-		Log     LogConfig   `ini:"log" comment:"Whether enabled or not console logger"`
+		Gzip    GzipConfig  `ini:"gzip" comment:"Gzip section"`
+		Log     LogConfig   `ini:"log" comment:"Log section"`
 		warnMsg string      `int:"-"`
 	}
 	// Config is the config information for each web instance
