@@ -26,6 +26,8 @@ type PathParam struct {
 // It is therefore safe to read values by the index.
 type PathParams []PathParam
 
+var _ apiware.KV = PathParams{}
+
 // ByName returns the value of the first PathParam which key matches the given name.
 // If no matching PathParam is found, an empty string is returned.
 func (ps PathParams) ByName(name string) string {
@@ -37,8 +39,6 @@ func (ps PathParams) ByName(name string) string {
 	return ""
 }
 
-var _ apiware.KV = PathParams{}
-
 // Get returns the value of the first PathParam which key matches the given name.
 // It implements the apiware.KV interface.
 func (ps PathParams) Get(name string) (string, bool) {
@@ -48,6 +48,27 @@ func (ps PathParams) Get(name string) (string, bool) {
 		}
 	}
 	return "", false
+}
+
+// Replace changes the value of the first PathParam which key matches the given name.
+// If n < 0, there is no limit on the number of changed.
+// If the key is changed, return true.
+func (ps PathParams) Replace(name string, value string, n int) bool {
+	if n < 0 {
+		n = len(ps)
+	}
+	var changed bool
+	for i := range ps {
+		if n <= 0 {
+			break
+		}
+		if ps[i].Key == name {
+			ps[i].Value = value
+			changed = true
+			n--
+		}
+	}
+	return changed
 }
 
 func min(a, b int) int {
