@@ -256,6 +256,9 @@ func (mux *MuxAPI) NamedDELETE(name string, pattern string, handlers ...Handler)
 	return mux.NamedAPI(name, "DELETE", pattern, handlers...)
 }
 
+// FilepathKey path key for static router pattern.
+const FilepathKey = "filepath"
+
 // NamedStaticFS serves files from the given file system fs.
 // The pattern must end with "/*filepath", files are then served from the local
 // pattern /defined/root/dir/*filepath.
@@ -271,12 +274,12 @@ func (mux *MuxAPI) NamedStaticFS(name, pattern string, fs FileSystem) *MuxAPI {
 		errStr := "For file server, fs (http.FileSystem) cannot be nil"
 		mux.frame.Log().Panicf("%s\n", errStr)
 	}
-	if len(pattern) < 10 || pattern[len(pattern)-10:] != "/*filepath" {
-		pattern = path.Join(pattern, "/*filepath")
+	if len(pattern) < 10 || pattern[len(pattern)-10:] != "/*"+FilepathKey {
+		pattern = path.Join(pattern, "/*"+FilepathKey)
 	}
 	handler := func(fileServer Handler) Handler {
 		return HandlerFunc(func(ctx *Context) error {
-			ctx.R.URL.Path = ctx.pathParams.ByName("filepath")
+			ctx.R.URL.Path = ctx.pathParams.ByName(FilepathKey)
 			return fileServer.Serve(ctx)
 		})
 	}(global.fsManager.FileServer(fs))
