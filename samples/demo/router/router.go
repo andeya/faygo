@@ -29,7 +29,7 @@ func Route1(frame *faygo.Framework) {
 				"./static/renderfs",
 				".html", // "*"
 				faygo.Map{"title": "RenderFS page"},
-			)),
+			)).Use(mw.AutoHTMLSuffix()),
 			frame.NewNamedStaticFS("markdown fs test", "/md", faygo.MarkdownFS(
 				"./static/markdown",
 			)),
