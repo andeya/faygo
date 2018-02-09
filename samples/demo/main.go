@@ -18,14 +18,14 @@ func main() {
 	go pprofServer()
 
 	faygo.SetShutdown(time.Minute, func() error {
-		faygo.Debug("Before services close1: wait 1s...")
+		faygo.Debug("Before services are closing1: wait for 1s...")
 		time.Sleep(1 * time.Second)
-		faygo.Debug("Before services close1: 1s end!")
+		faygo.Debug("Before services are closed1!")
 		return nil
 	}, func() error {
-		faygo.Debug("After services are closed2: wait 1s...")
+		faygo.Debug("After services are closing2: wait for 1s...")
 		time.Sleep(1 * time.Second)
-		faygo.Debug("After services are closed2: 1s end!")
+		faygo.Debug("After services are closed2!")
 		return nil
 	})
 
@@ -49,14 +49,14 @@ func main2() {
 	go pprofServer()
 
 	faygo.SetShutdown(time.Minute, func() error {
-		faygo.Debug("Before services close1: wait 1s...")
+		faygo.Debug("Before services are closing1: wait for 1s...")
 		time.Sleep(1 * time.Second)
-		faygo.Debug("Before services close1: 1s end!")
+		faygo.Debug("Before services are closed1!")
 		return nil
 	}, func() error {
-		faygo.Debug("After services are closed2: wait 1s...")
+		faygo.Debug("After services are closing2: wait for 1s...")
 		time.Sleep(1 * time.Second)
-		faygo.Debug("After services are closed2: 1s end!")
+		faygo.Debug("After services are closed2!")
 		return nil
 	})
 
