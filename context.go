@@ -121,7 +121,7 @@ type (
 	Context struct {
 		R                  *http.Request // the *http.Request
 		W                  *Response     // the *Response cooked by the http.ResponseWriter
-		CurSession         session.Store
+		curSession         session.Store
 		limitedRequestBody []byte // the copy of requset body(Limited by maximum length)
 		frame              *Framework
 		handlerChain       HandlerChain                // keep track all registed handlers
@@ -196,78 +196,78 @@ func (ctx *Context) checkXSRFCookie() bool {
 
 var errNotEnableSession = errors.New("before using the session, must set config `session::enable = true`...")
 
-// StartSession starts session and load old session data info this controller.
-func (ctx *Context) StartSession() (session.Store, error) {
-	if ctx.CurSession != nil {
-		return ctx.CurSession, nil
+// startSession starts session and load old session data info this controller.
+func (ctx *Context) startSession() (session.Store, error) {
+	if ctx.curSession != nil {
+		return ctx.curSession, nil
 	}
 	if !ctx.enableSession {
 		return nil, errNotEnableSession
 	}
 	var err error
-	ctx.CurSession, err = ctx.frame.sessionManager.SessionStart(ctx.W, ctx.R)
-	return ctx.CurSession, err
+	ctx.curSession, err = ctx.frame.sessionManager.SessionStart(ctx.W, ctx.R)
+	return ctx.curSession, err
 }
 
-// GetSessionStore return SessionStore.
-func (ctx *Context) GetSessionStore() (session.Store, error) {
-	if ctx.CurSession != nil {
-		return ctx.CurSession, nil
+// getSessionStore return SessionStore.
+func (ctx *Context) getSessionStore() (session.Store, error) {
+	if ctx.curSession != nil {
+		return ctx.curSession, nil
 	}
 	if !ctx.enableSession {
 		return nil, errNotEnableSession
 	}
 	var err error
-	ctx.CurSession, err = ctx.frame.sessionManager.GetSessionStore(ctx.W, ctx.R)
-	return ctx.CurSession, err
+	ctx.curSession, err = ctx.frame.sessionManager.GetSessionStore(ctx.W, ctx.R)
+	return ctx.curSession, err
 }
 
 // SetSession puts value into session.
 func (ctx *Context) SetSession(key interface{}, value interface{}) {
-	if _, err := ctx.StartSession(); err != nil {
+	if _, err := ctx.startSession(); err != nil {
 		ctx.Log().Warning(err.Error())
 		return
 	}
-	ctx.CurSession.Set(key, value)
+	ctx.curSession.Set(key, value)
 }
 
 // GetSession gets value from session.
 func (ctx *Context) GetSession(key interface{}) interface{} {
-	if _, err := ctx.GetSessionStore(); err != nil {
+	if _, err := ctx.getSessionStore(); err != nil {
 		ctx.Log().Debug(err.Error())
 		return nil
 	}
-	return ctx.CurSession.Get(key)
+	return ctx.curSession.Get(key)
 }
 
 // DelSession removes value from session.
 func (ctx *Context) DelSession(key interface{}) {
-	if _, err := ctx.GetSessionStore(); err != nil {
+	if _, err := ctx.getSessionStore(); err != nil {
 		ctx.Log().Debug(err.Error())
 		return
 	}
-	ctx.CurSession.Delete(key)
+	ctx.curSession.Delete(key)
 }
 
 // SessionRegenerateID regenerates session id for this session.
 // the session data have no changes.
 func (ctx *Context) SessionRegenerateID() {
-	if _, err := ctx.GetSessionStore(); err != nil {
+	if _, err := ctx.getSessionStore(); err != nil {
 		ctx.Log().Debug(err.Error())
 		return
 	}
-	ctx.CurSession.SessionRelease(ctx.W)
-	ctx.CurSession = ctx.frame.sessionManager.SessionRegenerateID(ctx.W, ctx.R)
+	ctx.curSession.SessionRelease(ctx.W)
+	ctx.curSession = ctx.frame.sessionManager.SessionRegenerateID(ctx.W, ctx.R)
 }
 
 // DestroySession cleans session data and session cookie.
 func (ctx *Context) DestroySession() {
-	if _, err := ctx.GetSessionStore(); err != nil {
+	if _, err := ctx.getSessionStore(); err != nil {
 		ctx.Log().Debug(err.Error())
 		return
 	}
-	ctx.CurSession.Flush()
-	ctx.CurSession = nil
+	ctx.curSession.Flush()
+	ctx.curSession = nil
 	ctx.frame.sessionManager.SessionDestroy(ctx.W, ctx.R)
 }
 
@@ -408,9 +408,9 @@ func (ctx *Context) beforeWriteHeader() {
 		ctx.SetSecureCookie(ctx.frame.config.XSRF.Key, "_xsrf", ctx._xsrfToken, ctx.xsrfExpire)
 	}
 	if ctx.enableSession {
-		if ctx.CurSession != nil {
-			ctx.CurSession.SessionRelease(ctx.W)
-			ctx.CurSession = nil
+		if ctx.curSession != nil {
+			ctx.curSession.SessionRelease(ctx.W)
+			ctx.curSession = nil
 		}
 	}
 }
