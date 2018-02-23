@@ -234,7 +234,6 @@ func (ctx *Context) SetSession(key interface{}, value interface{}) {
 // GetSession gets value from session.
 func (ctx *Context) GetSession(key interface{}) interface{} {
 	if _, err := ctx.getSessionStore(); err != nil {
-		ctx.Log().Debug(err.Error())
 		return nil
 	}
 	return ctx.curSession.Get(key)
@@ -243,7 +242,6 @@ func (ctx *Context) GetSession(key interface{}) interface{} {
 // DelSession removes value from session.
 func (ctx *Context) DelSession(key interface{}) {
 	if _, err := ctx.getSessionStore(); err != nil {
-		ctx.Log().Debug(err.Error())
 		return
 	}
 	ctx.curSession.Delete(key)
@@ -253,7 +251,6 @@ func (ctx *Context) DelSession(key interface{}) {
 // the session data have no changes.
 func (ctx *Context) SessionRegenerateID() {
 	if _, err := ctx.getSessionStore(); err != nil {
-		ctx.Log().Debug(err.Error())
 		return
 	}
 	ctx.curSession.SessionRelease(ctx.W)
@@ -263,7 +260,6 @@ func (ctx *Context) SessionRegenerateID() {
 // DestroySession cleans session data and session cookie.
 func (ctx *Context) DestroySession() {
 	if _, err := ctx.getSessionStore(); err != nil {
-		ctx.Log().Debug(err.Error())
 		return
 	}
 	ctx.curSession.Flush()
