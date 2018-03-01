@@ -290,6 +290,7 @@ tls_certfile           =                         # TLS certificate file path
 tls_keyfile            =                         # TLS key file path
 letsencrypt_dir        =                         # Let's Encrypt TLS certificate cache directory
 unix_filemode          = 0666                    # File permissions for UNIX listener, requires octal number
+http_redirect_https    = false                   # Redirect from 'http://hostname:port1' to 'https://hostname:port2'
 read_timeout           = 0s                      # Maximum duration for reading the full; ns|µs|ms|s|m|h request (including body)
 write_timeout          = 0s                      # Maximum duration for writing the full; ns|µs|ms|s|m|h response (including body)
 multipart_maxmemory_mb = 32                      # Maximum size of memory that can be used when receiving uploaded files

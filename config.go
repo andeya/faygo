@@ -36,13 +36,14 @@ type (
 	// Config is the config information for each web instance
 	Config struct {
 		// RunMode         string      `ini:"run_mode" comment:"run mode: dev|prod"`
-		NetTypes       []string    `ini:"net_types" delim:"|" comment:"List of network type: http|https|unix_http|unix_https|letsencrypt|unix_letsencrypt"`
-		Addrs          []string    `ini:"addrs" delim:"|" comment:"List of multiple listening addresses"`
-		TLSCertFile    string      `ini:"tls_certfile" comment:"TLS certificate file path"`
-		TLSKeyFile     string      `ini:"tls_keyfile" comment:"TLS key file path"`
-		LetsencryptDir string      `ini:"letsencrypt_dir" comment:"Let's Encrypt TLS certificate cache directory"`
-		UNIXFileMode   string      `ini:"unix_filemode" comment:"File permissions for UNIX listener, requires octal number"`
-		unixFileMode   os.FileMode `ini:"-"`
+		NetTypes          []string    `ini:"net_types" delim:"|" comment:"List of network type: http|https|unix_http|unix_https|letsencrypt|unix_letsencrypt"`
+		Addrs             []string    `ini:"addrs" delim:"|" comment:"List of multiple listening addresses"`
+		TLSCertFile       string      `ini:"tls_certfile" comment:"TLS certificate file path"`
+		TLSKeyFile        string      `ini:"tls_keyfile" comment:"TLS key file path"`
+		LetsencryptDir    string      `ini:"letsencrypt_dir" comment:"Let's Encrypt TLS certificate cache directory"`
+		UNIXFileMode      string      `ini:"unix_filemode" comment:"File permissions for UNIX listener, requires octal number"`
+		unixFileMode      os.FileMode `ini:"-"`
+		HttpRedirectHttps bool        `ini:"http_redirect_https" comment:"Redirect from 'http://hostname:port1' to 'https://hostname:port2'"`
 		// Maximum duration for reading the full request (including body).
 		//
 		// This also limits the maximum duration for idle keep-alive

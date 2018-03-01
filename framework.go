@@ -54,6 +54,10 @@ type Framework struct {
 	bizlog *logging.Logger
 	apidoc *swagger.Swagger
 	trees  map[string]*node
+	// Redirect from 'http://hostname:port1' to 'https://hostname:port2'
+	httpRedirectHttps bool
+	// One of the https ports to be listened
+	httpsPort string
 	// Enables automatic redirection if the current route can't be matched but a
 	// handler for the path with (without) the trailing slash exists.
 	// For example if /foo/ is requested but a route only exists for /foo, the
@@ -234,7 +238,7 @@ func (frame *Framework) build() {
 		// new server
 		nameWithVersion := frame.NameWithVersion()
 		for i, netType := range frame.config.NetTypes {
-			frame.servers = append(frame.servers, &Server{
+			srv := &Server{
 				nameWithVersion: nameWithVersion,
 				netType:         netType,
 				tlsCertFile:     frame.config.TLSCertFile,
@@ -248,7 +252,12 @@ func (frame *Framework) build() {
 					WriteTimeout: frame.config.WriteTimeout,
 				},
 				log: frame.syslog,
-			})
+			}
+			if frame.config.HttpRedirectHttps && srv.isHttps() {
+				frame.httpRedirectHttps = true
+				frame.httpsPort = srv.port()
+			}
+			frame.servers = append(frame.servers, srv)
 		}
 
 		// register session
@@ -532,6 +541,13 @@ func (frame *Framework) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 }
 
 func (frame *Framework) serveHTTP(ctx *Context) {
+	if frame.httpRedirectHttps && !ctx.IsSecure() {
+		u := ctx.URL()
+		u.Scheme = "https"
+		u.Host = ctx.Domain() + ":" + frame.httpsPort
+		http.Redirect(ctx.W, ctx.R, u.String(), 307)
+		return
+	}
 	if !ctx.doFilter() {
 		return
 	}
