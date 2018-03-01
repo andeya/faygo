@@ -98,17 +98,39 @@ func (ctx *Context) Host() string {
 
 // Domain returns domain as `www.example.com` style.
 func (ctx *Context) Domain() string {
-	return strings.Split(ctx.R.Host, ":")[0]
+	hostport := ctx.R.Host
+	colon := strings.IndexByte(hostport, ':')
+	if colon == -1 {
+		return hostport
+	}
+	if i := strings.IndexByte(hostport, ']'); i != -1 {
+		return strings.TrimPrefix(hostport[:i], "[")
+	}
+	return hostport[:colon]
 }
 
 // Port returns the port number of request.
 func (ctx *Context) Port() int {
-	parts := strings.Split(ctx.R.Host, ":")
-	if len(parts) == 1 {
+	portStr := portString(ctx.R.Host)
+	if len(portStr) == 0 {
 		return 80
 	}
-	port, _ := strconv.Atoi(parts[1])
+	port, _ := strconv.Atoi(portStr)
 	return port
+}
+
+func portString(hostport string) string {
+	colon := strings.IndexByte(hostport, ':')
+	if colon == -1 {
+		return ""
+	}
+	if i := strings.Index(hostport, "]:"); i != -1 {
+		return hostport[i+len("]:"):]
+	}
+	if strings.Contains(hostport, "]") {
+		return ""
+	}
+	return hostport[colon+len(":"):]
 }
 
 // IP gets just the ip from the most direct one client.
