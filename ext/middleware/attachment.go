@@ -17,26 +17,31 @@
 package middleware
 
 import (
+	"regexp"
 	"strings"
 
 	"github.com/henrylee2cn/faygo"
 )
 
 // NewAttachment has the response content downloaded as an attachment file.
-// Note: if the specifiedExtension is empty, applies to any response content.
-func NewAttachment(specifiedExtension ...string) faygo.HandlerFunc {
-	hash := make(map[string]bool, len(specifiedExtension))
-	for _, s := range specifiedExtension {
+// Note: if the specifiedFileExtension is empty, applies to any response content.
+func NewAttachment(specifiedFileExtension ...string) faygo.HandlerFunc {
+	re := regexp.MustCompile("^\\.[^\\.]+$")
+	hash := make(map[string]bool, len(specifiedFileExtension))
+	for _, s := range specifiedFileExtension {
+		if !re.MatchString(s) {
+			faygo.Fatalf("Invalid file extension: %s", s)
+		}
 		hash[s] = true
 	}
 	return func(ctx *faygo.Context) error {
 		var isAttachment bool
-		if len(specifiedExtension) == 0 {
+		if len(specifiedFileExtension) == 0 {
 			isAttachment = true
 		} else {
 			p := ctx.Path()
 			if idx := strings.LastIndex(p, "."); idx != -1 {
-				isAttachment = hash[p[idx+1:]]
+				isAttachment = hash[p[idx:]]
 			}
 		}
 		if isAttachment {
