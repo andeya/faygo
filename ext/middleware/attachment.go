@@ -32,7 +32,7 @@ func NewAttachment(specifiedFileExtension ...string) faygo.HandlerFunc {
 		if !re.MatchString(s) {
 			faygo.Fatalf("Invalid file extension: %s", s)
 		}
-		hash[s] = true
+		hash[strings.ToLower(s)] = true
 	}
 	return func(ctx *faygo.Context) error {
 		var isAttachment bool
@@ -41,7 +41,7 @@ func NewAttachment(specifiedFileExtension ...string) faygo.HandlerFunc {
 		} else {
 			p := ctx.Path()
 			if idx := strings.LastIndex(p, "."); idx != -1 {
-				isAttachment = hash[p[idx:]]
+				isAttachment = hash[strings.ToLower(p[idx:])]
 			}
 		}
 		if isAttachment {
