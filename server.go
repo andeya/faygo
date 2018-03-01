@@ -100,16 +100,35 @@ func (server *Server) run() {
 	}
 }
 
-func (server *Server) initAddr() {
+func (server *Server) isHttps() bool {
 	switch server.netType {
-	case NETTYPE_HTTP, NETTYPE_UNIX_HTTP:
-		if server.Addr == "" {
-			server.Addr = ":http"
-		}
+	default:
+		return false
 	case NETTYPE_HTTPS, NETTYPE_UNIX_HTTPS, NETTYPE_LETSENCRYPT, NETTYPE_UNIX_LETSENCRYPT:
-		if server.Addr == "" {
-			server.Addr = ":https"
-		}
+		return true
+	}
+}
+
+func (s *Server) port() string {
+	s.initAddr()
+	portStr := portString(s.Addr)
+	if portStr == "http" {
+		return "80"
+	}
+	if portStr == "https" {
+		return "443"
+	}
+	return portStr
+}
+
+func (server *Server) initAddr() {
+	if server.Addr != "" {
+		return
+	}
+	if server.isHttps() {
+		server.Addr = ":443"
+	} else {
+		server.Addr = ":80"
 	}
 }
 
