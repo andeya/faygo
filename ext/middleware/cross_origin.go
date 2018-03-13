@@ -24,9 +24,11 @@ import (
 // Note: The router node should add the OPTIONS method.
 var CrossOrigin faygo.HandlerFunc = func(ctx *faygo.Context) error {
 	ctx.SetHeader(faygo.HeaderAccessControlAllowOrigin, ctx.HeaderParam(faygo.HeaderOrigin))
+	// ctx.SetHeader(faygo.HeaderAccessControlAllowMethods, "POST, GET, OPTIONS, PUT, DELETE")
+	ctx.SetHeader(faygo.HeaderAccessControlAllowMethods, ctx.HeaderParam(faygo.HeaderAccessControlRequestMethod))
+	// ctx.SetHeader(faygo.HeaderAccessControlAllowHeaders, "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+	ctx.SetHeader(faygo.HeaderAccessControlAllowHeaders, ctx.HeaderParam(faygo.HeaderAccessControlRequestHeaders))
 	ctx.SetHeader(faygo.HeaderAccessControlAllowCredentials, "true")
-	ctx.SetHeader(faygo.HeaderAccessControlAllowMethods, "POST, GET, OPTIONS, PUT, DELETE")
-	ctx.SetHeader(faygo.HeaderAccessControlAllowHeaders, "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 	ctx.SetHeader(faygo.HeaderAccessControlMaxAge, "172800")
 	if ctx.IsOptions() {
 		ctx.W.WriteHeader(204)
