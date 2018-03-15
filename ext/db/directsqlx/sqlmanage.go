@@ -4,11 +4,6 @@
 * date   : 2016.12.13
 * desc   :
 * history:
-		   2018.03.15 修复参数默认值未定判断处理bug
-		     	default:
-				原 	if len(strings.TrimSpace(para.Paratypestr)) > 0 {
-				改为 if len(strings.TrimSpace(para.Defaultstr)) > 0 {
-
            2017.05.28
 		    -增加 对主从表的使用id的处理--待测试
            2017.03.22
@@ -16,7 +11,7 @@
          	 ST_GETBLOB  //10 获取BLOB (binary large object)，二进制大对象从数据库
 	         ST_SETBLOB  //11 保存BLOB (binary large object)，二进制大对象到数据库
 */
-package directsql
+package directsqlx
 
 import (
 	"encoding/xml"
@@ -28,16 +23,16 @@ import (
 	"sync"
 
 	"github.com/fsnotify/fsnotify"
-	"github.com/go-xorm/core"
+	"github.com/jmoiron/sqlx"
 	"github.com/henrylee2cn/faygo"
-	faygoxorm "github.com/henrylee2cn/faygo/ext/db/xorm"
+	faygosqlx "github.com/henrylee2cn/faygo/ext/db/sqlx"
 	confpkg "github.com/henrylee2cn/ini"
 )
 
 //var modelsqls map[string]*TModel
 
 //配置文件配置参数
-const MSCONFIGFILE = "./config/directsql.ini"
+const MSCONFIGFILE = "./config/directsqlx.ini"
 
 // 全部业务SQL路由表,不根据目录分层次，直接放在map sqlmodels中，key=带路径不带扩展名的文件名
 type TModels struct {
@@ -58,7 +53,7 @@ var models = &TModels{
 //sqlmodel 一个配置文件的SQLModel对应的结构
 type TModel struct {
 	Id   string           //root起用映射、不带扩展名的文件名
-	DB   *core.DB         //本模块的db引擎 *xorm.Engine.DB()
+	DB   *sqlx.DB         //本模块的db引擎 *sqlx.DB()
 	Sqls map[string]*TSql //sqlentity key=sqlentity.id
 }
 
@@ -260,9 +255,9 @@ func (ms *TModels) parseTModel(msqlfile string) (*TModel, error) {
 		return nil, err
 	}
 	//设置数据库
-	dbe, ok := faygoxorm.DB(tempresult.Database)
+	dbe, ok := faygosqlx.DB(tempresult.Database)
 	if ok == false {
-		dbe = faygoxorm.MustDB()
+		dbe = faygosqlx.MustDB()
 		//faygo.Log.Debug("database:", tempresult.Database)
 	}
 	//定义一个 TModel将 tempTModel 转换为 TModel
@@ -357,10 +352,10 @@ func (ms *TModels) parseTModel(msqlfile string) (*TModel, error) {
 				case "parentid":
 					para.Default = DT_PARENTID //主表的id的值 （parentid value）
 				default:
-					if len(strings.TrimSpace(para.Defaultstr)) > 0 {
-						para.Default = DT_CUSTOM //如果参数的默认值来源标识不为空则说明是通过自定义函数注册的默认值
+					if len(strings.TrimSpace(para.Paratypestr)) > 0 {
+						para.Default = DT_CUSTOM
 					} else {
-						para.Default = DT_UNDEFINED //未定义默认值
+						para.Default = DT_UNDEFINED
 					}
 				}
 			}
@@ -380,7 +375,7 @@ func (ms *TModels) findsql(modelid string, sqlid string) *TSql {
 }
 
 //获取sqlentity SQL的执行实体与DB执行引擎
-func (ms *TModels) findsqlanddb(modelid string, sqlid string) (*TSql, *core.DB) {
+func (ms *TModels) findsqlanddb(modelid string, sqlid string) (*TSql, *sqlx.DB) {
 	if sm, ok := ms.modelsqls[modelid]; ok {
 		if se, ok := sm.Sqls[sqlid]; ok {
 			return se, sm.DB
@@ -439,7 +434,7 @@ func (ms *TModels) renameModelFile(msqlfile, newfilename string) error {
 
 //单元访问文件--------------------------------------------------------------
 //获取sqlentity SQL的执行实体与数据库引擎
-func findSqlAndDB(modelid string, sqlid string) (*TSql, *core.DB) {
+func findSqlAndDB(modelid string, sqlid string) (*TSql, *sqlx.DB) {
 	return models.findsqlanddb(modelid, sqlid)
 }
 

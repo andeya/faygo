@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>directsql demo</title>
+    <script type="text/javascript" src="/static/jQuery-2.1.4.min.js"></script>
+</head>
+
+<body>
+    <div style="padding: 10px;">
+        <div>direct sql test: </div>
+        <hr/><br/>
+        <div>
+            <button id="select">select</button>
+            <button id="paging">paging Select</button>
+            <button id="multi">multi Select</button>
+            <button id="update">update</button>
+            <button id="insert">insert</button>
+            <button id="save">save</button>
+            <button id="bacthsave">bacthsave</button>
+            <button id="bacthinsert">bacthinsert</button>
+            <button id="bacthcomplexsave">bacthcomplexsave</button>
+        </div>
+        <hr/><br/><br/>
+        <pre id="info">
+            </pre>
+    </div>
+    <script type="text/javascript">
+        $(document).ready(function() {
+            //---SQL選擇測試-----------------------
+            $("#select").click(function() {
+                $.ajax({
+                    type: "POST",
+                    url: "/bos/biz/demo/select",
+                    contentType: "application/json", //必须有
+                    dataType: "json", //表示返回值类型，不必须
+                    data: JSON.stringify({
+                        'code': 'admin',
+                        'cnname': '23452w'
+                    }),
+                    success: function(jsonResult) {
+                        $("#info").html(JSON.stringify(jsonResult, null, "\t"));
+                        console.log(jsonResult);
+                    }
+                });
+            });
+
+            //---分頁SQL執行測試-----------------
+            $("#paging").click(function() {
+                $.ajax({
+                    type: "POST",
+                    url: "/bos/biz/demo/paging",
+                    contentType: "application/json", //必须有
+                    dataType: "json", //表示返回值类型，不必须
+                    data: JSON.stringify({
+                        'start': 0,
+                        'limted': 3
+                    }),
+                    success: function(jsonResult) {
+                        $("#info").html(JSON.stringify(jsonResult, null, "\t"));
+                        console.log(jsonResult);
+                    }
+                });
+            });
+            //----返回多結果集SQL執行-------------------
+            $("#multi").click(function() {
+                $.ajax({
+                    type: "POST",
+                    url: "/bos/biz/demo/multi",
+                    contentType: "application/json", //必须有
+                    dataType: "json", //表示返回值类型，不必须
+                    data: JSON.stringify({
+                        'code': 'admin',
+                        'nick': '管理员'
+                    }),
+                    success: function(jsonResult) {
+                        $("#info").html(JSON.stringify(jsonResult, null, "\t"));
+                        console.log(jsonResult);
+                    }
+                });
+            });
+            //---SQL更新測試-----------------------
+            $("#update").click(function() {
+                $.ajax({
+                    type: "POST",
+                    url: "/bos/biz/demo/update",
+                    contentType: "application/json", //必须有
+                    dataType: "json", //表示返回值类型，不必须
+                    data: JSON.stringify({
+                        'code': 'admin',
+                        'nick': '我是畅雨！！！'
+                    }),
+                    success: function(jsonResult) {
+                        $("#info").html(JSON.stringify(jsonResult, null, "\t"));
+                        console.log(jsonResult);
+                    }
+                });
+            });
+            //-----插入SQL執行測試----------------------
+            $("#insert").click(function() {
+                $.ajax({
+                    type: "POST",
+                    url: "/bos/biz/demo/insert",
+                    contentType: "application/json", //必须有
+                    dataType: "json", //表示返回值类型，非必须
+                    data: JSON.stringify({
+                        'code': 'lisi',
+                        'cnname': '李四',
+                        'nick': '我是李四',
+                        'pwd': 'lisi'
+                    }),
+                    success: function(jsonResult) {
+                        $("#info").html(JSON.stringify(jsonResult, null, "\t"));
+                        console.log(jsonResult);
+                    }
+                });
+            });
+            //----更新SQL執行測試(Mysql)-------
+            $("#save").click(function() {
+                $.ajax({
+                    type: "POST",
+                    url: "/bos/biz/demo/save",
+                    contentType: "application/json", //必须有
+                    dataType: "json", //表示返回值类型，不必须
+                    data: JSON.stringify({
+                        'uid': 'c868b2fc-b867-447a-ad3d-85abbb0be544',
+                        'acc': 'lisi',
+                        'nick': '我是新的李四！！！！！！！',
+                        'pwd': '111111'
+
+                    }),
+                    success: function(jsonResult) {
+                        $("#info").html(JSON.stringify(jsonResult, null, "\t"));
+                        console.log(jsonResult);
+                    }
+                });
+            });
+            //---批量插入SQL---服務端生成id(uuid)的測試---
+            $("#bacthsave").click(function() {
+                $.ajax({
+                    type: "POST",
+                    url: "/bos/biz/demo/batchinsert",
+                    contentType: "application/json", //必须有
+                    dataType: "json", //表示返回值类型，不必须
+                    data: JSON.stringify([{
+                        'code': 'zs',
+                        'cnname': '張三',
+                        'nick': '張三',
+                        'pwd': '123'
+                    }, {
+                        'code': 'ww',
+                        'cnname': '王五',
+                        'nick': '王五',
+                        'pwd': '123'
+                    }, {
+                        'code': 'll',
+                        'cnname': '莉莉',
+                        'nick': '莉莉',
+                        'pwd': '123'
+                    }]),
+                    success: function(jsonResult) {
+                        $("#info").html(JSON.stringify(jsonResult, null, "\t"));
+                        console.log(jsonResult);
+                    }
+                });
+            });
+            //---批量插入SQL---客戶端生成id(uuid)的測試---
+            $("#bacthinsert").click(function() {
+                $.ajax({
+                    type: "POST",
+                    url: "/bos/biz/demo/batchinsert",
+                    contentType: "application/json", //必须有
+                    dataType: "json", //表示返回值类型，不必须
+                    data: JSON.stringify([{
+                        'id': '7d7f434f-bb7e-4fbf-b90b-80c8cb4eca3a',
+                        'code': 'zs',
+                        'cnname': '張三',
+                        'nick': '張三',
+                        'pwd': '123'
+                    }, {
+                        'id': '3d4293ef-a2fd-45b7-933d-78c24de8474d',
+                        'code': 'ww',
+                        'cnname': '王五',
+                        'nick': '王五',
+                        'pwd': '123'
+                    }, {
+                        'id': 'a52dc2ce-a680-4f5b-b732-d611ec226333',
+                        'code': 'll',
+                        'cnname': '李立',
+                        'nick': '李立',
+                        'pwd': '123'
+                    }]),
+                    success: function(jsonResult) {
+                        $("#info").html(JSON.stringify(jsonResult, null, "\t"));
+                        console.log(jsonResult);
+                    }
+                });
+            });
+            //-----批量複雜多SQL執行-------OK
+            $("#bacthcomplexsave").click(function() {
+                $.ajax({
+                    type: "POST",
+                    url: "/bos/biz/demo/bacthcomplexsave",
+                    contentType: "application/json", //必须有
+                    dataType: "json", //表示返回值类型，不必须
+                    data: JSON.stringify({
+                        'main': [{ //服務端生成id(uuid)-回自動返回到客戶端
+                            'code': 'zs',
+                            'cnname': '張三',
+                            'nick': '張三',
+                            'pwd': '123'
+                        }, {
+                            'code': 'ww',
+                            'cnname': '王五',
+                            'nick': '王五',
+                            'pwd': '123'
+                        }],
+                        'detail1': [{ //客戶端生成id(uuid)
+                            'id': 'c868b2fc-b867-447a-ad3d-85abbb0be546',
+                            'code': 'll',
+                            'cnname': '李立',
+                            'nick': '李立',
+                            'pwd': '123'
+                        }],
+                        'detail2': [{ //客戶端生成id(uuid)
+                            'id': 'c868b2fc-0000-447a-ad3d-85abbb0be544',
+                            'code': 'zs',
+                            'cnname': '張三',
+                            'nick': '張三',
+                            'pwd': '123'
+                        }, {
+                            'id': 'c868b2fc-0000-447a-ad3d-85abbb0be545',
+                            'code': 'ww',
+                            'cnname': '王五',
+                            'nick': '王五',
+                            'pwd': '123'
+                        }, {
+                            'id': 'c868b2fc-0000-447a-ad3d-85abbb0be546',
+                            'code': 'll',
+                            'cnname': '李立',
+                            'nick': '李立',
+                            'pwd': '123'
+                        }]
+                    }),
+                    success: function(jsonResult) {
+                        $("#info").html(JSON.stringify(jsonResult, null, "\t"));
+                        console.log(jsonResult);
+                    }
+                });
+            });
+        })
+    </script>
+</body>
+
+</html>

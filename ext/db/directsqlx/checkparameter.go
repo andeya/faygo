@@ -7,7 +7,7 @@
           2017.05.28
 		  - 增加主从表关联id的服务端处理。完成，未测试
 */
-package directsql
+package directsqlx
 
 import (
 	"errors"
@@ -131,7 +131,7 @@ func dealwithParameter(paras []*TSqlParameter, mp map[string]interface{}, ctx *f
 				}
 				//如果是parentid则从 临时缓存的取值。
 			case DT_PARENTID:
-				mp[para.Name] = ctx.Data("__directsql__parentid")
+				mp[para.Name] = ctx.Data("__directsqlx__parentid")
 				faygo.Debug("Read parentid value:", mp[para.Name])
 			}
 			//如果需要返回
@@ -140,7 +140,7 @@ func dealwithParameter(paras []*TSqlParameter, mp map[string]interface{}, ctx *f
 			}
 			//如果作为从表的关联主表的id使用，则将值临时放到ctx，以便从表取值时用。
 			if para.Parentid {
-				ctx.SetData("__directsql__parentid", mp[para.Name])
+				ctx.SetData("__directsqlx__parentid", mp[para.Name])
 				faygo.Debug("Write parentid value:", mp[para.Name])
 
 			}
@@ -217,7 +217,7 @@ func dealwithParameter(paras []*TSqlParameter, mp map[string]interface{}, ctx *f
 			//faygo.Debug("Check sql parameters - " + para.Name + ": " + v.(string))
 		} else {
 			//sql的cmd参数中存在该参数定义但传入的post参数不存在则返回错误
-			return nil, errors.New("错误：配置的参数[" + para.Name + "]客户端未提交，请检查！")
+			return nil, errors.New("错误：参数[" + para.Name + "]未定义！")
 		}
 	}
 	return result, nil

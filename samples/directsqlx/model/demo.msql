@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="utf-8"?>
+<model id="demo" database="">
+	<comment>
+		<desc>DirectSQLX功能测试SQL定义</desc>
+		<author></author>
+		<date>2017-10-31</date>
+		<history Editor="畅雨" Date="2017-12-31">完善并增加注释</history>
+	</comment>
+	<!-- JSON参数示例：{'code':'12345'} -->
+	<sql type="select" id="select" desc="查询SQL">
+		<cmd in="" out="">
+			<![CDATA[ select * from sys_user where code=?code or cnname =?cnname ]]>
+			<parameters>
+				<parameter type="string" name="code" desc="用户帐号" required="true" minlen="5" maxlen="50" default="usercode" />
+				<parameter type="string" name="cnname" desc="用户名称" required="true" minlen="5" maxlen="10" default="username"/>
+			</parameters>
+		</cmd>
+	</sql>
+	<sql type="select" id="tpldemo" desc="查询SQL">
+		<cmd in="" out="">
+			<![CDATA[ select * from sys_user  ]]>
+		</cmd>
+	</sql>
+	<!-- JSON参数示例：{'name':'李四','start':1,'limted':20 } -->
+	<sql type="pagingselect" id="paging" desc="服务端分页查询,第一个cmd=总页数SQL,第二个cmd=分页的查询数据sql">
+		<cmd in="" out="total">
+			<![CDATA[ SELECT count(id) AS total FROM sys_user ]]>
+		</cmd>
+		<cmd in="" out="data">
+			<![CDATA[ SELECT * FROM sys_user LIMIT ?start,?limted ]]>
+			<parameters>
+				<parameter  name="start" desc="start" type="int" required="true" />
+				<parameter  name="limted" desc="size" type="int" required="true" />
+			</parameters>
+		</cmd>
+	</sql>
+	<!-- JSON参数示例：{para1:{'id':'123'},para2:{'id':'456'}} -->
+	<sql type="multiselect" id="multi" desc="多个Select返回多个结果集的查询组合，一个json参数">
+		<cmd in="" out="main">
+			<![CDATA[  SELECT id,code FROM sys_user where code=?code ]]>
+			<parameters>
+				<parameter type="string" name="code" desc="用户帐号" required="true" minlen="5" maxlen="50" />
+			</parameters>
+		</cmd>
+		<cmd in="" out="detail1">
+			<![CDATA[   SELECT id,code,pwd,nick FROM sys_user   ]]>
+		</cmd>
+		<cmd in="" out="detail2">
+			<![CDATA[   SELECT id,code,cnname,pwd,nick FROM sys_user WHERE nick=?nick   ]]>
+			<parameters>
+				<parameter type="string" name="nick" desc="用户帐号" required="true" />
+			</parameters>
+		</cmd>
+	</sql>
+	<!-- JSON参数示例：{'id':'123'} -->
+	<sql type="delete" id="delete" desc="删除，可以执行多条删除语句,建议类型改为 exec">
+		<cmd in="" out="">
+			<![CDATA[   DELETE FROM sys_user where code=?code   ]]>
+			<parameters>
+				<parameter name="code" desc="用户帐号" type="string" required="true" />
+			</parameters>
+		</cmd>
+	</sql>
+	<!-- JSON参数示例：{'id':'123','name':'xxx'} -->
+	<sql type="insert" id="insert" desc="新增服务端生成newid返回,建议类型改为 exec">
+		<cmd in="" out="">
+			<![CDATA[       INSERT INTO sys_user(id,code,cnname,pwd,nick) VALUES(?id,?code,?cnname,?pwd,?nick) ]]>
+			<parameters>
+				<parameter name="id" desc="用户id" type="string" required="true" maxlen="36" minlen="36" default="uuid" return="true"/>
+				<parameter name="code" desc="用户帐号" type="string" required="true" maxlen="50" minlen="5" />
+				<parameter name="cnname" desc="cnname" type="string" required="true" />
+				<parameter name="nick" desc="昵称" type="string" required="true" maxlen="30" minlen="0" />
+			</parameters>
+		</cmd>
+	</sql>
+	<!-- JSON参数示例：{'id':'123','name':'xxx'} -->
+	<sql type="update" id="update" desc="更新,建议类型改为 exec" >
+		<cmd in="" out="">
+			<![CDATA[ update sys_user set nick=?nick where code=?code ]]>
+			<parameters>
+				<parameter type="string" name="code" desc="用户帐号" required="true" />
+				<parameter type="string" name="nick" desc="用户帐号" required="true" />
+			</parameters>
+		</cmd>
+	</sql>
+	<sql type="insert" id="save" desc="保存(插入或更新),建议类型改为 exec" >
+		<cmd in="" out="">
+			<![CDATA[ INSERT INTO sys_user(uid,code,pwd,nick) VALUES(?uid,?code,?pwd,?nick) ON DUPLICATE KEY UPDATE nick=?nick             ]]>
+		</cmd>
+	</sql>
+	<!-- JSON参数示例：{data:[{'id':'123','name':'xxx'},{},...]} -->
+	<sql type="batchinsert" id="batchinsert" desc="批量新增，json传来多条数据，一个批次插入，要么全部成功要么全部失败">
+		<cmd in="" out="">
+			<![CDATA[ INSERT INTO sys_user(id,code,cnname,pwd,nick) VALUES(?id,?code,?cnname,?pwd,?nick)            ]]>
+			<parameters>
+				<parameter type="string" name="id" desc="用户帐号" required="true" minlen="30" default="uuid" />
+			</parameters>
+		</cmd>
+	</sql>
+	<!-- JSON参数示例：{data:[{'id':'123','name':'xxx'},{},...]} -->
+	<sql type="batchupdate" id="bacthsave" desc="批量更新,json传来多条数据，一个批次更新，要么全部成功要么全部失败">
+		<cmd in="" out="">
+			<![CDATA[   INSERT INTO sys_user(id,code,cnname,pwd,nick) VALUES(?id,?code,?cnname,?pwd,?nick)     ]]>
+		</cmd>
+	</sql>
+		<!-- JSON参数示例：{data:[{'id':'001'},{'id':'002'},{'id':'004'},...]}  -->
+	<sql type="batchdelete" id="delete" desc="批量删除，根据参数多次执行该语句">
+		<cmd in="" out="">
+			<![CDATA[   DELETE FROM sys_user where code=?code   ]]>
+			<parameters>
+				<parameter name="code" desc="用户帐号" type="string" required="true" />
+			</parameters>
+		</cmd>
+	</sql>
+	<!-- JSON参数示例：{main:[{'id':'123','name':'xxx'}],detail1:[{},...],detail2:[{},...]} -->
+	<sql type="batchmultiexec" id="bacthcomplexsave" desc="批量在一个事务里边组合执行多个表的保存，要么全部成功要么全部失败">
+		<cmd in="main" desc="主表的数据，支持多条">
+			<![CDATA[   INSERT INTO sys_user(id,code,cnname,pwd,nick) VALUES(?id,?code,?cnname,?pwd,?nick) ]]>
+			<parameters>
+				<parameter type="string" name="id" desc="用户帐号" required="true" default="uuid" />
+			</parameters>
+		</cmd>
+		<cmd in="detail1" desc="子表一数据，支持多条">
+			<![CDATA[       	   INSERT INTO sys_user(id,code,cnname,pwd,nick) VALUES(?id,?code,?cnname,?pwd,?nick)]]>
+		</cmd>
+		<cmd in="detail2" desc="子表二数据，支持多条">
+			<![CDATA[       	   INSERT INTO sys_user(id,code,cnname,pwd,nick) VALUES(?id,?code,?cnname,?pwd,?nick)   ]]>
+		</cmd>
+		<!-- 下面可继续添加多个组合进来的sql -->
+	</sql>
+	<!-- 下面可继续添加新的方法 -->
+</model>

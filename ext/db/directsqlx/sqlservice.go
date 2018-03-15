@@ -9,14 +9,14 @@
 	 2016.10.18
        增加 PagingSelectMapToMap func
 */
-package directsql
+package directsqlx
 
 import (
 	"database/sql"
 	"errors"
 	"reflect"
 
-	"github.com/go-xorm/core"
+	"github.com/jmoiron/sqlx"
 	"github.com/henrylee2cn/faygo"
 )
 
@@ -43,7 +43,7 @@ func DealwithParameter(modelId, sqlId string, mp map[string]interface{}, sqlinde
 }
 
 //查询 根据modelId，sqlId ，mp:map[string]interface{}命名参数,返回*core.Rows
-func SelectMapToRows(modelId, sqlId string, mp map[string]interface{}) (*core.Rows, error) {
+func SelectMapToRows(modelId, sqlId string, mp map[string]interface{}) (*sqlx.Rows, error) {
 	//获取Sqlentity,db
 	se, db := findSqlAndDB(modelId, sqlId)
 	if se == nil {
@@ -53,7 +53,7 @@ func SelectMapToRows(modelId, sqlId string, mp map[string]interface{}) (*core.Ro
 	if se.Sqltype != ST_SELECT {
 		return nil, notMatchError()
 	}
-	return db.QueryMap(se.Cmds[0].Sql, &mp)
+	return db.NamedQuery(se.Cmds[0].Sql, &mp)
 }
 
 //查询  根据modelId，sqlId ,SQL参数 map  返回 []map[string]interface{}
@@ -100,7 +100,7 @@ func SelectMapToStructPro(modelId, sqlId string, mp map[string]interface{}, dest
 }
 
 //执行返回多個結果集的多個查询根据modelId，sqlId ，SQLmp:map[string]interface{}命名参数 返回结果 map[string]*Rows
-func MultiSelectMapToRows(modelId, sqlId string, mp map[string]interface{}) (map[string]*core.Rows, error) {
+func MultiSelectMapToRows(modelId, sqlId string, mp map[string]interface{}) (map[string]*sqlx.Rows, error) {
 	result := make(map[string]*core.Rows)
 	//获取Sqlentity,db
 	se, db := findSqlAndDB(modelId, sqlId)
@@ -130,14 +130,14 @@ func MultiSelectMapToRows(modelId, sqlId string, mp map[string]interface{}) (map
 //分頁查詢的返回結果
 type PagingSelectRows struct {
 	Total int `json:"total"`
-	Rows  *core.Rows
+	Rows  *sqlx.Rows
 }
 
 //执行分页查询SQL  mp 是MAP类型命名参数 返回结果 int,[]map[string][]interface{}
 func PagingSelectMapToMap(modelId, sqlId string, mp map[string]interface{}) (*PagingSelectResult, error) {
 	se, db := findSqlAndDB(modelId, sqlId)
 	//获取总页数，約定該SQL放到第二條，並且只返回一條記錄一個字段
-	trows, err := db.QueryMap(se.Cmds[0].Sql, &mp)
+	trows, err := db.NamedQuery(se.Cmds[0].Sql, &mp)
 	if err != nil {
 		return nil, err
 	}
@@ -170,7 +170,7 @@ func PagingSelectMapToMap(modelId, sqlId string, mp map[string]interface{}) (*Pa
 func PagingSelectMapToRows(modelId, sqlId string, mp map[string]interface{}) (*PagingSelectRows, error) {
 	se, db := findSqlAndDB(modelId, sqlId)
 	//获取总页数，約定該SQL放到第二條，並且只返回一條記錄一個字段
-	trows, err := db.QueryMap(se.Cmds[0].Sql, &mp)
+	trows, err := db.NamedQuery(se.Cmds[0].Sql, &mp)
 	if err != nil {
 		return nil, err
 	}
@@ -185,7 +185,7 @@ func PagingSelectMapToRows(modelId, sqlId string, mp map[string]interface{}) (*P
 			return nil, errors.New("错误：获取总页数的SQL执行结果非唯一记录！")
 		}
 		//2.获取当前页數據，約定該SQL放到第二條
-		rows, err := db.QueryMap(se.Cmds[1].Sql, &mp)
+		rows, err := db.NamedQuery(se.Cmds[1].Sql, &mp)
 		if err != nil {
 			return nil, err
 		}
@@ -227,7 +227,7 @@ func ExecMap(modelId, sqlId string, mp map[string]interface{}) (sql.Result, erro
 		//循環每個sql定義
 		for _, cmd := range se.Cmds {
 			//faygo.Debug("ExecMap sql:" + cmd.Sql)
-			if _, err := tx.ExecMap(cmd.Sql, &mp); err != nil {
+			if _, err := tx.NamedExec(cmd.Sql, &mp); err != nil {
 				return err
 			}
 		}
@@ -251,7 +251,7 @@ func ExecStruct(modelId, sqlId string, st interface{}) (sql.Result, error) {
 		//循環每個sql定義
 		for _, cmd := range se.Cmds {
 			//faygo.Debug("ExecMap sql:" + cmd.Sql)
-			if _, err := tx.ExecStruct(cmd.Sql, st); err != nil {
+			if _, err := tx.NamedExec(cmd.Sql, st); err != nil {
 				return err
 			}
 		}
@@ -299,7 +299,7 @@ func BacthMultiExecMap(modelId, sqlId string, mp map[string][]map[string]interfa
 			if sp, ok := mp[cmd.Pin]; ok {
 				for _, p := range sp {
 					faygo.Debug("BacthMultiExecMap :" + cmd.Sql)
-					if _, err := tx.ExecMap(cmd.Sql, &p); err != nil {
+					if _, err := tx.NamedExec(cmd.Sql, &p); err != nil {
 						return err
 					}
 				}
