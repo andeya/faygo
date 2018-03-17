@@ -372,8 +372,8 @@ param |    in    | only one |     cookie    | (position of param) request cookie
 param |   name   |    no    |   (e.g.`id`)   | specify request param`s name
 param | required |    no    |               | request param is required
 param |   desc   |    no    |   (e.g.`id`)   | request param description
-param |   len    |    no    | (e.g.`3:6` `3`) | length range of param's value
-param |   range  |    no    |  (e.g.`0:10`)  | numerical range of param's value
+param |   len    |    no    | (e.g.`3:6`) | length range [a,b] of param's value
+param |   range  |    no    |  (e.g.`0:10`)  | numerical range [a,b] of param's value
 param |  nonzero |    no    |               | param`s value can not be zero
 param |   maxmb  |    no    |   (e.g.`32`)   | when request Content-Type is multipart/form-data, the max memory for body.(multi-param, whichever is greater)
 param |  regexp  |    no    | (e.g.`^\\w+$`) | verify the value of the param with a regular expression(param value can not be null)

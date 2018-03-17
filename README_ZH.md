@@ -372,8 +372,8 @@ param |    in    | 有且只有一个 |     cookie    | （参数位置）请求
 param |   name   |      否      |     (如`id`)   | 自定义参数名
 param | required |      否      |   required    | 参数是否必须
 param |   desc   |      否      |     (如`id`)   | 参数描述
-param |   len    |      否      |   (如`3:6``3`)  | 字符串类型参数的长度范围
-param |   range  |      否      |   (如`0:10`)   | 数字类型参数的数值范围
+param |   len    |      否      |   (如`3:6`)  | 字符串类型参数的长度范围[a,b]
+param |   range  |      否      |   (如`0:10`)   | 数字类型参数的数值范围[a,b]
 param |  nonzero |      否      |    nonzero    | 是否能为零值
 param |   maxmb  |      否      |    (如`32`)    | 当前`Content-Type`为`multipart/form-data`时，允许使用的最大内存，当设置了多个时使用较大值
 param |  regexp  |      否      |   (如`^\w+$`)  | 使用正则验证参数值
