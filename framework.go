@@ -107,7 +107,9 @@ func newFramework(config *Config, name string, version []string) *Framework {
 	}
 
 	if config == nil {
-		config = newConfigFromFile(frame.ConfigFilename())
+		config = newConfigFromFileAndCheck(frame.ConfigFilename())
+	} else {
+		config.check()
 	}
 	frame.setConfig(config)
 

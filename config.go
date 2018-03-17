@@ -272,42 +272,46 @@ func NewDefaultConfig() *Config {
 	}
 }
 
-func newConfigFromFile(filename string) *Config {
+func (c *Config) check() {
+	// switch c.RunMode {
+	// case RUNMODE_DEV, RUNMODE_PROD:
+	// default:
+	// 	panic("Please set a valid config item run_mode, refer to the following:\ndev|prod")
+	// }
+	if len(c.NetTypes) != len(c.Addrs) {
+		panic("The number of config items `net_types` and `addrs` must be equal")
+	}
+	if len(c.NetTypes) == 0 {
+		panic("The number of config items `net_types` and `addrs` must be greater than zero")
+	}
+	for _, t := range c.NetTypes {
+		switch t {
+		case NETTYPE_HTTP, NETTYPE_UNIX_HTTP, NETTYPE_HTTPS, NETTYPE_UNIX_HTTPS, NETTYPE_LETSENCRYPT, NETTYPE_UNIX_LETSENCRYPT:
+		default:
+			panic("Please set a valid config item `net_types`, refer to the following:" + __netTypes__)
+		}
+	}
+	fileMode, err := strconv.ParseUint(c.UNIXFileMode, 8, 32)
+	if err != nil {
+		panic("The config item `unix_filemode` is not a valid octal number:" + c.UNIXFileMode)
+	}
+	c.unixFileMode = os.FileMode(fileMode)
+	c.UNIXFileMode = fmt.Sprintf("%#o", fileMode)
+	c.multipartMaxMemory = c.MultipartMaxMemoryMB * MB
+	if c.SlowResponseThreshold <= 0 {
+		c.slowResponseThreshold = time.Duration(math.MaxInt64)
+	} else {
+		c.slowResponseThreshold = c.SlowResponseThreshold
+	}
+	c.APIdoc.Comb()
+}
+
+func newConfigFromFileAndCheck(filename string) *Config {
 	var background = NewDefaultConfig()
 	err := SyncINI(
 		background,
 		func(onceUpdateFunc func() error) error {
-			// switch background.RunMode {
-			// case RUNMODE_DEV, RUNMODE_PROD:
-			// default:
-			// 	panic("Please set a valid config item run_mode, refer to the following:\ndev|prod")
-			// }
-			if len(background.NetTypes) != len(background.Addrs) {
-				panic("The number of config items `net_types` and `addrs` must be equal")
-			}
-			if len(background.NetTypes) == 0 {
-				panic("The number of config items `net_types` and `addrs` must be greater than zero")
-			}
-			for _, t := range background.NetTypes {
-				switch t {
-				case NETTYPE_HTTP, NETTYPE_UNIX_HTTP, NETTYPE_HTTPS, NETTYPE_UNIX_HTTPS, NETTYPE_LETSENCRYPT, NETTYPE_UNIX_LETSENCRYPT:
-				default:
-					panic("Please set a valid config item `net_types`, refer to the following:" + __netTypes__)
-				}
-			}
-			fileMode, err := strconv.ParseUint(background.UNIXFileMode, 8, 32)
-			if err != nil {
-				panic("The config item `unix_filemode` is not a valid octal number:" + background.UNIXFileMode)
-			}
-			background.unixFileMode = os.FileMode(fileMode)
-			background.UNIXFileMode = fmt.Sprintf("%#o", fileMode)
-			background.multipartMaxMemory = background.MultipartMaxMemoryMB * MB
-			if background.SlowResponseThreshold <= 0 {
-				background.slowResponseThreshold = time.Duration(math.MaxInt64)
-			} else {
-				background.slowResponseThreshold = background.SlowResponseThreshold
-			}
-			background.APIdoc.Comb()
+			background.check()
 			return onceUpdateFunc()
 		},
 		filename,
