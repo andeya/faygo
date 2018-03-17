@@ -21,7 +21,6 @@ import (
 	"sort"
 	"strconv"
 	"strings"
-	"sync/atomic"
 	"time"
 )
 
@@ -183,13 +182,9 @@ const (
 	GLOBAL_CONFIG_FILE = "__global___.ini"
 )
 
-var (
-	appCount uint32
-)
-
 // global config
 var globalConfig = func() GlobalConfig {
-	var background = GlobalConfig{
+	var background = &GlobalConfig{
 		Cache: CacheConfig{
 			Enable:       false,
 			SizeMB:       32,
@@ -211,7 +206,7 @@ var globalConfig = func() GlobalConfig {
 	filename := CONFIG_DIR + GLOBAL_CONFIG_FILE
 
 	err := SyncINI(
-		&background,
+		background,
 		func(onceUpdateFunc func() error) error {
 			if !(background.Log.ConsoleEnable || background.Log.FileEnable) {
 				background.Log.ConsoleEnable = true
@@ -226,18 +221,15 @@ var globalConfig = func() GlobalConfig {
 		panic(err)
 	}
 
-	return background
+	return *background
 }()
 
-func newConfig(filename string) Config {
-	var addr string
-
-	addr = fmt.Sprintf("0.0.0.0:%d", defaultPort+atomic.LoadUint32(&appCount))
-	atomic.AddUint32(&appCount, 1)
-	var background = Config{
+// NewDefaultConfig creates a new default framework config.
+func NewDefaultConfig() *Config {
+	return &Config{
 		// RunMode:              RUNMODE_DEV,
 		NetTypes:             []string{NETTYPE_HTTP},
-		Addrs:                []string{addr},
+		Addrs:                []string{fmt.Sprintf("0.0.0.0:%d", defaultPort+len(AllFrames()))},
 		UNIXFileMode:         "0666",
 		MultipartMaxMemoryMB: defaultMultipartMaxMemoryMB,
 		Router: RouterConfig{
@@ -278,9 +270,12 @@ func newConfig(filename string) Config {
 			},
 		},
 	}
+}
 
+func newConfigFromFile(filename string) *Config {
+	var background = NewDefaultConfig()
 	err := SyncINI(
-		&background,
+		background,
 		func(onceUpdateFunc func() error) error {
 			// switch background.RunMode {
 			// case RUNMODE_DEV, RUNMODE_PROD:

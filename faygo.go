@@ -48,7 +48,12 @@ const (
 
 // New uses the faygo web framework to create a new application.
 func New(name string, version ...string) *Framework {
-	return newFramework(name, version...)
+	return newFramework(nil, name, version)
+}
+
+// NewWithConfig uses the faygo web framework to create a new application.
+func NewWithConfig(config *Config, name string, version ...string) *Framework {
+	return newFramework(config, name, version)
 }
 
 // AllFrames returns the list of applications that have been created.

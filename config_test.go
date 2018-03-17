@@ -19,5 +19,5 @@ import (
 )
 
 func TestNewConfig(t *testing.T) {
-	t.Logf("%#v", newConfig("test/faygo.ini"))
+	t.Logf("%#v", newConfigFromFile("test/faygo.ini"))
 }

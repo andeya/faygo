@@ -91,7 +91,7 @@ type Framework struct {
 var _ http.Handler = new(Framework)
 
 // newFramework uses the faygo web framework to create a new application.
-func newFramework(name string, version ...string) *Framework {
+func newFramework(config *Config, name string, version []string) *Framework {
 	mutexNewApp.Lock()
 	defer mutexNewApp.Unlock()
 	var frame = new(Framework)
@@ -106,8 +106,10 @@ func newFramework(name string, version ...string) *Framework {
 		Fatalf("There are two applications with exactly the same name and version: %s", id)
 	}
 
-	configFilename := frame.ConfigFilename()
-	frame.setConfig(newConfig(configFilename))
+	if config == nil {
+		config = newConfigFromFile(frame.ConfigFilename())
+	}
+	frame.setConfig(config)
 
 	frame.redirectTrailingSlash = frame.config.Router.RedirectTrailingSlash
 	frame.redirectFixedPath = frame.config.Router.RedirectFixedPath
@@ -137,8 +139,8 @@ var (
 	mutexForBuild sync.Mutex
 )
 
-func (frame *Framework) setConfig(config Config) {
-	frame.config = config
+func (frame *Framework) setConfig(config *Config) {
+	frame.config = *config
 }
 
 // Name returns the name of the application
