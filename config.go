@@ -212,12 +212,12 @@ var globalConfig = func() GlobalConfig {
 
 	err := SyncINI(
 		&background,
-		func(onecUpdateFunc func() error) error {
+		func(onceUpdateFunc func() error) error {
 			if !(background.Log.ConsoleEnable || background.Log.FileEnable) {
 				background.Log.ConsoleEnable = true
 				background.warnMsg = "config: log::enable_console and log::enable_file can not be disabled at the same time, so automatically open console log."
 			}
-			return onecUpdateFunc()
+			return onceUpdateFunc()
 		},
 		filename,
 	)
@@ -281,7 +281,7 @@ func newConfig(filename string) Config {
 
 	err := SyncINI(
 		&background,
-		func(onecUpdateFunc func() error) error {
+		func(onceUpdateFunc func() error) error {
 			// switch background.RunMode {
 			// case RUNMODE_DEV, RUNMODE_PROD:
 			// default:
@@ -313,7 +313,7 @@ func newConfig(filename string) Config {
 				background.slowResponseThreshold = background.SlowResponseThreshold
 			}
 			background.APIdoc.Comb()
-			return onecUpdateFunc()
+			return onceUpdateFunc()
 		},
 		filename,
 	)
