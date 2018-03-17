@@ -33,7 +33,7 @@ import (
 
 const (
 	// VERSION is faygo web framework's version
-	VERSION = "1.1"
+	VERSION = "1.2.0"
 
 	banner = `
         ___                    

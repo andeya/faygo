@@ -17,7 +17,7 @@ Faygo is a fast and concise Go Web framework that can be used to develop high-pe
 
 ### Version
 
-v1.1
+v1.2.0
 
 ### Requirements
 
