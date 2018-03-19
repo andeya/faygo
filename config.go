@@ -21,7 +21,6 @@ import (
 	"sort"
 	"strconv"
 	"strings"
-	"sync/atomic"
 	"time"
 )
 
@@ -183,13 +182,9 @@ const (
 	GLOBAL_CONFIG_FILE = "__global___.ini"
 )
 
-var (
-	appCount uint32
-)
-
 // global config
 var globalConfig = func() GlobalConfig {
-	var background = GlobalConfig{
+	var background = &GlobalConfig{
 		Cache: CacheConfig{
 			Enable:       false,
 			SizeMB:       32,
@@ -211,13 +206,13 @@ var globalConfig = func() GlobalConfig {
 	filename := CONFIG_DIR + GLOBAL_CONFIG_FILE
 
 	err := SyncINI(
-		&background,
-		func(onecUpdateFunc func() error) error {
+		background,
+		func(onceUpdateFunc func() error) error {
 			if !(background.Log.ConsoleEnable || background.Log.FileEnable) {
 				background.Log.ConsoleEnable = true
 				background.warnMsg = "config: log::enable_console and log::enable_file can not be disabled at the same time, so automatically open console log."
 			}
-			return onecUpdateFunc()
+			return onceUpdateFunc()
 		},
 		filename,
 	)
@@ -226,18 +221,15 @@ var globalConfig = func() GlobalConfig {
 		panic(err)
 	}
 
-	return background
+	return *background
 }()
 
-func newConfig(filename string) Config {
-	var addr string
-
-	addr = fmt.Sprintf("0.0.0.0:%d", defaultPort+atomic.LoadUint32(&appCount))
-	atomic.AddUint32(&appCount, 1)
-	var background = Config{
+// NewDefaultConfig creates a new default framework config.
+func NewDefaultConfig() *Config {
+	return &Config{
 		// RunMode:              RUNMODE_DEV,
 		NetTypes:             []string{NETTYPE_HTTP},
-		Addrs:                []string{addr},
+		Addrs:                []string{fmt.Sprintf("0.0.0.0:%d", defaultPort+len(AllFrames()))},
 		UNIXFileMode:         "0666",
 		MultipartMaxMemoryMB: defaultMultipartMaxMemoryMB,
 		Router: RouterConfig{
@@ -278,42 +270,49 @@ func newConfig(filename string) Config {
 			},
 		},
 	}
+}
 
+func (c *Config) check() {
+	// switch c.RunMode {
+	// case RUNMODE_DEV, RUNMODE_PROD:
+	// default:
+	// 	panic("Please set a valid config item run_mode, refer to the following:\ndev|prod")
+	// }
+	if len(c.NetTypes) != len(c.Addrs) {
+		panic("The number of config items `net_types` and `addrs` must be equal")
+	}
+	if len(c.NetTypes) == 0 {
+		panic("The number of config items `net_types` and `addrs` must be greater than zero")
+	}
+	for _, t := range c.NetTypes {
+		switch t {
+		case NETTYPE_HTTP, NETTYPE_UNIX_HTTP, NETTYPE_HTTPS, NETTYPE_UNIX_HTTPS, NETTYPE_LETSENCRYPT, NETTYPE_UNIX_LETSENCRYPT:
+		default:
+			panic("Please set a valid config item `net_types`, refer to the following:" + __netTypes__)
+		}
+	}
+	fileMode, err := strconv.ParseUint(c.UNIXFileMode, 8, 32)
+	if err != nil {
+		panic("The config item `unix_filemode` is not a valid octal number:" + c.UNIXFileMode)
+	}
+	c.unixFileMode = os.FileMode(fileMode)
+	c.UNIXFileMode = fmt.Sprintf("%#o", fileMode)
+	c.multipartMaxMemory = c.MultipartMaxMemoryMB * MB
+	if c.SlowResponseThreshold <= 0 {
+		c.slowResponseThreshold = time.Duration(math.MaxInt64)
+	} else {
+		c.slowResponseThreshold = c.SlowResponseThreshold
+	}
+	c.APIdoc.Comb()
+}
+
+func newConfigFromFileAndCheck(filename string) *Config {
+	var background = NewDefaultConfig()
 	err := SyncINI(
-		&background,
-		func(onecUpdateFunc func() error) error {
-			// switch background.RunMode {
-			// case RUNMODE_DEV, RUNMODE_PROD:
-			// default:
-			// 	panic("Please set a valid config item run_mode, refer to the following:\ndev|prod")
-			// }
-			if len(background.NetTypes) != len(background.Addrs) {
-				panic("The number of config items `net_types` and `addrs` must be equal")
-			}
-			if len(background.NetTypes) == 0 {
-				panic("The number of config items `net_types` and `addrs` must be greater than zero")
-			}
-			for _, t := range background.NetTypes {
-				switch t {
-				case NETTYPE_HTTP, NETTYPE_UNIX_HTTP, NETTYPE_HTTPS, NETTYPE_UNIX_HTTPS, NETTYPE_LETSENCRYPT, NETTYPE_UNIX_LETSENCRYPT:
-				default:
-					panic("Please set a valid config item `net_types`, refer to the following:" + __netTypes__)
-				}
-			}
-			fileMode, err := strconv.ParseUint(background.UNIXFileMode, 8, 32)
-			if err != nil {
-				panic("The config item `unix_filemode` is not a valid octal number:" + background.UNIXFileMode)
-			}
-			background.unixFileMode = os.FileMode(fileMode)
-			background.UNIXFileMode = fmt.Sprintf("%#o", fileMode)
-			background.multipartMaxMemory = background.MultipartMaxMemoryMB * MB
-			if background.SlowResponseThreshold <= 0 {
-				background.slowResponseThreshold = time.Duration(math.MaxInt64)
-			} else {
-				background.slowResponseThreshold = background.SlowResponseThreshold
-			}
-			background.APIdoc.Comb()
-			return onecUpdateFunc()
+		background,
+		func(onceUpdateFunc func() error) error {
+			background.check()
+			return onceUpdateFunc()
 		},
 		filename,
 	)
