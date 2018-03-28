@@ -553,12 +553,8 @@ func (ctx *Context) SaveFile(key string, cover bool, newfname ...string) (savedF
 		}
 	}()
 
-	var filename string
-	if os.PathSeparator == '/' {
-		filename = filepath.Base(strings.Replace(fh.Filename, "\\", "/", -1))
-	} else {
-		filename = filepath.Base(strings.Replace(fh.Filename, "/", "\\", -1))
-	}
+	ctx.fixFilename(fh)
+	var filename = filepath.Base(fh.Filename)
 
 	// Sets the full file name
 	var fullname string
@@ -631,12 +627,8 @@ func (ctx *Context) SaveFiles(key string, cover bool, newfname ...string) (saved
 			}
 		}()
 
-		var filename string
-		if os.PathSeparator == '/' {
-			filename = filepath.Base(strings.Replace(fh.Filename, "\\", "/", -1))
-		} else {
-			filename = filepath.Base(strings.Replace(fh.Filename, "/", "\\", -1))
-		}
+		ctx.fixFilename(fh)
+		var filename = filepath.Base(fh.Filename)
 
 		// Sets the full file name
 		var fullname string
@@ -699,6 +691,30 @@ func (ctx *Context) SaveFiles(key string, cover bool, newfname ...string) (saved
 		savedFileInfos = append(savedFileInfos, info)
 	}
 	return
+}
+
+func (ctx *Context) fixFilename(fh *multipart.FileHeader) {
+	if strings.Contains(fh.Filename, ":") {
+		sub := `"; filename="`
+		disp := fh.Header.Get("Content-Disposition")
+		idx := strings.Index(disp, sub)
+		if idx != -1 {
+			sub = disp[idx+len(sub):]
+			idx = strings.Index(sub, `"`)
+			if idx != -1 {
+				fh.Filename = sub[:idx]
+			}
+		}
+	}
+	fh.Filename = strings.TrimRight(fh.Filename, "/")
+	fh.Filename = strings.TrimRight(fh.Filename, "\\")
+	m := strings.LastIndex(fh.Filename, "/")
+	n := strings.LastIndex(fh.Filename, "\\")
+	if m > n {
+		fh.Filename = fh.Filename[m+1:]
+	} else if n > m {
+		fh.Filename = fh.Filename[n+1:]
+	}
 }
 
 // BindJSON reads JSON from request's body
