@@ -169,14 +169,18 @@ func (ctx *Context) XSRFFormHTML() string {
 		ctx.XSRFToken() + `" />`
 }
 
-// checkXSRFCookie checks xsrf token in this ruest is valid or not.
-// the token can provided in ruest header "X-Xsrftoken" and "X-CsrfToken"
+// checkXSRFCookie checks xsrf token in this request is valid or not.
+// the token can provided in request cookie "_xsrf",
+// or in header "X-Xsrftoken" and "X-CsrfToken",
 // or in form field value named as "_xsrf".
 func (ctx *Context) checkXSRFCookie() bool {
 	if !ctx.enableXSRF {
 		return true
 	}
 	token := ctx.BizParam("_xsrf")
+	if token == "" {
+		token = ctx.CookieParam("_xsrf")
+	}
 	if token == "" {
 		token = ctx.R.Header.Get("X-Xsrftoken")
 	}
