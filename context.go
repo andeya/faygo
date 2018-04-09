@@ -179,13 +179,14 @@ func (ctx *Context) checkXSRFCookie() bool {
 	}
 	token := ctx.BizParam("_xsrf")
 	if token == "" {
-		token = ctx.CookieParam("_xsrf")
-	}
-	if token == "" {
 		token = ctx.R.Header.Get("X-Xsrftoken")
 	}
 	if token == "" {
 		token = ctx.R.Header.Get("X-Csrftoken")
+	}
+	// default cookie value
+	if token == "" {
+		token, _ = ctx.SecureCookieParam(ctx.frame.config.XSRF.Key, "_xsrf")
 	}
 	if token == "" {
 		ctx.Error(403, "'_xsrf' argument missing from POST")
