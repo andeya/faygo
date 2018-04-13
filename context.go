@@ -209,6 +209,7 @@ func (ctx *Context) startSession() (session.Store, error) {
 	if !ctx.enableSession {
 		return nil, errNotEnableSession
 	}
+	ctx.makeSureParseMultipartForm()
 	var err error
 	ctx.curSession, err = ctx.frame.sessionManager.SessionStart(ctx.W, ctx.R)
 	return ctx.curSession, err

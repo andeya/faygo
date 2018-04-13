@@ -164,11 +164,10 @@ func (manager *Manager) getSid(r *http.Request) (string, error) {
 	if err != nil || cookie.Value == "" {
 		var sid string
 		if manager.config.EnableSidInUrlQuery {
-			err := r.ParseForm()
-			if err != nil {
-				return "", err
-			}
-
+			// err := r.ParseForm()
+			// if err != nil {
+			// 	return "", err
+			// }
 			sid = r.FormValue(manager.config.CookieName)
 		}
 

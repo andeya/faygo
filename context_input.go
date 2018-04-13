@@ -335,9 +335,7 @@ func (ctx *Context) BizParam(key string) string {
 	if len(value) > 0 {
 		return value
 	}
-	if ctx.R.Form == nil {
-		ctx.R.ParseMultipartForm(ctx.frame.config.multipartMaxMemory)
-	}
+	ctx.makeSureParseMultipartForm()
 	return ctx.R.FormValue(key)
 }
 
@@ -365,15 +363,7 @@ func (ctx *Context) PathParamAll() PathParams {
 
 // ParseFormOrMulitForm parseForm or parseMultiForm based on Content-type
 func (ctx *Context) ParseFormOrMulitForm(maxMemory int64) error {
-	// Parse the body depending on the content type.
-	if strings.Contains(ctx.HeaderParam(HeaderContentType), MIMEMultipartForm) {
-		if err := ctx.R.ParseMultipartForm(maxMemory); err != nil {
-			return errors.New("Error parsing request body:" + err.Error())
-		}
-	} else if err := ctx.R.ParseForm(); err != nil {
-		return errors.New("Error parsing request body:" + err.Error())
-	}
-	return nil
+	return ctx.R.ParseMultipartForm(maxMemory)
 }
 
 // FormParam returns the first value for the named component of the POST or PUT ruest body.
@@ -382,26 +372,20 @@ func (ctx *Context) ParseFormOrMulitForm(maxMemory int64) error {
 // any errors returned by these functions.
 // If key is not present, FormParam returns the empty string.
 func (ctx *Context) FormParam(key string) string {
-	if ctx.R.PostForm == nil {
-		ctx.R.ParseMultipartForm(ctx.frame.config.multipartMaxMemory)
-	}
+	ctx.makeSureParseMultipartForm()
 	return ctx.R.PostFormValue(key)
 }
 
 // FormParams returns the form field value with "[]string" for the provided key.
 func (ctx *Context) FormParams(key string) []string {
-	if ctx.R.PostForm == nil {
-		ctx.R.ParseMultipartForm(ctx.frame.config.multipartMaxMemory)
-	}
+	ctx.makeSureParseMultipartForm()
 	return ctx.R.PostForm[key]
 }
 
 // FormParamAll returns the parsed form data from POST, PATCH,
 // or PUT body parameters.
 func (ctx *Context) FormParamAll() url.Values {
-	if ctx.R.PostForm == nil {
-		ctx.R.ParseMultipartForm(ctx.frame.config.multipartMaxMemory)
-	}
+	ctx.makeSureParseMultipartForm()
 	return ctx.R.PostForm
 }
 
@@ -516,14 +500,19 @@ func (ctx *Context) SecureCookieParam(secret, key string) (string, bool) {
 // FormFile returns the first file for the provided form key.
 // FormFile calls ParseMultipartForm and ParseForm if necessary.
 func (ctx *Context) FormFile(key string) (multipart.File, *multipart.FileHeader, error) {
+	ctx.makeSureParseMultipartForm()
 	return ctx.R.FormFile(key)
+}
+
+func (ctx *Context) makeSureParseMultipartForm() {
+	if ctx.R.PostForm == nil || ctx.R.MultipartForm == nil {
+		ctx.R.ParseMultipartForm(ctx.frame.config.multipartMaxMemory)
+	}
 }
 
 // HasFormFile returns if the file header for the provided form key is exist.
 func (ctx *Context) HasFormFile(key string) bool {
-	if ctx.R.MultipartForm == nil {
-		ctx.R.ParseMultipartForm(ctx.frame.config.multipartMaxMemory)
-	}
+	ctx.makeSureParseMultipartForm()
 	if ctx.R.MultipartForm != nil && ctx.R.MultipartForm.File != nil {
 		if fhs := ctx.R.MultipartForm.File[key]; len(fhs) > 0 {
 			return true
