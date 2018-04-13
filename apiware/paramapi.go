@@ -456,7 +456,7 @@ func (paramsAPI *ParamsAPI) BindFields(
 	if pathParams == nil {
 		pathParams = Map(map[string]string{})
 	}
-	if req.Form == nil {
+	if req.MultipartForm == nil {
 		req.ParseMultipartForm(paramsAPI.maxMemory)
 	}
 	var queryValues url.Values
