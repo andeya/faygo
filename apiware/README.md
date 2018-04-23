@@ -9,7 +9,7 @@ Apiware将Go语言`net/http`及`fasthttp`请求的指定参数绑定到结构体
 
 # Demo 示例
 
-```
+```go
 package main
 
 import (
