@@ -16,8 +16,8 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/jmoiron/sqlx"
 	"github.com/henrylee2cn/faygo"
+	"github.com/jmoiron/sqlx"
 )
 
 //根据sqlid获取 *TSql
@@ -32,7 +32,7 @@ func (m *TModel) findSql(sqlid string) *TSql {
 func (m *TModel) selectMap(se *TSql, mp map[string]interface{}) ([]map[string]interface{}, error) {
 	faygo.Debug("selectMap parameters :", mp)
 	//执行sql
-	rows, err := m.DB.NamedQuery(se.Cmds[0].Sql, &mp)
+	rows, err := m.DB.NamedQuery(se.Cmds[0].Sql, mp)
 	if err != nil {
 		return nil, err
 	}
@@ -50,14 +50,14 @@ type PagingSelectResult struct {
 func (m *TModel) pagingSelectMap(se *TSql, mp map[string]interface{}) (*PagingSelectResult, error) {
 	faygo.Debug("pagingSelectMap parameters :", mp)
 	//获取总页数，約定該SQL放到第二條，並且只返回一條記錄一個字段
-	trows, err := m.DB.NamedQuery(se.Cmds[0].Sql, &mp)
+	trows, err := m.DB.NamedQuery(se.Cmds[0].Sql, mp)
 	if err != nil {
 		return nil, err
 	}
 	defer trows.Close()
 	for trows.Next() {
-		var total = make([]int, 1)
-		err := trows.ScanSlice(&total)
+
+		total, err := trows.SliceScan()
 		if err != nil {
 			return nil, err
 		}
@@ -65,7 +65,7 @@ func (m *TModel) pagingSelectMap(se *TSql, mp map[string]interface{}) (*PagingSe
 			return nil, errors.New("错误：获取总页数的SQL执行结果非唯一记录！")
 		}
 		//2.获取当前页數據，約定該SQL放到第二條
-		rows, err := m.DB.NamedQuery(se.Cmds[1].Sql, &mp)
+		rows, err := m.DB.NamedQuery(se.Cmds[1].Sql, mp)
 		if err != nil {
 			return nil, err
 		}
@@ -74,7 +74,7 @@ func (m *TModel) pagingSelectMap(se *TSql, mp map[string]interface{}) (*PagingSe
 		if err != nil {
 			return nil, err
 		}
-		return &PagingSelectResult{Total: total[0], Data: result}, nil //最終的結果
+		return &PagingSelectResult{Total: total[0].(int), Data: result}, nil //最終的結果
 	}
 	return nil, err
 }
@@ -86,7 +86,7 @@ func (m *TModel) multiSelectMap(se *TSql, mp map[string]interface{}) (map[string
 	//循環每個sql定義
 	for i, cmd := range se.Cmds {
 		faygo.Debug("MultiSelectMap :" + cmd.Sql)
-		rows, err := m.DB.NamedQuery(cmd.Sql, &mp)
+		rows, err := m.DB.NamedQuery(cmd.Sql, mp)
 		if err != nil {
 			return nil, err
 		}
@@ -108,7 +108,7 @@ func (m *TModel) multiSelectMap(se *TSql, mp map[string]interface{}) (map[string
 //根据 Idfield、Pidfield 构建嵌套的 map 结果集
 func (m *TModel) nestedSelectMap(se *TSql, mp map[string]interface{}) ([]map[string]interface{}, error) {
 	faygo.Debug("NestedSelectMap :" + se.Cmds[0].Sql)
-	rows, err := m.DB.NamedQuery(se.Cmds[0].Sql, &mp)
+	rows, err := m.DB.NamedQuery(se.Cmds[0].Sql, mp)
 	defer rows.Close()
 	if err != nil {
 		return nil, err
@@ -144,7 +144,7 @@ func (m *TModel) execMap(se *TSql, mp map[string]interface{}) error {
 		//循環每個sql定義
 		for _, cmd := range se.Cmds {
 			faygo.Debug("ExecMap sql:" + cmd.Sql)
-			if _, err := tx.ExecMap(cmd.Sql, &mp); err != nil {
+			if _, err := tx.NamedExec(cmd.Sql, mp); err != nil {
 				return err
 			}
 		}
@@ -158,7 +158,7 @@ func (m *TModel) bacthExecMap(se *TSql, sp []map[string]interface{}) error {
 	return transact(m.DB, func(tx *sqlx.Tx) error {
 		for _, p := range sp {
 			faygo.Debug("BacthExecMap :" + se.Cmds[0].Sql)
-			if _, err := tx.NamedExec(se.Cmds[0].Sql, &p); err != nil {
+			if _, err := tx.NamedExec(se.Cmds[0].Sql, p); err != nil {
 				return err
 			}
 		}
@@ -175,7 +175,7 @@ func (m *TModel) bacthMultiExecMap(se *TSql, mp map[string][]map[string]interfac
 			if sp, ok := mp[cmd.Pin]; ok {
 				for _, p := range sp {
 					faygo.Debug("BacthMultiExecMap :" + cmd.Sql)
-					if _, err := tx.NamedExec(cmd.Sql, &p); err != nil {
+					if _, err := tx.NamedExec(cmd.Sql, p); err != nil {
 						return err
 					}
 				}
@@ -194,7 +194,7 @@ func addData(db *sql.DB, data []byte) error {
 }*/
 func (m *TModel) setBLOB(se *TSql, mp map[string]interface{}) error {
 	faygo.Debug("setBLOB :" + se.Cmds[0].Sql)
-	_, err := m.DB.NamedExec(se.Cmds[0].Sql, &mp)
+	_, err := m.DB.NamedExec(se.Cmds[0].Sql, mp)
 	if err != nil {
 		return err
 	}
@@ -205,7 +205,7 @@ func (m *TModel) setBLOB(se *TSql, mp map[string]interface{}) error {
 func (m *TModel) getBLOB(se *TSql, mp map[string]interface{}) ([]byte, error) {
 	faygo.Debug("getBLOB parameters :", mp)
 	//执行sql
-	rows, err := m.DB.NamedQuery(se.Cmds[0].Sql, &mp)
+	rows, err := m.DB.NamedQuery(se.Cmds[0].Sql, mp)
 	if err != nil {
 		return nil, err
 	}
@@ -234,7 +234,7 @@ func (m *TModel) getBLOB(se *TSql, mp map[string]interface{}) ([]byte, error) {
 
 //ransaction handler 封装在一个事务中执行多个SQL语句
 func transact(db *sqlx.DB, txFunc func(*sqlx.Tx) error) (err error) {
-	tx, err := db.DB.Begin()
+	tx, err := db.Beginx()
 	if err != nil {
 		return
 	}

@@ -55,8 +55,14 @@ func trimBeforeSplitRight(s string, c byte, n int) (left, right string) {
 	return s, ""
 }
 
+var (
+	x_TIME_DEFAULT time.Time
+	timeType       = reflect.TypeOf(x_TIME_DEFAULT)
+)
+
 //------------ rows转换相关函数 -------------------------
 func reflect2value(rawValue *reflect.Value) (str string, err error) {
+
 	aa := reflect.TypeOf((*rawValue).Interface())
 	vv := reflect.ValueOf((*rawValue).Interface())
 	switch aa.Kind() {
@@ -78,8 +84,8 @@ func reflect2value(rawValue *reflect.Value) (str string, err error) {
 		}
 	// time type
 	case reflect.Struct:
-		if aa.ConvertibleTo(core.TimeType) {
-			str = vv.Convert(core.TimeType).Interface().(time.Time).Format(time.RFC3339Nano)
+		if aa.ConvertibleTo(timeType) {
+			str = vv.Convert(timeType).Interface().(time.Time).Format(time.RFC3339Nano)
 		} else {
 			err = fmt.Errorf("Unsupported struct type %v", vv.Type().Name())
 		}
@@ -261,8 +267,8 @@ func reflect2object(rawValue *reflect.Value) (value interface{}, err error) {
 		}
 	//时间类型
 	case reflect.Struct:
-		if aa.ConvertibleTo(core.TimeType) {
-			value = vv.Convert(core.TimeType).Interface().(time.Time)
+		if aa.ConvertibleTo(timeType) {
+			value = vv.Convert(timeType).Interface().(time.Time)
 		} else {
 			err = fmt.Errorf("Unsupported struct type %v", vv.Type().Name())
 		}

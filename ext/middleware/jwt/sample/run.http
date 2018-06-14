@@ -1,0 +1,40 @@
+//API测试
+
+//admin获取token
+POST http://localhost:8080/login HTTP/1.1
+content-type: application/json
+
+{
+    "username": "admin",
+    "password": "admin"
+}
+###
+//test获取token
+POST http://localhost:8080/login HTTP/1.1
+content-type: application/json
+
+{
+    "username": "test",
+    "password": "test"
+}
+###
+
+//权限内请求-没有权限（test账号）
+GET http://localhost:8080/auth/hello HTTP/1.1
+Content-Type: application/json
+token: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE1Mjc2ODcwOTAsImlkIjoidGVzdCIsIm9yaWdfaWF0IjoxNTI3Njg3MDMwfQ.eLbjFTRtOsD2l0uBCj9MmJ4UQOUjFJqWeCENGY7QFoc
+###
+
+//权限内请求-有权限（admin账号）
+GET http://localhost:8080/auth/hello HTTP/1.1
+Content-Type: application/json
+token: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE1Mjc2ODY2MDIsImlkIjoiYWRtaW4iLCJvcmlnX2lhdCI6MTUyNzY4NjM3M30._0AY9u8K3n5V1xXr58uY_ar0y6kcb7yZRIJobgxaFtU
+###
+
+//刷新token
+GET http://localhost:8080/auth/refresh_token  HTTP/1.1
+Content-Type: application/json
+token: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE1Mjc2ODY2MDIsImlkIjoiYWRtaW4iLCJvcmlnX2lhdCI6MTUyNzY4NjM3M30._0AY9u8K3n5V1xXr58uY_ar0y6kcb7yZRIJobgxaFtU
+###
+
+

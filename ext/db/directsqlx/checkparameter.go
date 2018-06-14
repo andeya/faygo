@@ -217,7 +217,7 @@ func dealwithParameter(paras []*TSqlParameter, mp map[string]interface{}, ctx *f
 			//faygo.Debug("Check sql parameters - " + para.Name + ": " + v.(string))
 		} else {
 			//sql的cmd参数中存在该参数定义但传入的post参数不存在则返回错误
-			return nil, errors.New("错误：参数[" + para.Name + "]未定义！")
+			return nil, errors.New("错误：配置的参数[" + para.Name + "]客户端未提交，请检查！")
 		}
 	}
 	return result, nil

@@ -23,16 +23,16 @@ import (
 	"sync"
 
 	"github.com/fsnotify/fsnotify"
-	"github.com/jmoiron/sqlx"
 	"github.com/henrylee2cn/faygo"
 	faygosqlx "github.com/henrylee2cn/faygo/ext/db/sqlx"
 	confpkg "github.com/henrylee2cn/ini"
+	"github.com/jmoiron/sqlx"
 )
 
 //var modelsqls map[string]*TModel
 
 //配置文件配置参数
-const MSCONFIGFILE = "./config/directsqlx.ini"
+const MSCONFIGFILE = "./config/directsql.ini"
 
 // 全部业务SQL路由表,不根据目录分层次，直接放在map sqlmodels中，key=带路径不带扩展名的文件名
 type TModels struct {
@@ -261,7 +261,7 @@ func (ms *TModels) parseTModel(msqlfile string) (*TModel, error) {
 		//faygo.Log.Debug("database:", tempresult.Database)
 	}
 	//定义一个 TModel将 tempTModel 转换为 TModel
-	result := &TModel{Id: tempresult.Id, DB: dbe.DB(), Sqls: make(map[string]*TSql)}
+	result := &TModel{Id: tempresult.Id, DB: dbe, Sqls: make(map[string]*TSql)}
 	//处理一遍：设置数据库访问引擎，设置TSql的类型
 	for _, se := range tempresult.Sqls {
 		//处理SQL类型与查询类语句缓存的配置参数
@@ -352,7 +352,7 @@ func (ms *TModels) parseTModel(msqlfile string) (*TModel, error) {
 				case "parentid":
 					para.Default = DT_PARENTID //主表的id的值 （parentid value）
 				default:
-					if len(strings.TrimSpace(para.Paratypestr)) > 0 {
+					if len(strings.TrimSpace(para.Defaultstr)) > 0 {
 						para.Default = DT_CUSTOM
 					} else {
 						para.Default = DT_UNDEFINED

@@ -21,7 +21,7 @@ import (
 )
 
 //DirectSQL handler 定义
-func DirectSQLX() faygo.HandlerFunc {
+func DirectSQL() faygo.HandlerFunc {
 	return func(ctx *faygo.Context) error {
 		//1.根据路径获取sqlentity:去掉/bos/,再拆分成 modelId，sqlId
 		modelId, sqlId := trimBeforeSplitRight(ctx.Path(), '/', 2)
@@ -516,7 +516,7 @@ func DirectSQLX() faygo.HandlerFunc {
 }
 
 //重新载入全部ModelSql配置文件
-func DirectSQLXReloadAll() faygo.HandlerFunc {
+func DirectSQLReloadAll() faygo.HandlerFunc {
 	return func(c *faygo.Context) error {
 		ReloadAll()
 		return c.JSONMsg(200, 200, "Info: Reload all modelsqls file ok!")
@@ -524,7 +524,7 @@ func DirectSQLXReloadAll() faygo.HandlerFunc {
 }
 
 //重新载入单个ModelSql配置文件
-func DirectSQLXReloadModel() faygo.HandlerFunc {
+func DirectSQLReloadModel() faygo.HandlerFunc {
 	return func(c *faygo.Context) error {
 		//ctx.Path(), '/', 2) 去掉 /bom/reload/
 		err := ReloadModel(trimBefore(c.Path(), '/', 3))

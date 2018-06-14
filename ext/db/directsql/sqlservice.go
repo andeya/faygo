@@ -2,12 +2,15 @@
  功能：动态SQL执行函数供其他包调用单元
  日期：
  更新：
+	 2017.06.05
+	   增加 SelectMapIsExist
      2017.03.29
 	   增加几个函数，返回Rows
      2017.03.13
 	   增加默认参数处理
 	 2016.10.18
-       增加 PagingSelectMapToMap func
+	   增加 PagingSelectMapToMap func
+
 */
 package directsql
 
@@ -54,6 +57,25 @@ func SelectMapToRows(modelId, sqlId string, mp map[string]interface{}) (*core.Ro
 		return nil, notMatchError()
 	}
 	return db.QueryMap(se.Cmds[0].Sql, &mp)
+}
+
+//判断记录是否存在，根据modelId，sqlId ，mp:map[string]interface{}命名参数,返回*core.Row
+
+func SelectMapIsExist(modelId, sqlId string, mp map[string]interface{}) (bool, error) {
+	//获取Sqlentity,db
+	se, db := findSqlAndDB(modelId, sqlId)
+	if se == nil {
+		return false, notFoundError(modelId + "/" + sqlId)
+	}
+	//判断类型不是Select 就返回错误
+	if se.Sqltype != ST_SELECT {
+		return false, notMatchError()
+	}
+	rows, err := db.QueryMap(se.Cmds[0].Sql, &mp)
+	if err != nil {
+		return false, err
+	}
+	return rows.Next(), nil
 }
 
 //查询  根据modelId，sqlId ,SQL参数 map  返回 []map[string]interface{}
