@@ -179,16 +179,21 @@ const (
 )
 
 var (
-	// configDir The path for the config files
+	// configDir the config files directory
 	configDir = "./config/"
 	// globalConfigFile global config file name
 	globalConfigFile = "__global___.ini"
 )
 
+// ConfigDir returns the config files directory
+func ConfigDir() string {
+	return configDir
+}
+
 // global config
 var globalConfig = func() GlobalConfig {
 	// get config dir
-	flag.StringVar(&configDir, "cfg_dir", configDir, "Configuration file directory")
+	flag.StringVar(&configDir, "cfg_dir", configDir, "Configuration files directory")
 	flag.Parse()
 
 	var background = &GlobalConfig{
