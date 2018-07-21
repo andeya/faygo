@@ -21,9 +21,13 @@ type DBConfig struct {
 
 // default constant
 const (
-	DBCONFIG_FILE  = faygo.CONFIG_DIR + "gorm.ini"
 	DATABASE_DIR   = "database/"
 	DEFAULTDB_NAME = "default"
+)
+
+var (
+	// DBCONFIG_FILE config file path
+	DBCONFIG_FILE = faygo.ConfigDir() + "gorm.ini"
 )
 
 var (
