@@ -235,9 +235,9 @@ func (frame *Framework) build() {
 				}
 				var root *node
 				if strings.HasSuffix(api.path, "/*"+FilepathKey) &&
-					!strings.HasSuffix(api.path, "/apidoc/*"+FilepathKey) &&
-					!strings.HasSuffix(api.path, "/upload/*"+FilepathKey) &&
-					!strings.HasSuffix(api.path, "/static/*"+FilepathKey) {
+					api.path != "/apidoc/*"+FilepathKey &&
+					api.path != "/upload/*"+FilepathKey &&
+					api.path != "/static/*"+FilepathKey {
 					// custom static
 					root = frame.staticSrcTree[method]
 					if root == nil {
