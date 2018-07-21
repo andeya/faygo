@@ -54,7 +54,7 @@ func SyncINI(structPtr interface{}, f func(onecUpdateFunc func() error) error, f
 		fname = strings.TrimSuffix(t.Name(), "Config")
 		fname = strings.TrimSuffix(fname, "INI")
 		fname = goutil.SnakeString(fname) + ".ini"
-		fname = filepath.Join(CONFIG_DIR, fname)
+		fname = filepath.Join(configDir, fname)
 	}
 	return ini.SyncINI(structPtr, f, fname)
 }
@@ -65,17 +65,17 @@ func RemoveUseless() {
 		return
 	}
 	var files []string
-	filepath.Walk(CONFIG_DIR, func(retpath string, f os.FileInfo, err error) error {
+	filepath.Walk(configDir, func(retpath string, f os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
 		files = append(files, retpath)
 		return err
 	})
-	confile := filepath.Join(CONFIG_DIR, GLOBAL_CONFIG_FILE)
+	confile := filepath.Join(configDir, globalConfigFile)
 	if len(files) == 1 || len(files) == 2 && files[1] == confile {
 		os.Remove(confile)
-		os.Remove(CONFIG_DIR)
+		os.Remove(configDir)
 		os.Remove(LogDir())
 		os.Remove(StaticDir())
 		os.Remove(UploadDir())

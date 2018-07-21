@@ -15,6 +15,7 @@
 package faygo
 
 import (
+	"flag"
 	"fmt"
 	"math"
 	"os"
@@ -175,15 +176,21 @@ const (
 	defaultMultipartMaxMemory   = 32 * MB // 32 MB
 	defaultMultipartMaxMemoryMB = 32
 	defaultPort                 = 8080
+)
 
-	// The path for the config files
-	CONFIG_DIR = "./config/"
-	// global config file name
-	GLOBAL_CONFIG_FILE = "__global___.ini"
+var (
+	// configDir The path for the config files
+	configDir = "./config/"
+	// globalConfigFile global config file name
+	globalConfigFile = "__global___.ini"
 )
 
 // global config
 var globalConfig = func() GlobalConfig {
+	// get config dir
+	flag.StringVar(&configDir, "cfg_dir", configDir, "Configuration file directory")
+	flag.Parse()
+
 	var background = &GlobalConfig{
 		Cache: CacheConfig{
 			Enable:       false,
@@ -203,7 +210,7 @@ var globalConfig = func() GlobalConfig {
 			FileLevel:     "debug",
 		},
 	}
-	filename := CONFIG_DIR + GLOBAL_CONFIG_FILE
+	filename := configDir + globalConfigFile
 
 	err := SyncINI(
 		background,

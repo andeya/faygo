@@ -170,7 +170,7 @@ func (frame *Framework) Config() Config {
 
 // ConfigFilename returns the framework's config file name.
 func (frame *Framework) ConfigFilename() string {
-	return CONFIG_DIR + "/" + frame.NameWithVersion() + ".ini"
+	return configDir + "/" + frame.NameWithVersion() + ".ini"
 }
 
 // Run starts the web service.
