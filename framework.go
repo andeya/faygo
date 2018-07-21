@@ -51,9 +51,10 @@ type Framework struct {
 	// for framework
 	syslog *logging.Logger
 	// for user bissness
-	bizlog *logging.Logger
-	apidoc *swagger.Swagger
-	trees  map[string]*node
+	bizlog         *logging.Logger
+	apidoc         *swagger.Swagger
+	dynamicSrcTree map[string]*node // dynamic resource router tree
+	staticSrcTree  map[string]*node // dynamic resource router tree
 	// Redirect from 'http://hostname:port1' to 'https://hostname:port2'
 	httpRedirectHttps bool
 	// One of the https ports to be listened
@@ -220,19 +221,36 @@ func (frame *Framework) build() {
 		}
 
 		// register router
+		if frame.dynamicSrcTree == nil {
+			frame.dynamicSrcTree = make(map[string]*node)
+		}
+		if frame.staticSrcTree == nil {
+			frame.staticSrcTree = make(map[string]*node)
+		}
 		for _, api := range frame.MuxAPIsForRouter() {
 			handle := frame.makeHandle(api.handlers)
 			for _, method := range api.methods {
 				if api.path[0] != '/' {
 					Panic("path must begin with '/' in path '" + api.path + "'")
 				}
-				if frame.trees == nil {
-					frame.trees = make(map[string]*node)
-				}
-				root := frame.trees[method]
-				if root == nil {
-					root = new(node)
-					frame.trees[method] = root
+				var root *node
+				if strings.HasSuffix(api.path, "/*"+FilepathKey) &&
+					!strings.HasSuffix(api.path, "/apidoc/*"+FilepathKey) &&
+					!strings.HasSuffix(api.path, "/upload/*"+FilepathKey) &&
+					!strings.HasSuffix(api.path, "/static/*"+FilepathKey) {
+					// custom static
+					root = frame.staticSrcTree[method]
+					if root == nil {
+						root = new(node)
+						frame.staticSrcTree[method] = root
+					}
+				} else {
+					// dynamic or default static
+					root = frame.dynamicSrcTree[method]
+					if root == nil {
+						root = new(node)
+						frame.dynamicSrcTree[method] = root
+					}
 				}
 				root.addRoute(api.path, handle)
 				frame.syslog.Criticalf("\x1b[46m[SYS]\x1b[0m %7s | %-30s", method, api.path)
@@ -557,10 +575,23 @@ func (frame *Framework) serveHTTP(ctx *Context) {
 	}
 	var path = ctx.Path()
 	var method = ctx.Method()
-	if root := frame.trees[method]; root != nil {
+	// find dynamic resource or default static resource
+	if frame.tryHandle(ctx, path, method, frame.dynamicSrcTree) {
+		return
+	}
+	// find custom static resource
+	if frame.tryHandle(ctx, path, method, frame.staticSrcTree) {
+		return
+	}
+	// Handle 404
+	global.errorFunc(ctx, "Not Found", 404)
+}
+
+func (frame *Framework) tryHandle(ctx *Context, path, method string, tree map[string]*node) bool {
+	if root := tree[method]; root != nil {
 		if handle, ps, tsr := root.getValue(path); handle != nil {
 			handle(ctx, ps)
-			return
+			return true
 		} else if method != "CONNECT" && path != "/" {
 			code := 301 // Permanent redirect, request with GET method
 			if method != "GET" {
@@ -576,7 +607,7 @@ func (frame *Framework) serveHTTP(ctx *Context) {
 					ctx.ModifyPath(path + "/")
 				}
 				http.Redirect(ctx.W, ctx.R, ctx.URL().String(), code)
-				return
+				return true
 			}
 
 			// Try to fix the request path
@@ -588,7 +619,7 @@ func (frame *Framework) serveHTTP(ctx *Context) {
 				if found {
 					ctx.ModifyPath(BytesToString(fixedPath))
 					http.Redirect(ctx.W, ctx.R, ctx.URL().String(), code)
-					return
+					return true
 				}
 			}
 		}
@@ -600,7 +631,7 @@ func (frame *Framework) serveHTTP(ctx *Context) {
 			if allow := frame.allowed(path, method); len(allow) > 0 {
 				ctx.SetHeader("Allow", allow)
 				ctx.W.WriteHeader(204)
-				return
+				return true
 			}
 		}
 	} else {
@@ -609,18 +640,16 @@ func (frame *Framework) serveHTTP(ctx *Context) {
 			if allow := frame.allowed(path, method); len(allow) > 0 {
 				ctx.SetHeader("Allow", allow)
 				global.errorFunc(ctx, "Method Not Allowed", 405)
-				return
+				return true
 			}
 		}
 	}
-
-	// Handle 404
-	global.errorFunc(ctx, "Not Found", 404)
+	return false
 }
 
 func (frame *Framework) allowed(path, reqMethod string) (allow string) {
 	if path == "*" { // server-wide
-		for method := range frame.trees {
+		for method := range frame.dynamicSrcTree {
 			if method == "OPTIONS" {
 				continue
 			}
@@ -633,13 +662,13 @@ func (frame *Framework) allowed(path, reqMethod string) (allow string) {
 			}
 		}
 	} else { // specific path
-		for method := range frame.trees {
+		for method := range frame.dynamicSrcTree {
 			// Skip the requested method - we already tried this one
 			if method == reqMethod || method == "OPTIONS" {
 				continue
 			}
 
-			handle, _, _ := frame.trees[method].getValue(path)
+			handle, _, _ := frame.dynamicSrcTree[method].getValue(path)
 			if handle != nil {
 				// add request method to list of allowed methods
 				if len(allow) == 0 {
