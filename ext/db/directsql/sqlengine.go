@@ -145,7 +145,8 @@ func (m *TModel) execMap(se *TSql, mp map[string]interface{}) error {
 		//循環每個sql定義
 		for _, cmd := range se.Cmds {
 			faygo.Debug("ExecMap sql:" + cmd.Sql)
-			if _, err := tx.ExecMap(cmd.Sql, &mp); err != nil {
+			_, err := tx.ExecMap(cmd.Sql, &mp)
+			if err != nil {
 				return err
 			}
 		}
@@ -154,6 +155,66 @@ func (m *TModel) execMap(se *TSql, mp map[string]interface{}) error {
 }
 
 //批量执行 UPDATE、INSERT、sp 是MAP类型命名参数
+func (m *TModel) bacthExecMap(se *TSql, sp []map[string]interface{}) error {
+	faygo.Debug("BacthExecMap parameters :", sp)
+	// 如果执行sql的语句组使用每次循环使用单独的事务，则如下
+	if se.Eachtran {
+		for _, p := range sp {
+			transact(m.DB, func(tx *core.Tx) error {
+				////////////////////////////////
+				//循環每個sql定義
+				for _, cmd := range se.Cmds {
+					faygo.Debug("BacthExecMap sql:" + cmd.Sql)
+					_, err := tx.ExecMap(cmd.Sql, &p)
+					if err != nil {
+						return err
+					}
+				}
+				return nil
+				////////////////////////////////////
+			})
+		}
+		//所有循环使用同一个事务
+	} else {
+		return transact(m.DB, func(tx *core.Tx) error {
+			for _, p := range sp {
+				////////////////////////////////
+				//循環每個sql定義
+				for _, cmd := range se.Cmds {
+					faygo.Debug("BacthExecMap sql:" + cmd.Sql)
+					_, err := tx.ExecMap(cmd.Sql, &p)
+					if err != nil {
+						return err
+					}
+				}
+			}
+			return nil
+		})
+	}
+	return nil
+}
+
+/*根据循环参数在一个事务中执行sql语句组（一个sql下多个cmd）
+func (m *TModel) bacthExecMap(se *TSql, sp []map[string]interface{}) error {
+	faygo.Debug("BacthExecMap parameters :", sp)
+	return transact(m.DB, func(tx *core.Tx) error {
+		for _, p := range sp {
+			////////////////////////////////
+			//循環每個sql定義
+			for _, cmd := range se.Cmds {
+				faygo.Debug("BacthExecMap sql:" + cmd.Sql)
+				_, err := tx.ExecMap(cmd.Sql, &p)
+				if err != nil {
+					return err
+				}
+			}
+			////////////////////////////////////
+		}
+		return nil
+	})
+}*/
+
+/*原来的之只能根据参数循环执行一个exec语句
 func (m *TModel) bacthExecMap(se *TSql, sp []map[string]interface{}) error {
 	faygo.Debug("BacthExecMap parameters :", sp)
 	return transact(m.DB, func(tx *core.Tx) error {
@@ -166,8 +227,54 @@ func (m *TModel) bacthExecMap(se *TSql, sp []map[string]interface{}) error {
 		return nil
 	})
 }
-
+*/
 //批量执行 BacthMultiExec、mp 是map[string][]map[string]interface{}参数,事务中依次执行
+func (m *TModel) bacthMultiExecMap(se *TSql, mp map[string][]map[string]interface{}) error {
+	// 如果执行sql的语句组使用每次循环使用单独的事务，规则如下：
+	// 比如有4个SQL ，其中 1，2使用同一个参数组则1，2组合在一起每次循环使用一个事务，多次循环多个事务
+	// ，3，4分别使用不同的参数组则各自也在不同的事务，规则同1，2
+	if se.Eachtran {
+		//根据参数循环
+		for key, sp := range mp {
+			for _, p := range sp {
+				transact(m.DB, func(tx *core.Tx) error {
+					//循環每個sql定義
+					for _, cmd := range se.Cmds {
+						//将使用相同参数的在一个事务执行
+						if cmd.Pin == key {
+							faygo.Debug("BacthMultiExecMap-EachTran :" + cmd.Sql)
+							if _, err := tx.ExecMap(cmd.Sql, &p); err != nil {
+								return err
+							}
+						}
+					}
+					return nil
+				})
+			}
+		}
+	} else { //原来的方式，在所有sql同一个事务中执行
+		return transact(m.DB, func(tx *core.Tx) error {
+			//循環每個sql定義
+			for _, cmd := range se.Cmds {
+				//循環其批量參數
+				if sp, ok := mp[cmd.Pin]; ok {
+					for _, p := range sp {
+						faygo.Debug("BacthMultiExecMap :" + cmd.Sql)
+						if _, err := tx.ExecMap(cmd.Sql, &p); err != nil {
+							return err
+						}
+					}
+				} else {
+					return errors.New("错误：传入的参数与SQL节点定义的sql.pin名称不匹配！")
+				}
+			}
+			return nil
+		})
+	}
+	return nil
+}
+
+/* 原来代码 批量执行 BacthMultiExec、mp 是map[string][]map[string]interface{}参数,在同一个事务中依次执行
 func (m *TModel) bacthMultiExecMap(se *TSql, mp map[string][]map[string]interface{}) error {
 	return transact(m.DB, func(tx *core.Tx) error {
 		//循環每個sql定義
@@ -187,7 +294,7 @@ func (m *TModel) bacthMultiExecMap(se *TSql, mp map[string][]map[string]interfac
 		return nil
 	})
 }
-
+*/
 /* / BinaryData的类型是blob/longblob
 func addData(db *sql.DB, data []byte) error {
     _, err := db.Exec("INSERT INTO MyTable(BinaryData) VALUES(?)", data)

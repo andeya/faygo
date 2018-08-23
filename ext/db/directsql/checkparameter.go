@@ -4,8 +4,10 @@
 * date   : 2016.12.13
 * desc   :
 * history :
+          2018.06.15:
+          - 默认参数增加直接设置值类型，DT_VALUE,格式{value} ，示例：{""},{0}
           2017.05.28
-		  - 增加主从表关联id的服务端处理。完成，未测试
+		  - 增加主从表关联id的服务端处理。
 */
 package directsql
 
@@ -121,6 +123,8 @@ func dealwithParameter(paras []*TSqlParameter, mp map[string]interface{}, ctx *f
 				mp[para.Name] = time.Now().Format("2006-01-02 15:04:05")
 			case DT_NOW_UNIX: //当前日期时间unix值 int64 now datetime
 				mp[para.Name] = time.Now().Unix()
+			case DT_VALUE: //直接值类型，将处理后的值赋值到参数值
+				mp[para.Name] = para.Defaultstr
 			case DT_CUSTOM: //通过RegAny注册的变量或函数
 				value, err := contextcall(para.Defaultstr, ctx)
 				//faygo.Debug("SQL Default parameter value:", value)

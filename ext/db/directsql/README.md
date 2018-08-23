@@ -1,9 +1,13 @@
 # directSQL 使用说明
 
 ## 升级:
-   增加两种类型的sql，处理二进制对象保存到数据库和从数据库获取
-   - getblob: ST_GETBLOB 获取BLOB (binary large object)，二进制大对象从数据库
-   - setblob: ST_SETBLOB 保存BLOB (binary large object)，二进制大对象到数据库
+     2018.08.22
+     sql节点配置增加 eachtran 属性，配置 batchexec、batchmultiexec类型生成的所有SQL是否一个事务中执行，默认为false，true的则每个批次循环在不同的事务。
+     batchexec 类型SQL支持配置多个sql    
+     2017.08
+    增加两种类型的sql，处理二进制对象保存到数据库和从数据库获取
+    - getblob: ST_GETBLOB 获取BLOB (binary large object)，二进制大对象从数据库
+    - setblob: ST_SETBLOB 保存BLOB (binary large object)，二进制大对象到数据库
    
 ## 简介
     directSQL通过配置sql映射文件，配置路由后可直接执行配置的sql并返回结果到客户端。
@@ -40,18 +44,24 @@
     [roots]
     biz=bizmodel  ; 比如： 系统根目录/bizmodel/plan/main.msql 访问url为 bos/biz/plan/main
     sys=sysmodel  ; 比如： 系统根目录/sysmodel/admin/users.msql 访问url为 bos/sys/admin/users `
-
+## SQL节点属性
+    <sql type=""  id=""  eachtran="false/true">
+       type=全局SQL类型
+       id= 此SQSL唯一标识（调用依据）
+       desc=此SQL说明
+       eachtran= 此节点（batchexec、batchmultiexec有效，其他类型无效）生成的所有SQL在一个事务中执行，默认为 false 
+                       true 则每个批次的SQL在一个事务中执行。     
+ 
 ## 全部SQL类型
     配置类型                      内部类型                          说明 
     - select                       ST_SELECT       Tsqltype = iota  //0=普通查询,只能配置一个查询语句返回一个结果集   
     - pagingselect                 ST_PAGINGSELECT                  //1=分页查询，配置一个总数sql语句，一个分页查询语句，返回总页数与一个结果集
-    - nestedselect                 ST_NESTEDSELECT                  //2=嵌套jsoin树---未实现---作废！！！
     - multiselect                  ST_MULTISELECT                   //3=多结果集查询，配置多个查询语句并返回多个结果集
     - exec/delete                  ST_EXEC                          //4=删除，可以配置多个sql语句，在一个事务中依次执行 
            insert                  ST_EXEC                          //  插入，可以配置多个sql语句，在一个事务中依次执行
            update                  ST_EXEC                          //  更新，可以配置多个sql语句，在一个事务中依次执行 
-    - batchexec/batchinsert        ST_BATCHEXEC                     //5=批量插入，配置一个sql，根据参数循环执行(单数据集批量插入)
-                batchupdate        ST_BATCHEXEC                     //  批量更新，配置一个sql，根据参数循环执行(单数据集批量更新)
+    - batchexec/batchinsert        ST_BATCHEXEC                     // 单个事务中执行 5=批量插入，配置多个sql，根据参数循环执行(单数据集批量插入)
+                batchupdate        ST_BATCHEXEC                     //  批量更新，配置多个sql，根据参数循环执行(单数据集批量更新)
     - batchmultiexec/batchcomplex  ST_BATCHMULTIEXEC                //6=批量复合SQL，配置多个sql(一般多数据集批量插入或更新)
     - getblob                      ST_GETBLOB                       //从数据库获取二进制内容
     - setblob                      ST_SETBLOB                       //保存二进制内容到数据库
@@ -68,7 +78,7 @@
     - batchexec(batchinsert/batchupdate)参数,简单批量json参数(数组)
         [{"id":"001","name":"aaaaa"},{"id":"002","name":"bbbbb"},{"id":"003","name":"ccc"}]
         分别循环数组中的 json对象调用配置的sql
-
+    -  
     - batchmultiexec/batchcomplexc参数,复杂批量json参数
         {"main":[{"id":"01","name":"aaaaa"},{"id":"002","name":"bbbbb"}],
         "sub1":[{"id":"0111","pid":"01","name":"sub11"},{"id":"0112","pid":"01","name":"sub12"}]
@@ -98,15 +108,16 @@
              - now: 当前服务器日期时间 
              - nowunix: 当前服务器日期时间 unix格式(64位整数)
              - parentid :父id，在SQL类型为batchcomplexc 的作为主从表（一主多从，主表只有一条记录）的从表的父id使用
-                             
-            默认参数取值扩展定义并使用
+             - {value} ：直接默认值，用{...}包裹的值直接作为参数默认值,例如 { },{0}
+             - 自注册函数取值默认值                
+                默认参数取值扩展定义并使用
                1）编写函数 参数必须为*faygo.Context:
                   func name(ctx *faygo.Context) interface{
                       ...
                   }
                2）注册函数
                   RegAny("name",func)
-               3）SQL默认参数配置实用，系统会自动解析调用
+               3）SQL默认参数配置，系统会自动解析调用
                 <parameters>
                     <parameter name="id" desc="用户id" type="string" required="true" maxlen="36" minlen="36" default="name" return="true"/>
                 </parameters>
@@ -121,7 +132,7 @@
        - cached : 是否缓存结果，0=不缓存 1=缓存，缓存的时间由cachetime确定（如果没有配置cachetime则自动为30分钟），只对 select，multiselect，pagingselect(第一页)有效
        - cachetime ：缓存有效时间，不配置或配置为0时 默认为directsql.ini的参数分钟，-1为一直有效，-2为一月，-3为一周，单位为分钟。 
     - 说明
-       - 缓存的key值用 执行请求的路径(/sys/home/select)， 参数名与参数值对作为suffix，进行确定换成值，对于同一个sql只缓存一次，就是第一次执行的参数的结果，其他的参数查询部缓存；对于没有参数的结果缓存suffix=nil  
+       - 缓存的key值用 执行请求的路径(/sys/home/select)， 参数名与参数值对作为suffix，进行确定换成值，对于同一个sql只缓存一次，就是第一次执行的参数的结果，其他的参数查询不缓存；对于没有参数的结果缓存suffix=nil  
 
 ## 完整示例
     ```<!-- id为本model的标识一般同文件名，database为xorm.ini中配置的数据库名称，为执行该配置文件sql的连接，空为默认数据库 -->
@@ -224,7 +235,7 @@
                 </parameters>
             </cmd>
         </sql>
-        <!-- JSON参数示例：{data:[{'id':'123','name':'xxx'},{},...]} -->
+        <!-- JSON参数示例：  [{"id":"001","name":"aaaaa"},{"id":"002","name":"bbbbb"},{"id":"003","name":"ccc"}] -->
         <sql type="batchinsert" id="batchinsert" desc="批量新增，json传来多条数据，一个批次插入，要么全部成功要么全部失败">
             <cmd in="" out="">
                 <![CDATA[ INSERT INTO sys_user(id,code,cnname,pwd,nick) VALUES(?id,?code,?cnname,?pwd,?nick)            ]]>
@@ -233,13 +244,13 @@
                 </parameters>
             </cmd>
         </sql>
-        <!-- JSON参数示例：{data:[{'id':'123','name':'xxx'},{},...]} -->
+        <!-- JSON参数示例：[{"id":"001","name":"aaaaa"},{"id":"002","name":"bbbbb"},{"id":"003","name":"ccc"}]-->
         <sql type="batchupdate" id="bacthsave" desc="批量更新,json传来多条数据，一个批次更新，要么全部成功要么全部失败">
             <cmd in="" out="">
                 <![CDATA[   INSERT INTO sys_user(id,code,cnname,pwd,nick) VALUES(?id,?code,?cnname,?pwd,?nick)     ]]>
             </cmd>
         </sql>
-            <!-- JSON参数示例：{data:[{'id':'001'},{'id':'002'},{'id':'004'},...]}  -->
+            <!-- JSON参数示例：  [{"id":"001","name":"aaaaa"},{"id":"002","name":"bbbbb"},{"id":"003","name":"ccc"}]  -->
         <sql type="batchdelete" id="delete" desc="批量删除，根据参数多次执行该语句">
             <cmd in="" out="">
                 <![CDATA[   DELETE FROM sys_user where code=?code   ]]>

@@ -4,6 +4,8 @@
 * date   : 2016.12.13
 * desc   :
 * history:
+           2018.08.22  sql节点配置增加 eachtran 属性，配置 batchexec、batchmultiexec类型生成的所有SQL是否一个事务中执行，默认为false，true的话则每个批次循环在不同的事务。
+           2018.06.15 默认参数增加直接设置值类型，DT_VALUE,格式{value} ，示例：{""},{0}
 		   2018.03.15 修复参数默认值未定判断处理bug
 		     	default:
 				原 	if len(strings.TrimSpace(para.Paratypestr)) > 0 {
@@ -81,6 +83,8 @@ type TSql struct {
 	Cmds       []*TCmd  `xml:"cmd"`            // sqlcmd(sqltype为分页查询时的计数SQL放第一个，结果SQL放第二个)
 	Cached     bool     `xml:"cached,attr"`    //是否启用查询数据缓存功能
 	Cachetime  int      `xml:"cachetime,attr"` //默认缓存的时间，单位为分钟，-1为一直有效，-2为一月，-3为一周 -4为一天，单位为分钟
+	Eachtran   bool     `xml:"eachtran,attr"`  //对于 batchexec、batchmultiexec类型SQL 如果为 false则所有SQL在一个事务执行，true则每一个批次在一个事务中
+
 }
 
 //TCmd  <Select/>等节点的下级节点<sql />对应结构
@@ -149,8 +153,9 @@ const (
 	DT_NOWDATE                         //2=当前日期 now date
 	DT_NOWDATETIME                     //3=当前日期时间 now datetime
 	DT_NOW_UNIX                        //4=当前时间的unix值 int64 now date
-	DT_CUSTOM                          //5=自定义，采用注册自定义变量实现
+	DT_CUSTOM                          //5=自定义变量，采用注册自定义函数获取变量实现
 	DT_PARENTID                        //6=关联的主表的Id的值
+	DT_VALUE                           //7=直接设置默认值，比如字符串设置{""},数值设置 {0} 用大括号括起来
 )
 
 //---------------------------------------------------------------------------------------------------
@@ -358,7 +363,16 @@ func (ms *TModels) parseTModel(msqlfile string) (*TModel, error) {
 					para.Default = DT_PARENTID //主表的id的值 （parentid value）
 				default:
 					if len(strings.TrimSpace(para.Defaultstr)) > 0 {
-						para.Default = DT_CUSTOM //如果参数的默认值来源标识不为空则说明是通过自定义函数注册的默认值
+						//DT_VALUE 直接值类型 {value}
+						if strings.HasPrefix(para.Defaultstr, "{") && strings.HasSuffix(para.Defaultstr, "}") {
+							para.Default = DT_VALUE
+							//同时将值的前后缀去掉 {value}=>value
+							para.Defaultstr = strings.TrimRight(strings.TrimLeft(para.Defaultstr, "{"), "}")
+						} else {
+							//DT_CUSTOM自定义注册函数值类型
+							para.Default = DT_CUSTOM //如果参数的默认值来源标识不为空且不是{vaule}则说明是通过自定义函数注册的默认值
+						}
+
 					} else {
 						para.Default = DT_UNDEFINED //未定义默认值
 					}
