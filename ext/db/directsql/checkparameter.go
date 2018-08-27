@@ -117,6 +117,10 @@ func dealwithParameter(paras []*TSqlParameter, mp map[string]interface{}, ctx *f
 			switch para.Default {
 			case DT_UUID: //uuid
 				mp[para.Name] = uuid.New().String()
+			case DT_SHORTUUID: //
+				mp[para.Name] = UUIDService().GetShortStrId()
+			case DT_INT64UUID:
+				mp[para.Name] = UUIDService().GetInt64Id()
 			case DT_NOWDATE: // now date
 				mp[para.Name] = time.Now().Format("2006-01-02")
 			case DT_NOWDATETIME: //now(date +time)

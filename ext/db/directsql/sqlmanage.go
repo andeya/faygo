@@ -43,14 +43,16 @@ const MSCONFIGFILE = "./config/directsql.ini"
 
 // 全部业务SQL路由表,不根据目录分层次，直接放在map sqlmodels中，key=带路径不带扩展名的文件名
 type TModels struct {
-	roots     map[string]string  //需要载入的根目录(可以多个)-短名=实际路径名
-	modelsqls map[string]*TModel //全部定义模型对象
-	extension string             //模型定义文件的扩展名(默认为.msql)
-	lazyload  bool               //true ／ false 配置项  true 则一开始不全部加载，只根据第一次请求才加载然后缓存，false＝一开始就根据配置的roots目录全部加载
-	loadLock  sync.RWMutex       //读写锁
-	watcher   *fsnotify.Watcher  //监控文件变化的wather
-	cached    bool               //是否启用查询数据缓存功能，启用则配置sql中配置属性cached=true 才有效，否则一律不缓存
-	cachetime int                //默认缓存的时间，如果使用缓存并且未配置缓存时间则使用该默认时间，单位为分钟，-1为一直有效，-2为一月，-3为一周 -4为一天，单位为分钟
+	roots          map[string]string  //需要载入的根目录(可以多个)-短名=实际路径名
+	modelsqls      map[string]*TModel //全部定义模型对象
+	extension      string             //模型定义文件的扩展名(默认为.msql)
+	lazyload       bool               //true ／ false 配置项  true 则一开始不全部加载，只根据第一次请求才加载然后缓存，false＝一开始就根据配置的roots目录全部加载
+	loadLock       sync.RWMutex       //读写锁
+	watcher        *fsnotify.Watcher  //监控文件变化的wather
+	cached         bool               //是否启用查询数据缓存功能，启用则配置sql中配置属性cached=true 才有效，否则一律不缓存
+	cachetime      int                //默认缓存的时间，如果使用缓存并且未配置缓存时间则使用该默认时间，单位为分钟，-1为一直有效，-2为一月，-3为一周 -4为一天，单位为分钟
+	servernodeid   int64              //服务器节点id（必须为整数）：必须介于0~63之间
+	starttimestamp int64              //生成shortuuit，int64uuid号码开始时间戳，必须是当前时间的过往日期，一旦使用后绝对不能修改，否则会产生重号！！！
 }
 
 //全局所有业务模型对象
@@ -149,13 +151,15 @@ type TDefaultType int
 
 const (
 	DT_UNDEFINED   TDefaultType = iota //0=未定义，不处理默认值
-	DT_UUID                            //1=uuid
-	DT_NOWDATE                         //2=当前日期 now date
-	DT_NOWDATETIME                     //3=当前日期时间 now datetime
-	DT_NOW_UNIX                        //4=当前时间的unix值 int64 now date
-	DT_CUSTOM                          //5=自定义变量，采用注册自定义函数获取变量实现
-	DT_PARENTID                        //6=关联的主表的Id的值
-	DT_VALUE                           //7=直接设置默认值，比如字符串设置{""},数值设置 {0} 用大括号括起来
+	DT_UUID                            //uuid
+	DT_INT64UUID                       // 64位整数长度的唯一id (具体说明见 readme)
+	DT_SHORTUUID                       //短字符串的唯一id（将int64uuid转为36进制的值（10个数字+26个字母组成的））
+	DT_NOWDATE                         //当前日期 now date
+	DT_NOWDATETIME                     //当前日期时间 now datetime
+	DT_NOW_UNIX                        //当前时间的unix值 int64 now date
+	DT_CUSTOM                          //自定义变量，采用注册自定义函数获取变量实现
+	DT_PARENTID                        //关联的主表的Id的值
+	DT_VALUE                           //直接设置默认值，比如字符串设置{""},数值设置 {0} 用大括号括起来
 )
 
 //---------------------------------------------------------------------------------------------------
@@ -165,7 +169,7 @@ func init() {
 
 }
 
-//读入全部模型
+//首先读取配置参数，读入全部模型
 func (ms *TModels) loadTModels() {
 	ms.loadLock.Lock()
 	defer ms.loadLock.Unlock()
@@ -178,6 +182,9 @@ func (ms *TModels) loadTModels() {
 	//是否缓存与缓存时间
 	ms.cached = cfg.Section("").Key("cached").MustBool(false)
 	ms.cachetime = cfg.Section("").Key("cachetime").MustInt(30)
+	//SQL参数默认值 shortuuit，int64uuid的配置参数
+	ms.servernodeid = cfg.Section("uuid").Key("servernodeid").MustInt64(0)
+	ms.starttimestamp = cfg.Section("uuid").Key("starttimestamp").MustInt64(1535252860333)
 
 	//读取ModelSQL文件的根目录
 	roots, err := cfg.GetSection("roots")
@@ -353,12 +360,16 @@ func (ms *TModels) parseTModel(msqlfile string) (*TModel, error) {
 				switch para.Defaultstr {
 				case "uuid":
 					para.Default = DT_UUID //1=uuid
+				case "shortuuid":
+					para.Default = DT_SHORTUUID //短字符uuid
+				case "int64uuid":
+					para.Default = DT_INT64UUID //int64唯一id
 				case "nowdate":
-					para.Default = DT_NOWDATE //12=当前日期 now date
+					para.Default = DT_NOWDATE //当前日期 now date
 				case "now":
 					para.Default = DT_NOWDATETIME //当前时间
 				case "nowunix":
-					para.Default = DT_NOW_UNIX //=当前日期时间unix值 int64 now datetime
+					para.Default = DT_NOW_UNIX //当前日期时间unix值 int64 now datetime
 				case "parentid":
 					para.Default = DT_PARENTID //主表的id的值 （parentid value）
 				default:
