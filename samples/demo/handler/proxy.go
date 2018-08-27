@@ -14,7 +14,7 @@ func (Search) Doc() faygo.Doc {
 	return faygo.Doc{
 		Note:   "reverse proxy",
 		Return: nil,
-		Params: []faygo.ParamInfo{
+		MoreParams: []faygo.ParamInfo{
 			{
 				Name:     "q",
 				In:       "query",

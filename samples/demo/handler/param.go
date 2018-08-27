@@ -50,7 +50,7 @@ func (p *Param) Doc() faygo.Doc {
 			Code: 1,
 			Info: "success",
 		},
-		Params: []faygo.ParamInfo{
+		MoreParams: []faygo.ParamInfo{
 			{
 				Name:  "additional",
 				In:    "path",

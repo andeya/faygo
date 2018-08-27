@@ -63,7 +63,8 @@ type (
 	Doc struct {
 		Note   string      `json:"note" xml:"note"`
 		Return interface{} `json:"return,omitempty" xml:"return,omitempty"`
-		Params []ParamInfo `json:"params,omitempty" xml:"params,omitempty"`
+		// MoreParams extra added parameters definition
+		MoreParams []ParamInfo `json:"more_params,omitempty" xml:"more_params,omitempty"`
 	}
 	// Notes implementation notes of a response
 	Notes struct {
@@ -108,7 +109,7 @@ var (
 var _ APIDoc = new(apiHandler)
 
 // ToAPIHandler tries converts it to an *apiHandler.
-func ToAPIHandler(handler Handler) (*apiHandler, error) {
+func ToAPIHandler(handler Handler, noDefaultParams bool) (*apiHandler, error) {
 	v := reflect.Indirect(reflect.ValueOf(handler))
 	if v.Kind() != reflect.Struct {
 		return nil, ErrNotStructPtr
@@ -120,7 +121,7 @@ func ToAPIHandler(handler Handler) (*apiHandler, error) {
 		bodydecoder = h.Decode
 	}
 
-	paramsAPI, err := apiware.NewParamsAPI(structPointer, global.paramNameMapper, bodydecoder)
+	paramsAPI, err := apiware.NewParamsAPI(structPointer, global.paramNameMapper, bodydecoder, !noDefaultParams)
 	if err != nil {
 		return nil, err
 	}
@@ -135,12 +136,12 @@ func ToAPIHandler(handler Handler) (*apiHandler, error) {
 }
 
 // IsHandlerWithoutPath verifies that the Handler is an HandlerWithoutPath.
-func IsHandlerWithoutPath(handler Handler) bool {
+func IsHandlerWithoutPath(handler Handler, noDefaultParams bool) bool {
 	v := reflect.Indirect(reflect.ValueOf(handler))
 	if v.Kind() != reflect.Struct {
 		return true
 	}
-	paramsAPI, err := apiware.NewParamsAPI(v.Addr().Interface(), nil, nil)
+	paramsAPI, err := apiware.NewParamsAPI(v.Addr().Interface(), nil, nil, !noDefaultParams)
 	if err != nil {
 		return true
 	}
@@ -181,15 +182,15 @@ func (h *apiHandler) Doc() Doc {
 			Desc:     param.Description(),
 			Model:    param.Raw(),
 		}
-		for i, p := range doc.Params {
+		for i, p := range doc.MoreParams {
 			if p.Name == info.Name {
-				doc.Params[i] = info
+				doc.MoreParams[i] = info
 				had = true
 				break
 			}
 		}
 		if !had {
-			doc.Params = append(doc.Params, info)
+			doc.MoreParams = append(doc.MoreParams, info)
 		}
 	}
 	return doc

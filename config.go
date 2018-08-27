@@ -92,9 +92,10 @@ type (
 		HandleMethodNotAllowed bool `ini:"handle_method_not_allowed" comment:"Returns 405 if the requested method does not exist, otherwise returns 404"`
 		// If enabled, the router automatically replies to OPTIONS requests.
 		// Custom OPTIONS handlers take priority over automatic replies.
-		HandleOPTIONS bool `ini:"handle_options" comment:"Automatic response OPTIONS request, you can set the default Handler in faygo"`
-		DefaultUpload bool `ini:"default_upload" comment:"Automatically register the default router: /upload/*filepath"`
-		DefaultStatic bool `ini:"default_static" comment:"Automatically register the default router: /static/*filepath"`
+		HandleOPTIONS   bool `ini:"handle_options" comment:"Automatic response OPTIONS request, you can set the default Handler in faygo"`
+		NoDefaultParams bool `ini:"no_default_params" comment:"Don't assign default parameter values based on initial value of the routing handler"`
+		DefaultUpload   bool `ini:"default_upload" comment:"Automatically register the default router: /upload/*filepath"`
+		DefaultStatic   bool `ini:"default_static" comment:"Automatically register the default router: /static/*filepath"`
 	}
 	// GzipConfig is the config about gzip
 	GzipConfig struct {

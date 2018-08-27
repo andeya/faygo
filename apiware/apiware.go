@@ -26,6 +26,7 @@ type (
 		ParamNameMapper
 		Pathdecoder
 		Bodydecoder
+		UseDefaultValues bool
 	}
 
 	// Pathdecoder parses path params function, return pathParams of KV type
@@ -36,11 +37,12 @@ type (
 // Parse and store the struct object, requires a struct pointer,
 // if `paramNameMapper` is nil, `paramNameMapper=toSnake`,
 // if `bodydecoder` is nil, `bodydecoder=bodyJONS`,
-func New(pathdecoder Pathdecoder, bodydecoder Bodydecoder, paramNameMapper ParamNameMapper) *Apiware {
+func New(pathdecoder Pathdecoder, bodydecoder Bodydecoder, paramNameMapper ParamNameMapper, useDefaultValues bool) *Apiware {
 	return &Apiware{
-		ParamNameMapper: paramNameMapper,
-		Pathdecoder:     pathdecoder,
-		Bodydecoder:     bodydecoder,
+		ParamNameMapper:  paramNameMapper,
+		Pathdecoder:      pathdecoder,
+		Bodydecoder:      bodydecoder,
+		UseDefaultValues: useDefaultValues,
 	}
 }
 
@@ -49,7 +51,7 @@ func New(pathdecoder Pathdecoder, bodydecoder Bodydecoder, paramNameMapper Param
 func (a *Apiware) Register(structPointers ...interface{}) error {
 	var errStr string
 	for _, obj := range structPointers {
-		err := Register(obj, a.ParamNameMapper, a.Bodydecoder)
+		err := Register(obj, a.ParamNameMapper, a.Bodydecoder, a.UseDefaultValues)
 		if err != nil {
 			errStr += err.Error() + "\n"
 		}

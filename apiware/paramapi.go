@@ -75,6 +75,7 @@ func NewParamsAPI(
 	structPointer interface{},
 	paramNameMapper ParamNameMapper,
 	bodydecoder Bodydecoder,
+	useDefaultValues bool,
 ) (
 	*ParamsAPI,
 	error,
@@ -109,7 +110,7 @@ func NewParamsAPI(
 		return nil, err
 	}
 
-	if !reflect.DeepEqual(reflect.New(paramsAPI.structType).Interface(), paramsAPI.rawStructPointer) {
+	if useDefaultValues && !reflect.DeepEqual(reflect.New(paramsAPI.structType).Interface(), paramsAPI.rawStructPointer) {
 		buf := bytes.NewBuffer(nil)
 		err = gob.NewEncoder(buf).EncodeValue(v)
 		if err == nil {
@@ -128,8 +129,9 @@ func Register(
 	structPointer interface{},
 	paramNameMapper ParamNameMapper,
 	bodydecoder Bodydecoder,
+	useDefaultValues bool,
 ) error {
-	_, err := NewParamsAPI(structPointer, paramNameMapper, bodydecoder)
+	_, err := NewParamsAPI(structPointer, paramNameMapper, bodydecoder, useDefaultValues)
 	return err
 }
 

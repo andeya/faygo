@@ -311,7 +311,7 @@ func (mux *MuxAPI) Use(handlers ...Handler) *MuxAPI {
 			errStr := "For using middleware, handler cannot be nil:" + reflect.TypeOf(h).String()
 			mux.frame.Log().Panicf("%s\n", errStr)
 		}
-		if !IsHandlerWithoutPath(h) {
+		if !IsHandlerWithoutPath(h, mux.frame.config.Router.NoDefaultParams) {
 			errStr := "For using middleware, the handlers can not bind the path parameter:" + reflect.TypeOf(h).String()
 			mux.frame.Log().Panicf("%s\n", errStr)
 		}
@@ -328,7 +328,7 @@ func (mux *MuxAPI) comb() {
 	mux.paramInfos = mux.paramInfos[:0]
 	mux.notes = mux.notes[:0]
 	for i, handler := range mux.handlers {
-		h, err := ToAPIHandler(handler)
+		h, err := ToAPIHandler(handler, mux.frame.config.Router.NoDefaultParams)
 		if err != nil {
 			if err == ErrNotStructPtr || err == ErrNoParamHandler {
 				// Get the information for apidoc
@@ -337,7 +337,7 @@ func (mux *MuxAPI) comb() {
 					if docinfo.Note != "" || docinfo.Return != nil {
 						mux.notes = append(mux.notes, Notes{Note: docinfo.Note, Return: docinfo.Return})
 					}
-					for _, param := range docinfo.Params {
+					for _, param := range docinfo.MoreParams {
 						// The path parameter must be a required parameter.
 						if param.In == "path" {
 							param.Required = true
@@ -359,7 +359,7 @@ func (mux *MuxAPI) comb() {
 		if docinfo.Note != "" || docinfo.Return != nil {
 			mux.notes = append(mux.notes, Notes{Note: docinfo.Note, Return: docinfo.Return})
 		}
-		for _, param := range docinfo.Params {
+		for _, param := range docinfo.MoreParams {
 			// The path parameter must be a required parameter.
 			if param.In == "path" {
 				param.Required = true

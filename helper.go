@@ -101,9 +101,9 @@ func WrapDoc(fn HandlerFunc, note string, ret interface{}, params ...ParamInfo) 
 	return &docWrap{
 		Handler: fn,
 		doc: Doc{
-			Note:   note,
-			Return: ret,
-			Params: params,
+			Note:       note,
+			Return:     ret,
+			MoreParams: params,
 		},
 	}
 }
