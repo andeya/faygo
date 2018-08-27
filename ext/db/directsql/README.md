@@ -1,6 +1,10 @@
 # directSQL 使用说明
 
-## 升级:
+## 升级
+   2018.08.26
+      <parameter>的 default 增加2个默认参数
+             - int64uuid ：64位整数长度的唯一id （通过配置机器节点支持分布式唯一id生成）
+             - shortuuid ：短字符串的唯一id（将int64uuid转为36进制的值（10个数字+26个字母组成的））
      2018.08.22
      sql节点配置增加 eachtran 属性，配置 batchexec、batchmultiexec类型生成的所有SQL是否一个事务中执行，默认为false，true的则每个批次循环在不同的事务。
      batchexec 类型SQL支持配置多个sql    
@@ -103,7 +107,9 @@
          - parentid 是否是作为parentid 使用，0或不配置则不作为父id使用，配置为1则作为从表的与主表关联的父id使用，在SQL类型为batchcomplexc 的作为主从表（一主多从，主表只有一条记录）的从表的父id使用，从表的 SQL参数中需要配置 default类的取值为 parentid，则系统自动用主表的这个值设置到从表的这个参数值中  
          - default: 服务端默认值：如果存在服务端默认值定义则客户端传入参数时可以不传由服务端处理并不执行验证规则（如果客户端传入了则使用客户端的值，并执行服务端的规则验证），
             默认参数取值如下：
-             - uuid: 生成新的uuid
+             - uuid: 生成新的uuid(36位全球唯一id)
+             - int64uuid ：64位整数长度的唯一id 
+             - shortuuid ：短字符串的唯一id（将int64uuid转为36进制的值（10个数字+26个字母组成的））
              - nowdate: 当前服务器日期
              - now: 当前服务器日期时间 
              - nowunix: 当前服务器日期时间 unix格式(64位整数)
