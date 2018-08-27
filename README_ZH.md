@@ -302,6 +302,7 @@ redirect_trailing_slash   = true                 # 当前请求的URL含`/`后�
 redirect_fixed_path       = true                 # 自动修复URL，如`/FOO` `/..//Foo`均被跳转至`/foo`（依赖redirect_trailing_slash=true）
 handle_method_not_allowed = true                 # 若开启，当前请求方法不存在时返回405，否则返回404
 handle_options            = true                 # 若开启，自动应答OPTIONS类请求，可在Faygo中设置默认Handler
+no_default_params         = false                # 若开启，不使用handler参数初始值作为请求参数默认值
 default_upload            = true                 # 自动注册默认静态路由: /upload/*filepath
 default_static            = true                 # 自动注册默认静态路由: /static/*filepath
 

@@ -302,6 +302,7 @@ redirect_trailing_slash   = true                 # Automatic redirection (for ex
 redirect_fixed_path       = true                 # Tries to fix the current request path, if no handle is registered for it
 handle_method_not_allowed = true                 # Returns 405 if the requested method does not exist, otherwise returns 404
 handle_options            = true                 # Automatic response OPTIONS request, you can set the default Handler in Faygo
+no_default_params         = false                # If true, don't assign default request parameter values based on initial parameter values of the routing handler
 default_upload            = true                 # Automatically register the default router: /upload/*filepath
 default_static            = true                 # Automatically register the default router: /static/*filepath
 
