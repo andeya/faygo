@@ -433,11 +433,20 @@ float64 |  []float64 |
 -----------------|---------------|-----------------
 盯房              | App           | https://www.df-house.com
 e交易             | App           | https://fir.im/ejy
-Seven A Jewelry  | Web           | http://sevenajewelry.com
 玩付              | App           | https://fir.im/eqb
-杰运好车          | App            | https://www.jieyunhaoche.com/appdown
+杰运好车          | App            | https://itunes.apple.com/cn/app/%E6%9D%B0%E8%BF%90%E5%A5%BD%E8%BD%A6/id1301132479?mt=8
 
 *注：按拼音字母排序*
+
+## 企业用户
+
+<a href="https://tech.pingan.com/index.html"><img src="http://pa-tech.hirede.com/templates/pa-tech/Images/logo.png" height="50" alt="平安科技"/></a>
+<br/>
+<a href="https://www.df-house.com/"><img src="https://www.df-house.com/dfhouse/img/logo.png" height="50" alt="杭州盯房科技有限公司"/></a>
+&nbsp;&nbsp;
+<a href="http://www.zlgjjt.com/" style="background-color:block"><img src="http://company.zhaopin.com/CompanyLogo/20160314/524FDDEA17D14FAEB704AD40E5179988.jpg" height="70" alt="众联网游"/></a>
+&nbsp;&nbsp;
+<a href="https://www.phonelee.com/"><img src="http://company.zhaopin.com/CompanyLogo/20170522/1DE0ABD220F1C4A253751F78B35E32F4.jpg" height="70" alt="丰利金服"/></a>
 
 ## 开源协议
 
