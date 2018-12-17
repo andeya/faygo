@@ -280,6 +280,7 @@ func NewDefaultConfig() *Config {
 			Whitelist: []string{
 				"127.*",
 				"192.168.*",
+				"10.*",
 			},
 		},
 	}
