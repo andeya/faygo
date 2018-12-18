@@ -4,7 +4,10 @@
 * date   : 2016.06.13
 * desc   : 关联关系全部通Id进行关联
 * history :
-           2017.03.22
+
+		 -2018.12.18
+		    -配置参数增加，批量SQL的事务处理：全部一个事务还是分开不同的事务中。
+         - 2017.03.22
 			-增加两种类型的sql，处理二进制对象保存到数据库和从数据库获取：
          	 ST_GETBLOB  //10 获取BLOB (binary large object)，二进制大对象从数据库
 	         ST_SETBLOB  //11 保存BLOB (binary large object)，二进制大对象到数据库
@@ -230,7 +233,7 @@ func (m *TModel) bacthExecMap(se *TSql, sp []map[string]interface{}) error {
 */
 //批量执行 BacthMultiExec、mp 是map[string][]map[string]interface{}参数,事务中依次执行
 func (m *TModel) bacthMultiExecMap(se *TSql, mp map[string][]map[string]interface{}) error {
-	faygo.Debug("BacthMultiExecMap parameters :", mp)
+	faygo.Debug("BacthMultiExecMap parameters : ", mp)
 	// 如果执行sql的语句组使用每次循环使用单独的事务，规则如下：
 	// 比如有4个SQL ，其中 1，2使用同一个参数组则1，2组合在一起每次循环使用一个事务，多次循环多个事务
 	// ，3，4分别使用不同的参数组则各自也在不同的事务，规则同1，2
