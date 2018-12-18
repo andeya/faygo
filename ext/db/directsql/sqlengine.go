@@ -230,6 +230,7 @@ func (m *TModel) bacthExecMap(se *TSql, sp []map[string]interface{}) error {
 */
 //批量执行 BacthMultiExec、mp 是map[string][]map[string]interface{}参数,事务中依次执行
 func (m *TModel) bacthMultiExecMap(se *TSql, mp map[string][]map[string]interface{}) error {
+	faygo.Debug("BacthMultiExecMap parameters :", mp)
 	// 如果执行sql的语句组使用每次循环使用单独的事务，规则如下：
 	// 比如有4个SQL ，其中 1，2使用同一个参数组则1，2组合在一起每次循环使用一个事务，多次循环多个事务
 	// ，3，4分别使用不同的参数组则各自也在不同的事务，规则同1，2
