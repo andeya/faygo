@@ -18,6 +18,8 @@ import (
 	"crypto/aes"
 	"encoding/json"
 	"testing"
+
+	"github.com/henrylee2cn/goutil"
 )
 
 func Test_gob(t *testing.T) {
@@ -53,7 +55,7 @@ type User struct {
 }
 
 func TestGenerate(t *testing.T) {
-	str := generateRandomKey(20)
+	str := goutil.RandomBytes(20)
 	if len(str) != 20 {
 		t.Fatal("generate length is not equal to 20")
 	}
@@ -61,12 +63,12 @@ func TestGenerate(t *testing.T) {
 
 func TestCookieEncodeDecode(t *testing.T) {
 	hashKey := "testhashKey"
-	blockkey := generateRandomKey(16)
+	blockkey := goutil.RandomBytes(16)
 	block, err := aes.NewCipher(blockkey)
 	if err != nil {
 		t.Fatal("NewCipher:", err)
 	}
-	securityName := string(generateRandomKey(20))
+	securityName := string(goutil.RandomBytes(20))
 	val := make(map[interface{}]interface{})
 	val["name"] = "astaxie"
 	val["gender"] = "male"
