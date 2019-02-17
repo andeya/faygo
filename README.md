@@ -72,17 +72,17 @@ HTTPS/HTTP2(Let's Encrypt TLS on UNIX socket) | `unix_letsencrypt`
 HTTP(UNIX socket)                             | `unix_http`
 HTTPS/HTTP2(TLS on UNIX socket)               | `unix_https`
 
-- Support single-service & single-listener, single-service & multi-listener, multi-service & multi-listener and so on. The config of multiple services is independent of each other.
-- The high-performance router based on `httprouter` supports both chain and tree registration styles; supports flexible static file router (such as DirFS, RenderFS, MarkdownFS, etc.).
-- Support graceful shutdown and rebooting, provide fay tools which has new projects, hot compilation , meta programming function.
-- Use the most powerful `pongo2` as the HTML rendering engine.
-- Support near-LRU memory caching. (mainly used for static file cache)
-- Support cross-platform color log system, and has two output interface(console and file).
-- Support session management.(If you use a persistent storage engine, you must use gob.Register() to register the relevant custom type before starting the service)
-- Support global gzip compression config.
-- Support XSRF security filtering.
-- Most features try to use simple ini configs to avoid unnecessary recompilation, and these profiles can be automatically assigned default values.
-- Provide `gorm`, ` xorm`, `sqlx`, ` directSQL`, `Websocket`, ` ini`, `http client` and many other commonly used expansion packages.
+- Support single-service & single-listener, single-service & multi-listener, multi-service & multi-listener and so on. The config of multiple services is independent of each other
+- The high-performance router based on `httprouter` supports both chain and tree registration styles; supports flexible static file router (such as DirFS, RenderFS, MarkdownFS, etc.)
+- Support graceful shutdown and rebooting, provide fay tools which has new projects, hot compilation , meta programming function
+- Use the most powerful `pongo2` as the HTML rendering engine
+- Support near-LRU memory caching (mainly used for static file cache)
+- Support cross-platform color log system, and has two output interface(console and file)
+- Support session management (If you use a persistent storage engine, you must use gob.Register() to register the relevant custom type before starting the service)
+- Support global gzip compression config
+- Support XSRF security filtering
+- Most features try to use simple ini configs to avoid unnecessary recompilation, and these profiles can be automatically assigned default values
+- Provide `gorm`, ` xorm`, `sqlx`, ` directSQL`, `Websocket`, ` ini`, `http client` and many other commonly used expansion packages
 
 ![faygo handler multi-usage](https://github.com/henrylee2cn/faygo/raw/master/doc/MultiUsage.png)
 
