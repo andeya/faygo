@@ -38,6 +38,7 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/henrylee2cn/faygo"
 	"github.com/henrylee2cn/faygo/session"
 
 	"github.com/garyburd/redigo/redis"
@@ -100,6 +101,7 @@ func (rs *SessionStore) SessionID() string {
 func (rs *SessionStore) SessionRelease(w http.ResponseWriter) {
 	b, err := session.EncodeGob(rs.values)
 	if err != nil {
+		faygo.Errorf("session release fail: %s", err.Error())
 		return
 	}
 	c := rs.p.Get()
