@@ -78,7 +78,7 @@ HTTPS/HTTP2(TLS on UNIX socket)               | `unix_https`
 - 采用最强大的 `pongo2` 作为HTML渲染引擎
 - 提供近似LRU的文件缓存功能，主要用途是静态文件缓存
 - 跨平台的彩色日志系统，且同时支持console和file两种输出形式（可以同时使用）
-- 提供Session管理功能
+- 提供Session管理功能（如使用持久化存储引擎，须在启动服务前使用gob.Register()注册相关的自定义类型）
 - 支持Gzip全局配置
 - 提供XSRF跨站请求伪造安全过滤
 - 大多数功能尽量使用简洁的ini进行配置来避免不必要的重新编译，并且这些配置文件支持自动补填默认值

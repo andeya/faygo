@@ -62,6 +62,7 @@ Then in you web app init the global session manager
 			go globalSessions.GC()
 		}
 
+* NOTE: If you use a persistent storage engine, you must use gob.Register() to register the relevant custom type before starting the service!
 
 Finally in the handlerfunc you can use it like this
 

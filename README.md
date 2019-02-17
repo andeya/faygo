@@ -78,7 +78,7 @@ HTTPS/HTTP2(TLS on UNIX socket)               | `unix_https`
 - Use the most powerful `pongo2` as the HTML rendering engine.
 - Support near-LRU memory caching. (mainly used for static file cache)
 - Support cross-platform color log system, and has two output interface(console and file).
-- Support session management.
+- Support session management.(If you use a persistent storage engine, you must use gob.Register() to register the relevant custom type before starting the service)
 - Support global gzip compression config.
 - Support XSRF security filtering.
 - Most features try to use simple ini configs to avoid unnecessary recompilation, and these profiles can be automatically assigned default values.
