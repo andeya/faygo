@@ -231,7 +231,7 @@ func (ctx *Context) getSessionStore() (session.Store, error) {
 // SetSession puts value into session.
 func (ctx *Context) SetSession(key interface{}, value interface{}) {
 	if _, err := ctx.startSession(); err != nil {
-		ctx.Log().Warning(err.Error())
+		ctx.Log().Warningf("start session fail: %s", err.Error())
 		return
 	}
 	ctx.curSession.Set(key, value)
