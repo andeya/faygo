@@ -39,6 +39,7 @@ import (
 
 	couchbase "github.com/couchbase/go-couchbase"
 
+	"github.com/henrylee2cn/faygo"
 	"github.com/henrylee2cn/faygo/session"
 )
 
@@ -107,6 +108,7 @@ func (cs *SessionStore) SessionRelease(w http.ResponseWriter) {
 
 	bo, err := session.EncodeGob(cs.values)
 	if err != nil {
+		faygo.Errorf("session release fail: %s", err.Error())
 		return
 	}
 

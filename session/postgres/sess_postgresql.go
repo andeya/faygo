@@ -56,9 +56,11 @@ import (
 	"sync"
 	"time"
 
-	"github.com/henrylee2cn/faygo/session"
 	// import postgresql Driver
 	_ "github.com/lib/pq"
+
+	"github.com/henrylee2cn/faygo"
+	"github.com/henrylee2cn/faygo/session"
 )
 
 var postgresqlpder = &Provider{}
@@ -117,6 +119,7 @@ func (st *SessionStore) SessionRelease(w http.ResponseWriter) {
 	defer st.c.Close()
 	b, err := session.EncodeGob(st.values)
 	if err != nil {
+		faygo.Errorf("session release fail: %s", err.Error())
 		return
 	}
 	st.c.Exec("UPDATE session set session_data=$1, session_expiry=$2 where session_key=$3",

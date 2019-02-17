@@ -7,9 +7,11 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/henrylee2cn/faygo/session"
 	"github.com/siddontang/ledisdb/config"
 	"github.com/siddontang/ledisdb/ledis"
+
+	"github.com/henrylee2cn/faygo"
+	"github.com/henrylee2cn/faygo/session"
 )
 
 var ledispder = &Provider{}
@@ -66,6 +68,7 @@ func (ls *SessionStore) SessionID() string {
 func (ls *SessionStore) SessionRelease(w http.ResponseWriter) {
 	b, err := session.EncodeGob(ls.values)
 	if err != nil {
+		faygo.Errorf("session release fail: %s", err.Error())
 		return
 	}
 	c.Set([]byte(ls.sid), b)

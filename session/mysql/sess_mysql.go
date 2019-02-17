@@ -46,9 +46,10 @@ import (
 	"sync"
 	"time"
 
-	"github.com/henrylee2cn/faygo/session"
-	// import mysql driver
 	_ "github.com/go-sql-driver/mysql"
+
+	"github.com/henrylee2cn/faygo"
+	"github.com/henrylee2cn/faygo/session"
 )
 
 var (
@@ -111,6 +112,7 @@ func (st *SessionStore) SessionRelease(w http.ResponseWriter) {
 	defer st.c.Close()
 	b, err := session.EncodeGob(st.values)
 	if err != nil {
+		faygo.Errorf("session release fail: %s", err.Error())
 		return
 	}
 	st.c.Exec("UPDATE "+TableName+" set `session_data`=?, `session_expiry`=? where session_key=?",

@@ -37,9 +37,10 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/henrylee2cn/faygo/session"
-
 	"github.com/bradfitz/gomemcache/memcache"
+
+	"github.com/henrylee2cn/faygo"
+	"github.com/henrylee2cn/faygo/session"
 )
 
 var mempder = &MemProvider{}
@@ -96,6 +97,7 @@ func (rs *SessionStore) SessionID() string {
 func (rs *SessionStore) SessionRelease(w http.ResponseWriter) {
 	b, err := session.EncodeGob(rs.values)
 	if err != nil {
+		faygo.Errorf("session release fail: %s", err.Error())
 		return
 	}
 	item := memcache.Item{Key: rs.sid, Value: b, Expiration: int32(rs.maxlifetime)}

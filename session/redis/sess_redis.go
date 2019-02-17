@@ -38,10 +38,10 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/garyburd/redigo/redis"
+
 	"github.com/henrylee2cn/faygo"
 	"github.com/henrylee2cn/faygo/session"
-
-	"github.com/garyburd/redigo/redis"
 )
 
 var redispder = &Provider{}

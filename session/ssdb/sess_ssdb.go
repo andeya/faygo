@@ -7,8 +7,11 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/henrylee2cn/faygo/session"
+	"github.com/henrylee2cn/goutil"
 	"github.com/ssdb/gossdb/ssdb"
+
+	"github.com/henrylee2cn/faygo"
+	"github.com/henrylee2cn/faygo/session"
 )
 
 var ssdbProvider = &SsdbProvider{}
@@ -182,6 +185,7 @@ func (s *SessionStore) SessionID() string {
 func (s *SessionStore) SessionRelease(w http.ResponseWriter) {
 	b, err := session.EncodeGob(s.values)
 	if err != nil {
+		faygo.Errorf("session release fail: %s", err.Error())
 		return
 	}
 	s.client.Do("setx", s.sid, goutil.BytesToString(b), s.maxLifetime)
