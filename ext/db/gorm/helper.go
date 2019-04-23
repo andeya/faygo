@@ -96,7 +96,6 @@ func CallbackByName(dbName string, fn func(*gorm.DB) error, session ...*gorm.DB)
 }
 
 // TransactCallback uses the default database for transactional operations.
-// note: if an error is returned, the rollback method should be invoked outside the function.
 func TransactCallback(fn func(*gorm.DB) error, session ...*gorm.DB) (err error) {
 	if fn == nil {
 		return
@@ -121,7 +120,6 @@ func TransactCallback(fn func(*gorm.DB) error, session ...*gorm.DB) (err error) 
 }
 
 // TransactCallbackByName uses the `specified` database for transactional operations.
-// note: if an error is returned, the rollback method should be invoked outside the function.
 func TransactCallbackByName(dbName string, fn func(*gorm.DB) error, session ...*gorm.DB) (err error) {
 	if fn == nil {
 		return

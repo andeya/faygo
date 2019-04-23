@@ -87,7 +87,6 @@ func CallbackByName(dbName string, fn func(DbOrTx) error, tx ...*sqlx.Tx) error 
 }
 
 // TransactCallback uses the default database for transactional operations.
-// note: if an error is returned, the rollback method should be invoked outside the function.
 func TransactCallback(fn func(*sqlx.Tx) error, tx ...*sqlx.Tx) (err error) {
 	if fn == nil {
 		return
@@ -114,7 +113,6 @@ func TransactCallback(fn func(*sqlx.Tx) error, tx ...*sqlx.Tx) (err error) {
 }
 
 // TransactCallbackByName uses the `specified` database for transactional operations.
-// note: if an error is returned, the rollback method should be invoked outside the function.
 func TransactCallbackByName(dbName string, fn func(*sqlx.Tx) error, tx ...*sqlx.Tx) (err error) {
 	if fn == nil {
 		return
