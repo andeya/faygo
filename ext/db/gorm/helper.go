@@ -70,7 +70,7 @@ func Callback(fn func(*gorm.DB) error, session ...*gorm.DB) error {
 	}
 	if sess == nil {
 		sess = MustDB().New()
-		defer sess.Close()
+		// defer sess.Close()
 	}
 	return fn(sess)
 }
@@ -90,7 +90,7 @@ func CallbackByName(dbName string, fn func(*gorm.DB) error, session ...*gorm.DB)
 			return errors.New("[gorm] the database engine `" + dbName + "` is not configured")
 		}
 		sess = engine.New()
-		defer sess.Close()
+		// defer sess.Close()
 	}
 	return fn(sess)
 }
@@ -112,7 +112,7 @@ func TransactCallback(fn func(*gorm.DB) error, session ...*gorm.DB) (err error) 
 			} else {
 				sess.Commit()
 			}
-			sess.Close()
+			// sess.Close()
 		}()
 	}
 	err = fn(sess)
@@ -140,7 +140,7 @@ func TransactCallbackByName(dbName string, fn func(*gorm.DB) error, session ...*
 			} else {
 				sess.Commit()
 			}
-			sess.Close()
+			// sess.Close()
 		}()
 	}
 	err = fn(sess)
