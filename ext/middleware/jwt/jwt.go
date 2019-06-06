@@ -479,7 +479,12 @@ func (mw *FaygoJWTMiddleware) jwtFromHeader(c *faygo.Context, key string) (strin
 		return "", ErrEmptyAuthHeader
 	}
 
+	// ios某些版本，有空格的话，会报SyntaxError DOM Exception 12，前端调用时可以改用Bearer/xxxxxxxxx格式，兼容之前的Bearer xxxxxxxxx格式
 	parts := strings.SplitN(authHeader, " ", 2)
+	if len(parts) == 2 && parts[0] == mw.TokenHeadName {
+		return parts[1], nil
+	}
+	parts = strings.SplitN(authHeader, "/", 2)
 	if !(len(parts) == 2 && parts[0] == mw.TokenHeadName) {
 		return "", ErrInvalidAuthHeader
 	}
