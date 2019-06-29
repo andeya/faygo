@@ -23,7 +23,6 @@ import (
 )
 
 func graceSignal() {
-	WritePid(LogDir() + "app.pid")
 	// subscribe to SIGINT signals
 	ch := make(chan os.Signal)
 	signal.Notify(ch, os.Interrupt, os.Kill)

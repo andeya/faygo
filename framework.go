@@ -179,10 +179,8 @@ func (frame *Framework) Run() {
 	if frame.Running() {
 		return
 	}
+	global.beforeRun()
 	go frame.run()
-	global.graceOnce.Do(func() {
-		graceSignal()
-	})
 	select {}
 }
 

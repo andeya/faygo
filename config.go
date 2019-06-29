@@ -17,8 +17,10 @@ package faygo
 import (
 	"flag"
 	"fmt"
+	"io/ioutil"
 	"math"
 	"os"
+	"path/filepath"
 	"sort"
 	"strconv"
 	"strings"
@@ -191,11 +193,25 @@ func ConfigDir() string {
 	return configDir
 }
 
+func resetFlag() {
+	flag.CommandLine.Init(os.Args[0], flag.ContinueOnError)
+	flag.CommandLine.SetOutput(nil)
+	for _, arg := range os.Args[1:] {
+		if arg == "-help" || arg == "--help" || arg == "-h" || arg == "--h" {
+			fmt.Fprintf(flag.CommandLine.Output(), "Usage:\n")
+			flag.PrintDefaults()
+			os.Exit(2)
+		}
+	}
+}
+
 // global config
 var globalConfig = func() GlobalConfig {
 	// get config dir
-	flag.StringVar(&configDir, "cfg_dir", configDir, "Configuration files directory")
-	flag.Parse()
+	flag.CommandLine.Init(os.Args[0], -1) // ignore error
+	flag.CommandLine.SetOutput(ioutil.Discard)
+	flag.CommandLine.StringVar(&configDir, "cfg_dir", configDir, "Configuration files directory")
+	flag.CommandLine.Parse(os.Args[1:])
 
 	var background = &GlobalConfig{
 		Cache: CacheConfig{
@@ -216,8 +232,7 @@ var globalConfig = func() GlobalConfig {
 			FileLevel:     "debug",
 		},
 	}
-	filename := configDir + globalConfigFile
-
+	filename := filepath.Join(configDir, globalConfigFile)
 	err := SyncINI(
 		background,
 		func(onceUpdateFunc func() error) error {

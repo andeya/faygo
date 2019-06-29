@@ -80,6 +80,7 @@ func GetFrame(name string, version ...string) (*Framework, bool) {
 
 // Run starts all web services.
 func Run() {
+	global.beforeRun()
 	global.framesLock.Lock()
 	for _, frame := range global.frames {
 		if !frame.Running() {
@@ -88,9 +89,6 @@ func Run() {
 		}
 	}
 	global.framesLock.Unlock()
-	global.graceOnce.Do(func() {
-		graceSignal()
-	})
 	select {}
 }
 
@@ -456,7 +454,7 @@ type (
 		// executed after services are closed, but not guaranteed to be completed.
 		postCloseFunc func() error
 
-		graceOnce sync.Once
+		beforeRunOnce sync.Once
 	}
 	// PresetStatic is the system default static file routing information
 	PresetStatic struct {
@@ -568,4 +566,12 @@ func addFrame(frame *Framework) {
 		}
 	}
 	global.frames = append(global.frames, frame)
+}
+
+func (g *GlobalVariables) beforeRun() {
+	g.beforeRunOnce.Do(func() {
+		resetFlag()
+		WritePid(LogDir() + "app.pid")
+		go graceSignal()
+	})
 }
