@@ -70,7 +70,7 @@ type (
 		Consumes    []string              `json:"consumes,omitempty"`
 		Produces    []string              `json:"produces,omitempty"`
 		Parameters  []*Parameter          `json:"parameters,omitempty"`
-		Responses   map[string]*Resp      `json:"responses,omitempty"` // {"httpcode":resp}
+		Responses   map[string]*Resp      `json:"responses"` // {"httpcode":resp}
 		Security    []map[string][]string `json:"security,omitempty"`
 	}
 	// Parameter object
@@ -103,8 +103,8 @@ type (
 	}
 	// Resp object
 	Resp struct {
-		Schema      *Schema `json:"schema,omitempty"`
-		Description string  `json:"description,omitempty"`
+		Schema      *Schema `json:"schema"`
+		Description string  `json:"description"`
 	}
 	// Definition object
 	Definition struct {
