@@ -19,7 +19,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/go-xorm/core"
+	"xorm.io/core"
 	"github.com/henrylee2cn/faygo"
 )
 

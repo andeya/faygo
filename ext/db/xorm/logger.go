@@ -1,7 +1,7 @@
 package xorm
 
 import (
-	"github.com/go-xorm/core"
+	"xorm.io/core"
 
 	"github.com/henrylee2cn/faygo"
 	"github.com/henrylee2cn/faygo/logging"

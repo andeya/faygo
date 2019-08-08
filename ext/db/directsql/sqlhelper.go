@@ -11,7 +11,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/go-xorm/core"
+	"xorm.io/core"
 )
 
 //-------解析参数的函数------------

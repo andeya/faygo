@@ -30,7 +30,7 @@ import (
 	"sync"
 
 	"github.com/fsnotify/fsnotify"
-	"github.com/go-xorm/core"
+	"xorm.io/core"
 	"github.com/henrylee2cn/faygo"
 	faygoxorm "github.com/henrylee2cn/faygo/ext/db/xorm"
 	confpkg "github.com/henrylee2cn/ini"
