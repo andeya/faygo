@@ -440,7 +440,7 @@ e交易             | App           | https://fir.im/ejy
 
 ## 企业用户
 
-<a href="https://tech.pingan.com/index.html"><img src="http://pa-tech.hirede.com/templates/pa-tech/Images/logo.png" height="50" alt="平安科技"/></a>
+<a href="https://tech.pingan.com/index.html"><img src="http://pa-tech.hirede.com/templates/pa-tech/Images/logo.png" height="50" width="406" alt="平安科技" style="margin-right: -120px;"/></a>
 &nbsp;&nbsp;
 <a href="https://www.followme.cn/"><img src="https://raw.githubusercontent.com/henrylee2cn/imgs-repo/master/followme.png" height="60" alt="Followme"/></a>
 <br/>
