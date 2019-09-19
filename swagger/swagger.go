@@ -302,7 +302,12 @@ func CreateProperties(obj interface{}) map[string]*Property {
 				fv = reflect.New(ft).Elem()
 			}
 			p.Default = fv.Interface()
-			ps[field.Name] = p
+			n := field.Tag.Get("json")
+			if n == "" {
+				ps[field.Name] = p
+			} else {
+				ps[n] = p
+			}
 		}
 		return ps
 

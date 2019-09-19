@@ -35,3 +35,4 @@ samples/demo/demo
 
 ext/services
 .DS_Store
+.idea
