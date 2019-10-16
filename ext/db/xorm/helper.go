@@ -3,7 +3,7 @@ package xorm
 import (
 	"errors"
 
-	"github.com/go-xorm/xorm"
+	"xorm.io/xorm"
 	"github.com/henrylee2cn/faygo"
 )
 

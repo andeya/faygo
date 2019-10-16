@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	"xorm.io/core"
-	"github.com/go-xorm/xorm"
+	"xorm.io/xorm"
 
 	// _ "github.com/denisenkom/go-mssqldb" //mssql
 	_ "github.com/go-sql-driver/mysql" //mysql
