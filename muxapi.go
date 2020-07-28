@@ -370,9 +370,6 @@ func (mux *MuxAPI) comb() {
 		mux.handlers[i] = h
 	}
 
-	// check path params defined, and panic if there is any error.
-	mux.checkPathParams()
-
 	mux.path = mux.pattern
 	if mux.parent != nil {
 		mux.path = path.Join(mux.parent.path, mux.path)
@@ -380,6 +377,9 @@ func (mux *MuxAPI) comb() {
 		mux.paramInfos = append(mux.parent.paramInfos, mux.paramInfos...)
 		mux.handlers = append(mux.parent.handlers, mux.handlers...)
 	}
+
+	// check path params defined, and panic if there is any error.
+	mux.checkPathParams()
 
 	// Get distinct and sorted parameters information.
 	mux.paramInfos = distinctAndSortedParamInfos(mux.paramInfos)
@@ -402,19 +402,19 @@ func (mux *MuxAPI) checkPathParams() {
 		if paramInfo.In != "path" {
 			continue
 		}
-		if !strings.Contains(mux.pattern, "/:"+paramInfo.Name) && !strings.Contains(mux.pattern, "/*"+paramInfo.Name) {
+		if !strings.Contains(mux.path, "/:"+paramInfo.Name) && !strings.Contains(mux.path, "/*"+paramInfo.Name) {
 			mux.frame.Log().Panicf(
 				"[Faygo-checkPathParams] the router pattern `%s` does not match the path param:\n%#v",
-				mux.pattern,
+				mux.path,
 				paramInfo,
 			)
 		}
 		numPathParams++
 	}
-	if countPathParams(mux.pattern) < numPathParams {
+	if countPathParams(mux.path) < numPathParams {
 		mux.frame.Log().Panicf(
 			"[Faygo-checkPathParams] the router pattern `%s` does not match the path params:\n%#v",
-			mux.pattern,
+			mux.path,
 			mux.paramInfos,
 		)
 	}
