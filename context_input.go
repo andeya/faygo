@@ -17,8 +17,11 @@ package faygo
 import (
 	"bytes"
 	"crypto/hmac"
+	"crypto/md5"
+	"crypto/rand"
 	"crypto/sha1"
 	"encoding/base64"
+	"encoding/hex"
 	"encoding/json"
 	"encoding/xml"
 	"errors"
@@ -527,6 +530,23 @@ type SavedFileInfo struct {
 	Size int64
 }
 
+// GetMd5String 返回MD5串
+func GetMd5String(s string) string {
+	h := md5.New()
+	h.Write([]byte(s))
+	return hex.EncodeToString(h.Sum(nil))
+}
+
+// GetGuid 返回guid
+func GetGuid() string {
+	b := make([]byte, 48)
+
+	if _, err := io.ReadFull(rand.Reader, b); err != nil {
+		return ""
+	}
+	return GetMd5String(base64.URLEncoding.EncodeToString(b))
+}
+
 // SaveFile saves the uploaded file to global.UploadDir(),
 // character "?" indicates that the original file name.
 // for example newfname="a/?" -> global.UploadDir()/a/fname.
@@ -551,13 +571,13 @@ func (ctx *Context) SaveFile(key string, cover bool, newfname ...string) (savedF
 		fullname = filepath.Join(UploadDir(), filename)
 	} else {
 		if strings.Contains(newfname[0], "?") {
-			fullname = filepath.Join(UploadDir(), strings.Replace(newfname[0], "?", filename, -1))
+			fullname = strings.Replace(newfname[0], "?", GetGuid()+filepath.Ext(filename), -1)
 		} else {
 			fname := strings.TrimRight(newfname[0], ".")
 			if filepath.Ext(fname) == "" {
-				fullname = filepath.Join(UploadDir(), fname+filepath.Ext(filename))
+				fullname = fname + filepath.Ext(filename)
 			} else {
-				fullname = filepath.Join(UploadDir(), fname)
+				fullname = newfname[0]
 			}
 		}
 	}
@@ -586,6 +606,7 @@ func (ctx *Context) SaveFile(key string, cover bool, newfname ...string) (savedF
 		return
 	}
 	savedFileInfo.Size, err = io.Copy(f2, f)
+	f2.Sync()
 	err3 := f2.Close()
 	if err3 != nil && err == nil {
 		err = err3
