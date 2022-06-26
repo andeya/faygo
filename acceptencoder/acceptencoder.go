@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-// modified by HenryLee 2016.11.11
+// modified by AndeyaLee 2016.11.11
 
 package acceptencoder
 
@@ -29,13 +29,13 @@ import (
 )
 
 var (
-	//Default size==20B same as nginx
+	// Default size==20B same as nginx
 	defaultGzipMinLength = 20
-	//Content will only be compressed if content length is either unknown or greater than gzipMinLength.
+	// Content will only be compressed if content length is either unknown or greater than gzipMinLength.
 	gzipMinLength = defaultGzipMinLength
-	//The compression level used for deflate compression. (0-9).
+	// The compression level used for deflate compression. (0-9).
 	gzipCompressLevel int
-	//List of HTTP methods to compress. If not set, only GET requests are compressed.
+	// List of HTTP methods to compress. If not set, only GET requests are compressed.
 	includedMethods map[string]bool
 	getMethodOnly   bool
 )
@@ -65,7 +65,7 @@ type nopResetWriter struct {
 }
 
 func (n nopResetWriter) Reset(w io.Writer) {
-	//do nothing
+	// do nothing
 }
 
 type acceptEncoder struct {
@@ -98,9 +98,9 @@ func (ac acceptEncoder) put(wr resetWriter, level int) {
 	}
 	wr.Reset(nil)
 
-	//notice
-	//compressionLevel==BestCompression DOES NOT MATTER
-	//sync.Pool will not memory leak
+	// notice
+	// compressionLevel==BestCompression DOES NOT MATTER
+	// sync.Pool will not memory leak
 
 	switch level {
 	case gzipCompressLevel:
@@ -119,10 +119,10 @@ var (
 		bestCompressionPool:     &sync.Pool{New: func() interface{} { wr, _ := gzip.NewWriterLevel(nil, flate.BestCompression); return wr }},
 	}
 
-	//according to the sec :http://tools.ietf.org/html/rfc2616#section-3.5 ,the deflate compress in http is zlib indeed
-	//deflate
-	//The "zlib" format defined in RFC 1950 [31] in combination with
-	//the "deflate" compression mechanism described in RFC 1951 [29].
+	// according to the sec :http://tools.ietf.org/html/rfc2616#section-3.5 ,the deflate compress in http is zlib indeed
+	// deflate
+	// The "zlib" format defined in RFC 1950 [31] in combination with
+	// the "deflate" compression mechanism described in RFC 1951 [29].
 	deflateCompressEncoder = acceptEncoder{
 		name:                    "deflate",
 		levelEncode:             func(level int) resetWriter { wr, _ := zlib.NewWriterLevel(nil, level); return wr },

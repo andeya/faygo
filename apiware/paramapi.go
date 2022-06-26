@@ -1,4 +1,4 @@
-// Copyright 2016 HenryLee. All Rights Reserved.
+// Copyright 2022 AndeyaLee. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -35,9 +35,9 @@ type (
 	ParamsAPI struct {
 		name   string
 		params []*Param
-		//used to create a new struct (non-pointer)
+		// used to create a new struct (non-pointer)
 		structType reflect.Type
-		//the raw struct pointer
+		// the raw struct pointer
 		rawStructPointer interface{}
 		// rawStructPointer value bytes
 		defaultValues []byte
@@ -45,7 +45,7 @@ type (
 		paramNameMapper ParamNameMapper
 		// decode params from request body
 		bodydecoder Bodydecoder
-		//when request Content-Type is multipart/form-data, the max memory for body.
+		// when request Content-Type is multipart/form-data, the max memory for body.
 		maxMemory int64
 	}
 

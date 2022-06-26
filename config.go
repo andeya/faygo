@@ -1,4 +1,4 @@
-// Copyright 2016 HenryLee. All Rights Reserved.
+// Copyright 2022 AndeyaLee. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -103,13 +103,13 @@ type (
 	GzipConfig struct {
 		// if EnableGzip, compress response content.
 		Enable bool `ini:"enable" comment:"Whether enabled or not"`
-		//Content will only be compressed if content length is either unknown or greater than gzipMinLength.
-		//Default size==20B same as nginx
+		// Content will only be compressed if content length is either unknown or greater than gzipMinLength.
+		// Default size==20B same as nginx
 		MinLength int `ini:"min_length" comment:"The minimum length of content to be compressed"`
-		//The compression level used for deflate compression. (0-9).
-		//Non-file response Body's compression level is 0-9, but the files' always 9
+		// The compression level used for deflate compression. (0-9).
+		// Non-file response Body's compression level is 0-9, but the files' always 9
 		CompressLevel int `ini:"compress_level" comment:"Non-file response Body's compression level is 0-9, but the files' always 9"`
-		//List of HTTP methods to compress. If not set, only GET requests are compressed.
+		// List of HTTP methods to compress. If not set, only GET requests are compressed.
 		Methods []string `ini:"methods" delim:"|" comment:"List of HTTP methods to compress. If not set, only GET requests are compressed."`
 		// StaticExtensionsToGzip []string
 	}
@@ -277,7 +277,7 @@ func NewDefaultConfig() *Config {
 			Enable:                false,
 			Provider:              "memory",
 			Name:                  "faygosessionID",
-			CookieLifeSecond:      0, //set cookie default is the browser life
+			CookieLifeSecond:      0, // set cookie default is the browser life
 			GcLifeSecond:          300,
 			MaxLifeSecond:         3600,
 			ProviderConfig:        "",
