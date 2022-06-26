@@ -1,3 +1,4 @@
+// Deprecated: Use the "github.com/andeya/faygo" module instead.
 module github.com/henrylee2cn/faygo
 
 require (
