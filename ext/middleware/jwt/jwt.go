@@ -8,7 +8,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/henrylee2cn/faygo"
+	"github.com/andeya/faygo"
 	"gopkg.in/dgrijalva/jwt-go.v3"
 )
 
@@ -291,7 +291,7 @@ func (mw *FaygoJWTMiddleware) MiddlewareInit() error {
 
 // MiddlewareFunc makes FaygoJWTMiddleware implement the Middleware interface.
 func (mw *FaygoJWTMiddleware) MiddlewareFunc() faygo.HandlerFunc {
-	//初始设置改为手动调用
+	// 初始设置改为手动调用
 	/*if err := mw.MiddlewareInit(); err != nil {
 		return func(c *faygo.Context) error {
 			mw.unauthorized(c, http.StatusInternalServerError, mw.HTTPStatusMessageFunc(err, nil))
@@ -396,7 +396,7 @@ func (mw *FaygoJWTMiddleware) signedString(token *jwt.Token) (string, error) {
 // Reply will be of the form {"token": "TOKEN"}.
 func (mw *FaygoJWTMiddleware) RefreshHandler(c *faygo.Context) error {
 	token, err := mw.parseToken(c)
-	//如果有错误并不是过期则触发错误并返回
+	// 如果有错误并不是过期则触发错误并返回
 	if (err != nil) && (err.Error() != "Token is expired") {
 		faygo.Error(err)
 		return mw.unauthorized(c, http.StatusUnauthorized, mw.HTTPStatusMessageFunc(err, c))
@@ -404,7 +404,7 @@ func (mw *FaygoJWTMiddleware) RefreshHandler(c *faygo.Context) error {
 	claims := token.Claims.(jwt.MapClaims)
 
 	origIat := int64(claims["orig_iat"].(float64))
-	//如果超过 刷新期则触发过期错误并返回
+	// 如果超过 刷新期则触发过期错误并返回
 	if origIat < mw.TimeFunc().Add(-mw.MaxRefresh).Unix() {
 		return mw.unauthorized(c, http.StatusUnauthorized, mw.HTTPStatusMessageFunc(ErrExpiredToken, c))
 
@@ -421,7 +421,7 @@ func (mw *FaygoJWTMiddleware) RefreshHandler(c *faygo.Context) error {
 	expire := mw.TimeFunc().Add(mw.Timeout)
 	newClaims["id"] = claims["id"]
 	newClaims["exp"] = expire.Unix()
-	newClaims["orig_iat"] = mw.TimeFunc().Unix() //原来是 origIat貌似不正确
+	newClaims["orig_iat"] = mw.TimeFunc().Unix() // 原来是 origIat貌似不正确
 	tokenString, err := mw.signedString(newToken)
 
 	if err != nil {

@@ -3,7 +3,7 @@ package main
 import (
 	"os"
 
-	"github.com/henrylee2cn/faygo/logging"
+	"github.com/andeya/faygo/logging"
 )
 
 var log = logging.NewLogger("example")

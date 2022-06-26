@@ -7,11 +7,11 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/henrylee2cn/goutil"
+	"github.com/andeya/goutil"
 	"github.com/ssdb/gossdb/ssdb"
 
-	"github.com/henrylee2cn/faygo"
-	"github.com/henrylee2cn/faygo/session"
+	"github.com/andeya/faygo"
+	"github.com/andeya/faygo/session"
 )
 
 var ssdbProvider = &SsdbProvider{}
@@ -91,7 +91,7 @@ func (p *SsdbProvider) SessionExist(sid string) bool {
 
 }
 func (p *SsdbProvider) SessionRegenerate(oldsid, sid string) (session.Store, error) {
-	//conn.Do("setx", key, v, ttl)
+	// conn.Do("setx", key, v, ttl)
 	if p.client == nil {
 		if err := p.connectInit(); err != nil {
 			return nil, err

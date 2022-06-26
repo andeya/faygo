@@ -1,9 +1,9 @@
-# surfer    [![GoDoc](https://godoc.org/github.com/tsuna/gohbase?status.png)](https://godoc.org/github.com/henrylee2cn/surfer) [![GitHub release](https://img.shields.io/github/release/henrylee2cn/surfer.svg)](https://github.com/henrylee2cn/surfer/releases)
+# surfer    [![GoDoc](https://godoc.org/github.com/tsuna/gohbase?status.png)](https://godoc.org/github.com/andeya/surfer) [![GitHub release](https://img.shields.io/github/release/andeya/surfer.svg)](https://github.com/andeya/surfer/releases)
 
 
 Surfer 是一款Go语言编写的高并发 web 客户端，拥有surf与phantom两种下载内核，高度模拟浏览器行为，可实现模拟登录等功能。
 
-高并发爬虫[Pholcus](https://github.com/henrylee2cn/pholcus)的专用下载器。（官方QQ群：Go大数据 42731170，欢迎加入我们的讨论）
+高并发爬虫[Pholcus](https://github.com/andeya/pholcus)的专用下载器。（官方QQ群：Go大数据 42731170，欢迎加入我们的讨论）
 
 ## 特性
 
@@ -17,7 +17,7 @@ Surfer 是一款Go语言编写的高并发 web 客户端，拥有surf与phantom�
 package main
 
 import (
-    "github.com/henrylee2cn/surfer"
+    "github.com/andeya/surfer"
     "io/ioutil"
     "log"
 )
@@ -25,7 +25,7 @@ import (
 func main() {
     // 默认使用surf内核下载
     resp, err := surfer.Download(&surfer.Request{
-        Url: "http://github.com/henrylee2cn/surfer",
+        Url: "http://github.com/andeya/surfer",
     })
     if err != nil {
         log.Fatal(err)
@@ -35,7 +35,7 @@ func main() {
 
     // 指定使用phantomjs内核下载
     resp, err = surfer.Download(&surfer.Request{
-        Url:          "http://github.com/henrylee2cn",
+        Url:          "http://github.com/andeya",
         DownloaderID: 1,
     })
     if err != nil {
@@ -49,9 +49,9 @@ func main() {
 }
 ```
 
-[完整示例](https://github.com/henrylee2cn/surfer/blob/master/example/example.go)
+[完整示例](https://github.com/andeya/surfer/blob/master/example/example.go)
 
 
 ## 开源协议
 
-Surfer 项目采用商业应用友好的[Apache License v2](https://github.com/henrylee2cn/surfer/raw/master/LICENSE).发布
+Surfer 项目采用商业应用友好的[Apache License v2](https://github.com/andeya/surfer/raw/master/LICENSE).发布

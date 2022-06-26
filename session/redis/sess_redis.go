@@ -40,8 +40,8 @@ import (
 
 	"github.com/garyburd/redigo/redis"
 
-	"github.com/henrylee2cn/faygo"
-	"github.com/henrylee2cn/faygo/session"
+	"github.com/andeya/faygo"
+	"github.com/andeya/faygo/session"
 )
 
 var redispder = &Provider{}

@@ -5,8 +5,8 @@ import (
 	_ "net/http/pprof"
 	"time"
 
-	"github.com/henrylee2cn/faygo"
-	"github.com/henrylee2cn/faygo/samples/demo/router"
+	"github.com/andeya/faygo"
+	"github.com/andeya/faygo/samples/demo/router"
 )
 
 // Browse 'http://localhost:8080/apidoc' and 'http://localhost:8081/apidoc' to test.

@@ -19,7 +19,7 @@ import (
 	"reflect"
 	"sort"
 
-	"github.com/henrylee2cn/faygo/apiware"
+	"github.com/andeya/faygo/apiware"
 )
 
 type (

@@ -4,8 +4,8 @@ package qr
 import (
 	"image"
 
-	"github.com/henrylee2cn/faygo/ext/barcode"
-	"github.com/henrylee2cn/faygo/ext/barcode/utils"
+	"github.com/andeya/faygo/ext/barcode"
+	"github.com/andeya/faygo/ext/barcode/utils"
 )
 
 type encodeFn func(content string, eccLevel ErrorCorrectionLevel) (*utils.BitList, *versionInfo, error)
@@ -87,7 +87,7 @@ func render(data []byte, vi *versionInfo) *qrcode {
 	drawFinderPatterns(vi, setAll)
 	drawAlignmentPatterns(occupied, vi, setAll)
 
-	//Timing Pattern:
+	// Timing Pattern:
 	var i int
 	for i = 0; i < dim; i++ {
 		if !occupied.Get(i, 6) {

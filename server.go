@@ -22,8 +22,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/henrylee2cn/faygo/gracenet"
-	"github.com/henrylee2cn/faygo/logging"
+	"github.com/andeya/faygo/gracenet"
+	"github.com/andeya/faygo/logging"
 	"golang.org/x/crypto/acme/autocert"
 )
 

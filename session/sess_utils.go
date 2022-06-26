@@ -27,7 +27,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/henrylee2cn/goutil"
+	"github.com/andeya/goutil"
 )
 
 func init() {

@@ -10,8 +10,8 @@ import (
 	"github.com/siddontang/ledisdb/config"
 	"github.com/siddontang/ledisdb/ledis"
 
-	"github.com/henrylee2cn/faygo"
-	"github.com/henrylee2cn/faygo/session"
+	"github.com/andeya/faygo"
+	"github.com/andeya/faygo/session"
 )
 
 var ledispder = &Provider{}

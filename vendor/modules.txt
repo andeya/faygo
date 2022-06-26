@@ -1,82 +1,121 @@
+# github.com/andeya/goutil v0.0.0-20220626152529-9b7868da7b6d
+## explicit; go 1.12
+github.com/andeya/goutil
+github.com/andeya/goutil/errors
+# github.com/andeya/ini v1.30.0
+## explicit; go 1.18
+github.com/andeya/ini
 # github.com/bradfitz/gomemcache v0.0.0-20190329173943-551aad21a668
+## explicit; go 1.12
 github.com/bradfitz/gomemcache/memcache
 # github.com/couchbase/go-couchbase v0.0.0-20190808141609-0a5dfbe71f2f
+## explicit
 github.com/couchbase/go-couchbase
 # github.com/couchbase/gomemcached v0.0.0-20190515232915-c4b4ca0eb21d
+## explicit
 github.com/couchbase/gomemcached
 github.com/couchbase/gomemcached/client
 # github.com/couchbase/goutils v0.0.0-20190315194238-f9d42b11473b
+## explicit
 github.com/couchbase/goutils/logging
 github.com/couchbase/goutils/scramsha
 # github.com/cupcake/rdb v0.0.0-20161107195141-43ba34106c76
+## explicit
 github.com/cupcake/rdb
 github.com/cupcake/rdb/crc64
 github.com/cupcake/rdb/nopdecoder
 # github.com/davecgh/go-spew v1.1.1
+## explicit
 github.com/davecgh/go-spew/spew
+# github.com/dgrijalva/jwt-go v3.2.0+incompatible
+## explicit
 # github.com/edsrzf/mmap-go v1.0.0
+## explicit
 github.com/edsrzf/mmap-go
 # github.com/elazarl/go-bindata-assetfs v1.0.0
+## explicit
 github.com/elazarl/go-bindata-assetfs
-# github.com/facebookgo/ensure v0.0.0-20160127193407-b4ab57deab51
+# github.com/facebookgo/ensure v0.0.0-20200202191622-63f1cf65ac4c
+## explicit
 github.com/facebookgo/ensure
 # github.com/facebookgo/freeport v0.0.0-20150612182905-d4adf43b75b9
+## explicit
 github.com/facebookgo/freeport
 # github.com/facebookgo/stack v0.0.0-20160209184415-751773369052
+## explicit
 github.com/facebookgo/stack
 # github.com/facebookgo/subset v0.0.0-20150612182917-8dac2c3c4870
+## explicit
 github.com/facebookgo/subset
 # github.com/flosch/pongo2 v0.0.0-20190707114632-bbf5a6c351f4
+## explicit
 github.com/flosch/pongo2
 # github.com/fsnotify/fsnotify v1.4.7
+## explicit
 github.com/fsnotify/fsnotify
 # github.com/garyburd/redigo v1.6.0
+## explicit
 github.com/garyburd/redigo/internal
 github.com/garyburd/redigo/redis
 # github.com/go-sql-driver/mysql v1.4.1
+## explicit
 github.com/go-sql-driver/mysql
 # github.com/golang/snappy v0.0.0-20180518054509-2e65f85255db
+## explicit
 github.com/golang/snappy
-# github.com/gorilla/websocket v1.4.0
+# github.com/gorilla/websocket v1.5.0
+## explicit; go 1.12
 github.com/gorilla/websocket
-# github.com/henrylee2cn/goutil v0.0.0-20190807075143-e8afa09140e9
-github.com/henrylee2cn/goutil
-github.com/henrylee2cn/goutil/errors
-# github.com/henrylee2cn/ini v1.29.0
-github.com/henrylee2cn/ini
+# github.com/henrylee2cn/ameda v1.4.10
+## explicit; go 1.13
+github.com/henrylee2cn/ameda
 # github.com/jinzhu/gorm v1.9.10
+## explicit; go 1.12
 github.com/jinzhu/gorm
 github.com/jinzhu/gorm/dialects/mysql
 github.com/jinzhu/gorm/dialects/postgres
 # github.com/jinzhu/inflection v1.0.0
+## explicit
 github.com/jinzhu/inflection
 # github.com/jmoiron/sqlx v1.2.0
+## explicit
 github.com/jmoiron/sqlx
 github.com/jmoiron/sqlx/reflectx
 # github.com/json-iterator/go v1.1.7
+## explicit; go 1.12
 github.com/json-iterator/go
 # github.com/juju/errors v0.0.0-20181118221551-089d3ea4e4d5
+## explicit
 github.com/juju/errors
 # github.com/kr/pretty v0.1.0
+## explicit
 github.com/kr/pretty
 # github.com/kr/text v0.1.0
+## explicit
 github.com/kr/text
 # github.com/lib/pq v1.2.0
+## explicit
 github.com/lib/pq
 github.com/lib/pq/hstore
 github.com/lib/pq/oid
 github.com/lib/pq/scram
 # github.com/modern-go/concurrent v0.0.0-20180228061459-e0a39a4cb421
+## explicit
 github.com/modern-go/concurrent
 # github.com/modern-go/reflect2 v0.0.0-20180701023420-4b7aa43c6742
+## explicit
 github.com/modern-go/reflect2
 # github.com/pelletier/go-toml v1.4.0
+## explicit; go 1.12
 github.com/pelletier/go-toml
 # github.com/pkg/errors v0.8.1
+## explicit
 github.com/pkg/errors
 # github.com/pmezard/go-difflib v1.0.0
+## explicit
 github.com/pmezard/go-difflib/difflib
 # github.com/siddontang/go v0.0.0-20180604090527-bdc77568d726
+## explicit
 github.com/siddontang/go/filelock
 github.com/siddontang/go/hack
 github.com/siddontang/go/ioutil2
@@ -85,6 +124,7 @@ github.com/siddontang/go/num
 github.com/siddontang/go/snappy
 github.com/siddontang/go/sync2
 # github.com/siddontang/ledisdb v0.0.0-20190202134119-8ceb77e66a92
+## explicit
 github.com/siddontang/ledisdb/config
 github.com/siddontang/ledisdb/ledis
 github.com/siddontang/ledisdb/rpl
@@ -94,13 +134,17 @@ github.com/siddontang/ledisdb/store/goleveldb
 github.com/siddontang/ledisdb/store/leveldb
 github.com/siddontang/ledisdb/store/rocksdb
 # github.com/siddontang/rdb v0.0.0-20150307021120-fc89ed2e418d
+## explicit
 github.com/siddontang/rdb
 # github.com/ssdb/gossdb v0.0.0-20180723034631-88f6b59b84ec
+## explicit
 github.com/ssdb/gossdb/ssdb
-# github.com/stretchr/testify v1.4.0
+# github.com/stretchr/testify v1.7.5
+## explicit; go 1.13
 github.com/stretchr/testify/assert
 github.com/stretchr/testify/require
 # github.com/syndtr/goleveldb v1.0.0
+## explicit
 github.com/syndtr/goleveldb/leveldb
 github.com/syndtr/goleveldb/leveldb/cache
 github.com/syndtr/goleveldb/leveldb/comparer
@@ -113,20 +157,25 @@ github.com/syndtr/goleveldb/leveldb/opt
 github.com/syndtr/goleveldb/leveldb/storage
 github.com/syndtr/goleveldb/leveldb/table
 github.com/syndtr/goleveldb/leveldb/util
-# golang.org/x/crypto v0.0.0-20190701094942-4def268fd1a4
+# golang.org/x/crypto v0.0.0-20220622213112-05595931fe9d
+## explicit; go 1.17
 golang.org/x/crypto/acme
 golang.org/x/crypto/acme/autocert
 golang.org/x/crypto/pbkdf2
-# golang.org/x/net v0.0.0-20190724013045-ca1201d0de80
+# golang.org/x/net v0.0.0-20220624214902-1bab6f366d9e
+## explicit; go 1.17
 golang.org/x/net/context
 golang.org/x/net/html
 golang.org/x/net/html/atom
 golang.org/x/net/html/charset
 golang.org/x/net/idna
-# golang.org/x/sys v0.0.0-20190804053845-51ab0e2deafa
+# golang.org/x/sys v0.0.0-20220624220833-87e55d714810
+## explicit; go 1.17
+golang.org/x/sys/internal/unsafeheader
 golang.org/x/sys/unix
 golang.org/x/sys/windows
-# golang.org/x/text v0.3.2
+# golang.org/x/text v0.3.7
+## explicit; go 1.17
 golang.org/x/text/encoding
 golang.org/x/text/encoding/charmap
 golang.org/x/text/encoding/htmlindex
@@ -148,16 +197,23 @@ golang.org/x/text/transform
 golang.org/x/text/unicode/bidi
 golang.org/x/text/unicode/norm
 # google.golang.org/appengine v1.6.0
+## explicit
 google.golang.org/appengine/cloudsql
 # gopkg.in/check.v1 v1.0.0-20180628173108-788fd7840127
+## explicit
 gopkg.in/check.v1
 # gopkg.in/dgrijalva/jwt-go.v3 v3.2.0
+## explicit
 gopkg.in/dgrijalva/jwt-go.v3
-# gopkg.in/yaml.v2 v2.2.2
-gopkg.in/yaml.v2
+# gopkg.in/yaml.v3 v3.0.1
+## explicit
+gopkg.in/yaml.v3
 # xorm.io/builder v0.3.6
+## explicit; go 1.11
 xorm.io/builder
 # xorm.io/core v0.7.2
+## explicit
 xorm.io/core
 # xorm.io/xorm v0.8.0
+## explicit; go 1.11
 xorm.io/xorm

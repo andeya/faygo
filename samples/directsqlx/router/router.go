@@ -8,9 +8,9 @@
 package router
 
 import (
-	"github.com/henrylee2cn/faygo"
-	"github.com/henrylee2cn/faygo/ext/db/directsqlx"
-	"github.com/henrylee2cn/faygo/samples/directsql/handler"
+	"github.com/andeya/faygo"
+	"github.com/andeya/faygo/ext/db/directsql"
+	"github.com/andeya/faygo/samples/directsql/handler"
 )
 
 // Register the system router in a chain style

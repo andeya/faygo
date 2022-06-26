@@ -9,12 +9,13 @@
 package directsqlx
 
 import (
-	"github.com/fsnotify/fsnotify"
-	"github.com/henrylee2cn/faygo"
 	"strings"
+
+	"github.com/andeya/faygo"
+	"github.com/fsnotify/fsnotify"
 )
 
-//start filesytem watcher
+// start filesytem watcher
 func (mss *TModels) StartWatcher() error {
 	var err error
 	mss.watcher, err = fsnotify.NewWatcher()
@@ -26,7 +27,7 @@ func (mss *TModels) StartWatcher() error {
 		for {
 			select {
 			case event := <-mss.watcher.Events:
-				//如果变更的文件是 .msql文件
+				// 如果变更的文件是 .msql文件
 				if strings.HasSuffix(event.Name, mss.extension) {
 					if event.Op&fsnotify.Write == fsnotify.Write {
 						faygo.Debug("Modified file:" + event.Name)
@@ -59,18 +60,18 @@ func (mss *TModels) StartWatcher() error {
 			}
 		}
 	}()
-	//增加监控路径
+	// 增加监控路径
 	for _, value := range mss.roots {
 		err = mss.watcher.Add(value)
 		if err != nil {
 			faygo.Error(err.Error())
-			//return
+			// return
 		}
 	}
 	return nil
 }
 
-//stop filesytem watcher
+// stop filesytem watcher
 func (mss *TModels) StopWatcher() error {
 	if mss.watcher != nil {
 		faygo.Info("Directsql stop watching.....................")

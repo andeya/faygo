@@ -23,7 +23,7 @@ A trivial example is:
     import (
         // "mime/multipart"
         "time"
-        "github.com/henrylee2cn/faygo"
+        "github.com/andeya/faygo"
     )
 
     type Index struct {

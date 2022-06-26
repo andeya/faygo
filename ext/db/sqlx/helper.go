@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"errors"
 
-	"github.com/henrylee2cn/faygo"
+	"github.com/andeya/faygo"
 	"github.com/jmoiron/sqlx"
 )
 

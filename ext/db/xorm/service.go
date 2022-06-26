@@ -9,12 +9,12 @@ import (
 	"xorm.io/xorm"
 
 	// _ "github.com/denisenkom/go-mssqldb" //mssql
-	_ "github.com/go-sql-driver/mysql" //mysql
-	_ "github.com/lib/pq"              //postgres
+	_ "github.com/go-sql-driver/mysql" // mysql
+	_ "github.com/lib/pq"              // postgres
 	// _ "github.com/mattn/go-oci8"         //oracle(need to install the pkg-config utility)
 	// _ "github.com/mattn/go-sqlite3"      //sqlite
 
-	"github.com/henrylee2cn/faygo"
+	"github.com/andeya/faygo"
 )
 
 // DBService is a database engine object.

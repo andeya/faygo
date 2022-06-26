@@ -1,4 +1,4 @@
-//A basic freecache server supports redis protocol
+// A basic freecache server supports redis protocol
 package main
 
 import (
@@ -15,7 +15,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/henrylee2cn/faygo/freecache"
+	"github.com/andeya/faygo/freecache"
 )
 
 var (

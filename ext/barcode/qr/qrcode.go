@@ -5,8 +5,8 @@ import (
 	"image/color"
 	"math"
 
-	"github.com/henrylee2cn/faygo/ext/barcode"
-	"github.com/henrylee2cn/faygo/ext/barcode/utils"
+	"github.com/andeya/faygo/ext/barcode"
+	"github.com/andeya/faygo/ext/barcode/utils"
 )
 
 type qrcode struct {

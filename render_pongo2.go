@@ -9,7 +9,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/henrylee2cn/faygo/pongo2"
+	"github.com/andeya/faygo/pongo2"
 )
 
 type (

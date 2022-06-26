@@ -4,7 +4,7 @@ package datamatrix
 import (
 	"errors"
 
-	"github.com/henrylee2cn/faygo/ext/barcode"
+	"github.com/andeya/faygo/ext/barcode"
 )
 
 // Encode returns a Datamatrix barcode for the given content

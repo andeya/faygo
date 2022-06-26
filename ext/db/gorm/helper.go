@@ -3,7 +3,7 @@ package gorm
 import (
 	"errors"
 
-	"github.com/henrylee2cn/faygo"
+	"github.com/andeya/faygo"
 	"github.com/jinzhu/gorm"
 )
 

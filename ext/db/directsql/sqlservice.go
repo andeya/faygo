@@ -19,8 +19,8 @@ import (
 	"errors"
 	"reflect"
 
+	"github.com/andeya/faygo"
 	"xorm.io/core"
-	"github.com/henrylee2cn/faygo"
 )
 
 var notFoundError = func(sqlid string) error {
@@ -32,7 +32,7 @@ var notMatchError = func() error {
 
 // 默认参数处理
 func DealwithParameter(modelId, sqlId string, mp map[string]interface{}, sqlindex int, ctx *faygo.Context) error {
-	//获取Sqlentity,db
+	// 获取Sqlentity,db
 	se, _ := findSqlAndDB(modelId, sqlId)
 	if se == nil {
 		return notFoundError(modelId + "/" + sqlId)
@@ -45,29 +45,29 @@ func DealwithParameter(modelId, sqlId string, mp map[string]interface{}, sqlinde
 	return nil
 }
 
-//查询 根据modelId，sqlId ，mp:map[string]interface{}命名参数,返回*core.Rows
+// 查询 根据modelId，sqlId ，mp:map[string]interface{}命名参数,返回*core.Rows
 func SelectMapToRows(modelId, sqlId string, mp map[string]interface{}) (*core.Rows, error) {
-	//获取Sqlentity,db
+	// 获取Sqlentity,db
 	se, db := findSqlAndDB(modelId, sqlId)
 	if se == nil {
 		return nil, notFoundError(modelId + "/" + sqlId)
 	}
-	//判断类型不是Select 就返回错误
+	// 判断类型不是Select 就返回错误
 	if se.Sqltype != ST_SELECT {
 		return nil, notMatchError()
 	}
 	return db.QueryMap(se.Cmds[0].Sql, &mp)
 }
 
-//判断记录是否存在，根据modelId，sqlId ，mp:map[string]interface{}命名参数,返回*core.Row
+// 判断记录是否存在，根据modelId，sqlId ，mp:map[string]interface{}命名参数,返回*core.Row
 
 func SelectMapIsExist(modelId, sqlId string, mp map[string]interface{}) (bool, error) {
-	//获取Sqlentity,db
+	// 获取Sqlentity,db
 	se, db := findSqlAndDB(modelId, sqlId)
 	if se == nil {
 		return false, notFoundError(modelId + "/" + sqlId)
 	}
-	//判断类型不是Select 就返回错误
+	// 判断类型不是Select 就返回错误
 	if se.Sqltype != ST_SELECT {
 		return false, notMatchError()
 	}
@@ -78,7 +78,7 @@ func SelectMapIsExist(modelId, sqlId string, mp map[string]interface{}) (bool, e
 	return rows.Next(), nil
 }
 
-//查询  根据modelId，sqlId ,SQL参数 map  返回 []map[string]interface{}
+// 查询  根据modelId，sqlId ,SQL参数 map  返回 []map[string]interface{}
 func SelectMapToMap(modelId, sqlId string, mp map[string]interface{}) ([]map[string]interface{}, error) {
 	rows, err := SelectMapToRows(modelId, sqlId, mp)
 	if err != nil {
@@ -88,8 +88,8 @@ func SelectMapToMap(modelId, sqlId string, mp map[string]interface{}) ([]map[str
 	return rows2mapObjects(rows)
 }
 
-//查询 根据modelId，sqlId ，SQL参数是map, 返回 []struct
-//目前使用比较繁琐：st －－是结构体的一个空实例，返回的是 改结构体的实例的slice，再使用返还结果时还的需要转换下类型。
+// 查询 根据modelId，sqlId ，SQL参数是map, 返回 []struct
+// 目前使用比较繁琐：st －－是结构体的一个空实例，返回的是 改结构体的实例的slice，再使用返还结果时还的需要转换下类型。
 func SelectMapToStruct(modelId, sqlId string, mp map[string]interface{}, st interface{}) (*[]interface{}, error) {
 
 	s := reflect.ValueOf(st).Elem()
@@ -108,7 +108,7 @@ func SelectMapToStruct(modelId, sqlId string, mp map[string]interface{}, st inte
 		err = rows.Scan(onerow...)
 		if err != nil {
 			return nil, err
-			//panic(err)
+			// panic(err)
 		}
 		result = append(result, s.Interface())
 	}
@@ -116,24 +116,24 @@ func SelectMapToStruct(modelId, sqlId string, mp map[string]interface{}, st inte
 	return &result, nil
 }
 
-//查询 根据modelId，sqlId ，SQL参数是map,dest 是待填充的返回结果 []*Struct ---未完成
+// 查询 根据modelId，sqlId ，SQL参数是map,dest 是待填充的返回结果 []*Struct ---未完成
 func SelectMapToStructPro(modelId, sqlId string, mp map[string]interface{}, dest interface{}) error {
 	return nil
 }
 
-//执行返回多個結果集的多個查询根据modelId，sqlId ，SQLmp:map[string]interface{}命名参数 返回结果 map[string]*Rows
+// 执行返回多個結果集的多個查询根据modelId，sqlId ，SQLmp:map[string]interface{}命名参数 返回结果 map[string]*Rows
 func MultiSelectMapToRows(modelId, sqlId string, mp map[string]interface{}) (map[string]*core.Rows, error) {
 	result := make(map[string]*core.Rows)
-	//获取Sqlentity,db
+	// 获取Sqlentity,db
 	se, db := findSqlAndDB(modelId, sqlId)
 	if se == nil {
 		return nil, notFoundError(modelId + "/" + sqlId)
 	}
-	//判断类型不是MULTISELECT 就返回错误
+	// 判断类型不是MULTISELECT 就返回错误
 	if se.Sqltype != ST_MULTISELECT {
 		return nil, notMatchError()
 	}
-	//循環每個sql定義
+	// 循環每個sql定義
 	for i, cmd := range se.Cmds {
 		faygo.Debug("MultiSelectMap :" + cmd.Sql)
 		rows, err := db.QueryMap(cmd.Sql, &mp)
@@ -149,16 +149,16 @@ func MultiSelectMapToRows(modelId, sqlId string, mp map[string]interface{}) (map
 	return result, nil
 }
 
-//分頁查詢的返回結果
+// 分頁查詢的返回結果
 type PagingSelectRows struct {
 	Total int `json:"total"`
 	Rows  *core.Rows
 }
 
-//执行分页查询SQL  mp 是MAP类型命名参数 返回结果 int,[]map[string][]interface{}
+// 执行分页查询SQL  mp 是MAP类型命名参数 返回结果 int,[]map[string][]interface{}
 func PagingSelectMapToMap(modelId, sqlId string, mp map[string]interface{}) (*PagingSelectResult, error) {
 	se, db := findSqlAndDB(modelId, sqlId)
-	//获取总页数，約定該SQL放到第二條，並且只返回一條記錄一個字段
+	// 获取总页数，約定該SQL放到第二條，並且只返回一條記錄一個字段
 	trows, err := db.QueryMap(se.Cmds[0].Sql, &mp)
 	if err != nil {
 		return nil, err
@@ -173,7 +173,7 @@ func PagingSelectMapToMap(modelId, sqlId string, mp map[string]interface{}) (*Pa
 		if len(total) != 1 {
 			return nil, errors.New("错误：获取总页数的SQL执行结果非唯一记录！")
 		}
-		//2.获取当前页數據，約定該SQL放到第二條
+		// 2.获取当前页數據，約定該SQL放到第二條
 		rows, err := db.QueryMap(se.Cmds[1].Sql, &mp)
 		if err != nil {
 			return nil, err
@@ -183,15 +183,15 @@ func PagingSelectMapToMap(modelId, sqlId string, mp map[string]interface{}) (*Pa
 		if err != nil {
 			return nil, err
 		}
-		return &PagingSelectResult{Total: total[0], Data: result}, nil //最終的結果
+		return &PagingSelectResult{Total: total[0], Data: result}, nil // 最終的結果
 	}
 	return nil, err
 }
 
-//执行分页查询SQL  mp 是MAP类型命名参数 返回结果 int,Rows
+// 执行分页查询SQL  mp 是MAP类型命名参数 返回结果 int,Rows
 func PagingSelectMapToRows(modelId, sqlId string, mp map[string]interface{}) (*PagingSelectRows, error) {
 	se, db := findSqlAndDB(modelId, sqlId)
-	//获取总页数，約定該SQL放到第二條，並且只返回一條記錄一個字段
+	// 获取总页数，約定該SQL放到第二條，並且只返回一條記錄一個字段
 	trows, err := db.QueryMap(se.Cmds[0].Sql, &mp)
 	if err != nil {
 		return nil, err
@@ -206,17 +206,17 @@ func PagingSelectMapToRows(modelId, sqlId string, mp map[string]interface{}) (*P
 		if len(total) != 1 {
 			return nil, errors.New("错误：获取总页数的SQL执行结果非唯一记录！")
 		}
-		//2.获取当前页數據，約定該SQL放到第二條
+		// 2.获取当前页數據，約定該SQL放到第二條
 		rows, err := db.QueryMap(se.Cmds[1].Sql, &mp)
 		if err != nil {
 			return nil, err
 		}
-		return &PagingSelectRows{Total: total[0], Rows: rows}, nil //最終的結果
+		return &PagingSelectRows{Total: total[0], Rows: rows}, nil // 最終的結果
 	}
 	return nil, err
 }
 
-//多個查询 返回 map[string][]map[string]interface{}
+// 多個查询 返回 map[string][]map[string]interface{}
 func MultiSelectMapToMap(modelId, sqlId string, mp map[string]interface{}) (map[string][]map[string]interface{}, error) {
 	multirows, err := MultiSelectMapToRows(modelId, sqlId, mp)
 	if err != nil {
@@ -233,22 +233,22 @@ func MultiSelectMapToMap(modelId, sqlId string, mp map[string]interface{}) (map[
 	return result, nil
 }
 
-//执行EXEC (UPDATE、DELETE、INSERT)，mp 是MAP类型命名参数 返回结果 sql.Result
+// 执行EXEC (UPDATE、DELETE、INSERT)，mp 是MAP类型命名参数 返回结果 sql.Result
 func ExecMap(modelId, sqlId string, mp map[string]interface{}) (sql.Result, error) {
-	//获取Sqlentity,db
+	// 获取Sqlentity,db
 	se, db := findSqlAndDB(modelId, sqlId)
 	if se == nil {
 		return nil, notFoundError(modelId + "/" + sqlId)
 	}
-	//判断类型不是EXEC(UPDATE、DELETE、INSERT)就返回错误
+	// 判断类型不是EXEC(UPDATE、DELETE、INSERT)就返回错误
 	if se.Sqltype != ST_EXEC {
 		return nil, notMatchError()
 	}
-	//return db.ExecMap(se.Cmds[0].Sql, &mp)
+	// return db.ExecMap(se.Cmds[0].Sql, &mp)
 	return nil, transact(db, func(tx *core.Tx) error {
-		//循環每個sql定義
+		// 循環每個sql定義
 		for _, cmd := range se.Cmds {
-			//faygo.Debug("ExecMap sql:" + cmd.Sql)
+			// faygo.Debug("ExecMap sql:" + cmd.Sql)
 			if _, err := tx.ExecMap(cmd.Sql, &mp); err != nil {
 				return err
 			}
@@ -257,22 +257,22 @@ func ExecMap(modelId, sqlId string, mp map[string]interface{}) (sql.Result, erro
 	})
 }
 
-//执行EXEC (UPDATE、DELETE、INSERT)，SQL参数是struct  返回结果 sql.Result
+// 执行EXEC (UPDATE、DELETE、INSERT)，SQL参数是struct  返回结果 sql.Result
 func ExecStruct(modelId, sqlId string, st interface{}) (sql.Result, error) {
-	//获取Sqlentity,db
+	// 获取Sqlentity,db
 	se, db := findSqlAndDB(modelId, sqlId)
 	if se == nil {
 		return nil, notFoundError(modelId + "/" + sqlId)
 	}
-	//判断类型不是EXEC 就返回错误
+	// 判断类型不是EXEC 就返回错误
 	if se.Sqltype != ST_EXEC {
 		return nil, notMatchError()
 	}
-	//return db.ExecStruct(se.Cmds[0].Sql, st)
+	// return db.ExecStruct(se.Cmds[0].Sql, st)
 	return nil, transact(db, func(tx *core.Tx) error {
-		//循環每個sql定義
+		// 循環每個sql定義
 		for _, cmd := range se.Cmds {
-			//faygo.Debug("ExecMap sql:" + cmd.Sql)
+			// faygo.Debug("ExecMap sql:" + cmd.Sql)
 			if _, err := tx.ExecStruct(cmd.Sql, st); err != nil {
 				return err
 			}
@@ -281,14 +281,14 @@ func ExecStruct(modelId, sqlId string, st interface{}) (sql.Result, error) {
 	})
 }
 
-//批量执行 UPDATE、INSERT、DELETE、mp 是MAP类型命名参数
+// 批量执行 UPDATE、INSERT、DELETE、mp 是MAP类型命名参数
 func BacthExecMap(modelId, sqlId string, sp []map[string]interface{}) error {
-	//获取Sqlentity,db
+	// 获取Sqlentity,db
 	se, db := findSqlAndDB(modelId, sqlId)
 	if se == nil {
 		return notFoundError(modelId + "/" + sqlId)
 	}
-	//判断类型不是BATCHEXEC 就返回错误
+	// 判断类型不是BATCHEXEC 就返回错误
 	if se.Sqltype != ST_BATCHEXEC {
 		return notMatchError()
 	}
@@ -303,21 +303,21 @@ func BacthExecMap(modelId, sqlId string, sp []map[string]interface{}) error {
 	})
 }
 
-//批量执行 BacthComplex、mp 是MAP类型命名参数,事务中依次执行
+// 批量执行 BacthComplex、mp 是MAP类型命名参数,事务中依次执行
 func BacthMultiExecMap(modelId, sqlId string, mp map[string][]map[string]interface{}) error {
-	//获取Sqlentity,db
+	// 获取Sqlentity,db
 	se, db := findSqlAndDB(modelId, sqlId)
 	if se == nil {
 		return notFoundError(modelId + "/" + sqlId)
 	}
-	//判断类型不是 ST_BATCHMULTIEXEC 就返回错误
+	// 判断类型不是 ST_BATCHMULTIEXEC 就返回错误
 	if se.Sqltype != ST_BATCHMULTIEXEC {
 		return notMatchError()
 	}
 	return transact(db, func(tx *core.Tx) error {
-		//循環每個sql定義
+		// 循環每個sql定義
 		for _, cmd := range se.Cmds {
-			//循環其批量參數
+			// 循環其批量參數
 			if sp, ok := mp[cmd.Pin]; ok {
 				for _, p := range sp {
 					faygo.Debug("BacthMultiExecMap :" + cmd.Sql)

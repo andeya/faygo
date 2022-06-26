@@ -25,10 +25,10 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/henrylee2cn/faygo/logging"
-	"github.com/henrylee2cn/faygo/logging/color"
-	"github.com/henrylee2cn/faygo/session"
-	"github.com/henrylee2cn/faygo/swagger"
+	"github.com/andeya/faygo/logging"
+	"github.com/andeya/faygo/logging/color"
+	"github.com/andeya/faygo/session"
+	"github.com/andeya/faygo/swagger"
 )
 
 // Framework is the faygo web framework.
@@ -694,7 +694,7 @@ func panicHandler(ctx *Context, rcv interface{}) {
 	s := []byte("/src/runtime/panic.go")
 	e := []byte("\ngoroutine ")
 	line := []byte("\n")
-	stack := make([]byte, 4<<10) //4KB
+	stack := make([]byte, 4<<10) // 4KB
 	length := runtime.Stack(stack, true)
 	start := bytes.Index(stack, s)
 	stack = stack[start:length]

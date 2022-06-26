@@ -20,7 +20,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/henrylee2cn/faygo"
+	"github.com/andeya/faygo"
 )
 
 // NewAttachment has the response content downloaded as an attachment file.

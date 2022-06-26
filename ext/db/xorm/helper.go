@@ -3,8 +3,8 @@ package xorm
 import (
 	"errors"
 
+	"github.com/andeya/faygo"
 	"xorm.io/xorm"
-	"github.com/henrylee2cn/faygo"
 )
 
 // MustDB gets the specified database engine,

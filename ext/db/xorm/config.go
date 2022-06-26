@@ -4,8 +4,8 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/henrylee2cn/faygo"
-	"github.com/henrylee2cn/ini"
+	"github.com/andeya/faygo"
+	"github.com/andeya/ini"
 )
 
 // DBConfig is database connection config

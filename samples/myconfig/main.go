@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/henrylee2cn/faygo"
+	"github.com/andeya/faygo"
 )
 
 func main() {

@@ -24,10 +24,10 @@ import (
 	"reflect"
 	"strings"
 
-	"github.com/henrylee2cn/ini"
+	"github.com/andeya/ini"
 
-	"github.com/henrylee2cn/goutil"
-	"github.com/henrylee2cn/goutil/errors"
+	"github.com/andeya/goutil"
+	"github.com/andeya/goutil/errors"
 )
 
 // JoinStatic adds the static directory prefix to the file name.

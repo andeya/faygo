@@ -3,8 +3,8 @@ package handler
 import (
 	"time"
 
-	"github.com/henrylee2cn/faygo"
-	"github.com/henrylee2cn/faygo/ext/websocket"
+	"github.com/andeya/faygo"
+	"github.com/andeya/faygo/ext/websocket"
 )
 
 func WebsocketPage() faygo.HandlerFunc {

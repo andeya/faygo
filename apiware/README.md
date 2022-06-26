@@ -1,4 +1,4 @@
-# Apiware    [![GoDoc](https://godoc.org/github.com/tsuna/gohbase?status.png)](https://godoc.org/github.com/henrylee2cn/faygo/apiware)
+# Apiware    [![GoDoc](https://godoc.org/github.com/tsuna/gohbase?status.png)](https://godoc.org/github.com/andeya/faygo/apiware)
 
 Apiware binds the specified parameters of the Golang `net/http` and `fasthttp` requests to the structure and verifies the validity of the parameter values.
 
@@ -14,7 +14,7 @@ package main
 
 import (
     "encoding/json"
-    "github.com/henrylee2cn/faygo/apiware"
+    "github.com/andeya/faygo/apiware"
     // "mime/multipart"
     "net/http"
     "strings"
@@ -57,7 +57,7 @@ func testHandler(resp http.ResponseWriter, req *http.Request) {
     // set cookies
     http.SetCookie(resp, &http.Cookie{
         Name:  "apiwareid",
-        Value: "http_henrylee2cn",
+        Value: "http_andeya",
     })
 
     // bind params

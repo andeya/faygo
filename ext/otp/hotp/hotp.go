@@ -18,7 +18,7 @@
 package hotp
 
 import (
-	"github.com/henrylee2cn/faygo/ext/otp"
+	"github.com/andeya/faygo/ext/otp"
 
 	"crypto/hmac"
 	"crypto/rand"

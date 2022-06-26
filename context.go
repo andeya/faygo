@@ -26,8 +26,8 @@ import (
 	"path"
 	"sync"
 
-	"github.com/henrylee2cn/faygo/logging"
-	"github.com/henrylee2cn/faygo/session"
+	"github.com/andeya/faygo/logging"
+	"github.com/andeya/faygo/session"
 )
 
 // Headers
@@ -365,7 +365,7 @@ func (ctx *Context) doHandler(handlerChain HandlerChain, pathParams PathParams) 
 // Called before the start
 func (ctx *Context) prepare() bool {
 	var pass = true
-	//if XSRF is Enable then check cookie where there has any cookie in the request's cookie _csrf
+	// if XSRF is Enable then check cookie where there has any cookie in the request's cookie _csrf
 	if ctx.enableXSRF {
 		ctx.XSRFToken()
 		switch ctx.R.Method {
@@ -389,9 +389,9 @@ func (ctx *Context) posReset() {
 // Next calls all the next handler from the middleware stack, it used inside a middleware.
 // Notes: Non-concurrent security.
 func (ctx *Context) Next() {
-	//set position to the next
+	// set position to the next
 	ctx.pos++
-	//run the next
+	// run the next
 	if ctx.pos < ctx.handlerChainLen {
 		if err := ctx.handlerChain[ctx.pos].Serve(ctx); err != nil {
 			global.errorFunc(ctx, err.Error(), http.StatusInternalServerError)

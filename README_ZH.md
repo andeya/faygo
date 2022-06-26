@@ -1,17 +1,17 @@
-# Faygo [![report card](https://goreportcard.com/badge/github.com/henrylee2cn/faygo?style=flat-square)](http://goreportcard.com/report/henrylee2cn/faygo) [![github issues](https://img.shields.io/github/issues/henrylee2cn/faygo.svg?style=flat-square)](https://github.com/henrylee2cn/faygo/issues?q=is%3Aopen+is%3Aissue) [![github closed issues](https://img.shields.io/github/issues-closed-raw/henrylee2cn/faygo.svg?style=flat-square)](https://github.com/henrylee2cn/faygo/issues?q=is%3Aissue+is%3Aclosed) [![GitHub release](https://img.shields.io/github/release/henrylee2cn/faygo.svg?style=flat-square)](https://github.com/henrylee2cn/faygo/releases) [![GoDoc](https://img.shields.io/badge/godoc-reference-blue.svg?style=flat-square)](http://godoc.org/github.com/henrylee2cn/faygo) [![view Go网络编程群](https://img.shields.io/badge/官方QQ群-Go网络编程(42730308)-27a5ea.svg?style=flat-square)](http://jq.qq.com/?_wv=1027&k=fzi4p1)
+# Faygo [![report card](https://goreportcard.com/badge/github.com/andeya/faygo?style=flat-square)](http://goreportcard.com/report/andeya/faygo) [![github issues](https://img.shields.io/github/issues/andeya/faygo.svg?style=flat-square)](https://github.com/andeya/faygo/issues?q=is%3Aopen+is%3Aissue) [![github closed issues](https://img.shields.io/github/issues-closed-raw/andeya/faygo.svg?style=flat-square)](https://github.com/andeya/faygo/issues?q=is%3Aissue+is%3Aclosed) [![GitHub release](https://img.shields.io/github/release/andeya/faygo.svg?style=flat-square)](https://github.com/andeya/faygo/releases) [![GoDoc](https://img.shields.io/badge/godoc-reference-blue.svg?style=flat-square)](http://godoc.org/github.com/andeya/faygo) [![view Go网络编程群](https://img.shields.io/badge/官方QQ群-Go网络编程(42730308)-27a5ea.svg?style=flat-square)](http://jq.qq.com/?_wv=1027&k=fzi4p1)
 
-![Faygo Favicon](https://github.com/henrylee2cn/faygo/raw/master/doc/faygo_96x96.png)
+![Faygo Favicon](https://github.com/andeya/faygo/raw/master/doc/faygo_96x96.png)
 
 Faygo 是一款快速、简洁的Go Web框架，可用极少的代码开发出高性能的Web应用程序（尤其是API接口）。只需定义 struct Handler，Faygo 就能自动绑定、验证请求参数并生成在线API文档。
 
 
-[查看《用户手册》](https://github.com/henrylee2cn/faydoc)
+[查看《用户手册》](https://github.com/andeya/faydoc)
 
-![faygo index](https://github.com/henrylee2cn/faygo/raw/master/doc/index.png)
+![faygo index](https://github.com/andeya/faygo/raw/master/doc/index.png)
 
-![faygo apidoc](https://github.com/henrylee2cn/faygo/raw/master/doc/apidoc.png)
+![faygo apidoc](https://github.com/andeya/faygo/raw/master/doc/apidoc.png)
 
-![faygo server](https://github.com/henrylee2cn/faygo/raw/master/doc/server.png)
+![faygo server](https://github.com/andeya/faygo/raw/master/doc/server.png)
 
 ## 最新版本
 
@@ -28,13 +28,13 @@ Go Version ≥ 1.8
 - 方式一 源码下载
 
 ```sh
-go get -u -v github.com/henrylee2cn/faygo
+go get -u -v github.com/andeya/faygo
 ```
 
-- 方式二 部署工具 （[Go to fay](https://github.com/henrylee2cn/fay)）
+- 方式二 部署工具 （[Go to fay](https://github.com/andeya/fay)）
 
 ```sh
-go get -u -v github.com/henrylee2cn/fay
+go get -u -v github.com/andeya/fay
 ```
 
 ```
@@ -84,7 +84,7 @@ HTTPS/HTTP2(TLS on UNIX socket)               | `unix_https`
 - 大多数功能尽量使用简洁的ini进行配置来避免不必要的重新编译，并且这些配置文件支持自动补填默认值
 - 提供 `gorm`、`xorm`、`sqlx`、`directSQL`、`Websocket`、`ini` 、`http client` 等很多常用扩展包
 
-![faygo struct handler 多重用途合一](https://github.com/henrylee2cn/faygo/raw/master/doc/MultiUsage.png)
+![faygo struct handler 多重用途合一](https://github.com/andeya/faygo/raw/master/doc/MultiUsage.png)
 
 ## 简单示例
 
@@ -94,7 +94,7 @@ package main
 import (
     // "mime/multipart"
     "time"
-    "github.com/henrylee2cn/faygo"
+    "github.com/andeya/faygo"
 )
 
 type Index struct {
@@ -143,7 +143,7 @@ response:
 */
 ```
 
-[示例库](https://github.com/henrylee2cn/faygo/raw/master/samples)
+[示例库](https://github.com/andeya/faygo/raw/master/samples)
 
 ## 操作和中间件
 
@@ -413,19 +413,19 @@ float64 |  []float64 |
 
 扩展包           |  导入路径
 -----------------|-----------------------------------------------------------------------------------------------------------------
-[各种条码](https://github.com/henrylee2cn/faygo/raw/master/ext/barcode)       | `github.com/henrylee2cn/faygo/ext/barcode`
-[比特单位](https://github.com/henrylee2cn/faygo/raw/master/ext/bitconv)       | `github.com/henrylee2cn/faygo/ext/bitconv`
-[gorm数据库引擎](https://github.com/henrylee2cn/faygo/raw/master/ext/db/gorm) | `github.com/henrylee2cn/faygo/ext/db/gorm`
-[sqlx数据库引擎](https://github.com/henrylee2cn/faygo/raw/master/ext/db/sqlx) | `github.com/henrylee2cn/faygo/ext/db/sqlx`
-[xorm数据库引擎](https://github.com/henrylee2cn/faygo/raw/master/ext/db/xorm) | `github.com/henrylee2cn/faygo/ext/db/xorm`
-[directSQL(配置化SQL引擎)](https://github.com/henrylee2cn/faygo/raw/master/ext/db/directsql) | `github.com/henrylee2cn/faygo/ext/db/directsql`
-[口令算法](https://github.com/henrylee2cn/faygo/raw/master/ext/otp)           | `github.com/henrylee2cn/faygo/ext/otp`
-[UUID](https://github.com/henrylee2cn/faygo/raw/master/ext/uuid)              | `github.com/henrylee2cn/faygo/ext/uuid`
-[Websocket](https://github.com/henrylee2cn/faygo/raw/master/ext/websocket)    | `github.com/henrylee2cn/faygo/ext/websocket`
-[ini配置](https://github.com/henrylee2cn/faygo/raw/master/ini)                | `github.com/henrylee2cn/faygo/ini`
-[定时器](https://github.com/henrylee2cn/faygo/raw/master/ext/cron)            | `github.com/henrylee2cn/faygo/ext/cron`
-[任务工具](https://github.com/henrylee2cn/faygo/raw/master/ext/task)          | `github.com/henrylee2cn/faygo/ext/task`
-[HTTP客户端](https://github.com/henrylee2cn/faygo/raw/master/ext/surfer)      | `github.com/henrylee2cn/faygo/ext/surfer`
+[各种条码](https://github.com/andeya/faygo/raw/master/ext/barcode)       | `github.com/andeya/faygo/ext/barcode`
+[比特单位](https://github.com/andeya/faygo/raw/master/ext/bitconv)       | `github.com/andeya/faygo/ext/bitconv`
+[gorm数据库引擎](https://github.com/andeya/faygo/raw/master/ext/db/gorm) | `github.com/andeya/faygo/ext/db/gorm`
+[sqlx数据库引擎](https://github.com/andeya/faygo/raw/master/ext/db/sqlx) | `github.com/andeya/faygo/ext/db/sqlx`
+[xorm数据库引擎](https://github.com/andeya/faygo/raw/master/ext/db/xorm) | `github.com/andeya/faygo/ext/db/xorm`
+[directSQL(配置化SQL引擎)](https://github.com/andeya/faygo/raw/master/ext/db/directsql) | `github.com/andeya/faygo/ext/db/directsql`
+[口令算法](https://github.com/andeya/faygo/raw/master/ext/otp)           | `github.com/andeya/faygo/ext/otp`
+[UUID](https://github.com/andeya/faygo/raw/master/ext/uuid)              | `github.com/andeya/faygo/ext/uuid`
+[Websocket](https://github.com/andeya/faygo/raw/master/ext/websocket)    | `github.com/andeya/faygo/ext/websocket`
+[ini配置](https://github.com/andeya/faygo/raw/master/ini)                | `github.com/andeya/faygo/ini`
+[定时器](https://github.com/andeya/faygo/raw/master/ext/cron)            | `github.com/andeya/faygo/ext/cron`
+[任务工具](https://github.com/andeya/faygo/raw/master/ext/task)          | `github.com/andeya/faygo/ext/task`
+[HTTP客户端](https://github.com/andeya/faygo/raw/master/ext/surfer)      | `github.com/andeya/faygo/ext/surfer`
 
 ## 已知案例
 
@@ -442,7 +442,7 @@ e交易             | App           | https://fir.im/ejy
 
 <a href="https://tech.pingan.com/index.html" style="margin-right: -120px"><img src="http://pa-tech.hirede.com/templates/pa-tech/Images/logo.png" height="50" width="406" alt="平安科技"/></a>
 &nbsp;&nbsp;
-<a href="https://www.followme.cn/"><img src="https://raw.githubusercontent.com/henrylee2cn/imgs-repo/master/followme.png" height="60" alt="Followme"/></a>
+<a href="https://www.followme.cn/"><img src="https://raw.githubusercontent.com/andeya/imgs-repo/master/followme.png" height="60" alt="Followme"/></a>
 <br/>
 <a href="https://www.df-house.com/"><img src="https://www.df-house.com/dfhouse/img/logo.png" height="50" alt="杭州盯房科技有限公司"/></a>
 &nbsp;&nbsp;
@@ -452,4 +452,4 @@ e交易             | App           | https://fir.im/ejy
 
 ## 开源协议
 
-Faygo 项目采用商业应用友好的 [Apache2.0](https://github.com/henrylee2cn/faygo/raw/master/LICENSE) 协议发布
+Faygo 项目采用商业应用友好的 [Apache2.0](https://github.com/andeya/faygo/raw/master/LICENSE) 协议发布

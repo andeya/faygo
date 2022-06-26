@@ -35,7 +35,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/henrylee2cn/faygo/apiware"
+	"github.com/andeya/faygo/apiware"
 )
 
 // Regexes for checking the accept headers

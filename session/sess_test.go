@@ -19,7 +19,7 @@ import (
 	"encoding/json"
 	"testing"
 
-	"github.com/henrylee2cn/goutil"
+	"github.com/andeya/goutil"
 )
 
 func Test_gob(t *testing.T) {

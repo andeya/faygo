@@ -15,7 +15,7 @@ import (
 	"regexp"
 	"time"
 
-	"github.com/henrylee2cn/faygo"
+	"github.com/andeya/faygo"
 )
 
 var reIdentifiers = regexp.MustCompile("^[a-zA-Z0-9_]+$")
@@ -34,9 +34,9 @@ func gettime() string {
 	return time.Now().Format("2006-01-02 15:04:05")
 }
 
-//注册新的变量或函数到map
+// 注册新的变量或函数到map
 func RegAny(name string, fn interface{}) (err error) {
-	//判断名称是否合法
+	// 判断名称是否合法
 	if !reIdentifiers.MatchString(name) {
 		return errors.New(fmt.Sprintf("SQLContext-key '%s' (value: '%+v') is not a valid identifier.", name, fn))
 	}
@@ -62,7 +62,7 @@ func contextcall(name string, params ...interface{}) (result reflect.Value, err 
 	if fv.Kind() == reflect.Func {
 		t := fv.Type()
 		faygo.Debug("Context Func: ", t)
-		//Check input arguments
+		// Check input arguments
 		if len(params) != t.NumIn() {
 			err = errors.New("parameters of function not adapted")
 			return
@@ -76,7 +76,7 @@ func contextcall(name string, params ...interface{}) (result reflect.Value, err 
 		for k, param := range params {
 			in[k] = reflect.ValueOf(param)
 		}
-		//return result
+		// return result
 		result = fv.Call(in)[0]
 		faygo.Debug("Context func value : ", result)
 	} else {

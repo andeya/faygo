@@ -59,8 +59,8 @@ import (
 	// import postgresql Driver
 	_ "github.com/lib/pq"
 
-	"github.com/henrylee2cn/faygo"
-	"github.com/henrylee2cn/faygo/session"
+	"github.com/andeya/faygo"
+	"github.com/andeya/faygo/session"
 )
 
 var postgresqlpder = &Provider{}

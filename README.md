@@ -1,16 +1,16 @@
-# Faygo [![report card](https://goreportcard.com/badge/github.com/henrylee2cn/faygo?style=flat-square)](http://goreportcard.com/report/henrylee2cn/faygo) [![github issues](https://img.shields.io/github/issues/henrylee2cn/faygo.svg?style=flat-square)](https://github.com/henrylee2cn/faygo/issues?q=is%3Aopen+is%3Aissue) [![github closed issues](https://img.shields.io/github/issues-closed-raw/henrylee2cn/faygo.svg?style=flat-square)](https://github.com/henrylee2cn/faygo/issues?q=is%3Aissue+is%3Aclosed) [![GitHub release](https://img.shields.io/github/release/henrylee2cn/faygo.svg?style=flat-square)](https://github.com/henrylee2cn/faygo/releases) [![GoDoc](https://img.shields.io/badge/godoc-reference-blue.svg?style=flat-square)](http://godoc.org/github.com/henrylee2cn/faygo) [![view Go网络编程群](https://img.shields.io/badge/官方QQ群-Go网络编程(42730308)-27a5ea.svg?style=flat-square)](http://jq.qq.com/?_wv=1027&k=fzi4p1)
+# Faygo [![report card](https://goreportcard.com/badge/github.com/andeya/faygo?style=flat-square)](http://goreportcard.com/report/andeya/faygo) [![github issues](https://img.shields.io/github/issues/andeya/faygo.svg?style=flat-square)](https://github.com/andeya/faygo/issues?q=is%3Aopen+is%3Aissue) [![github closed issues](https://img.shields.io/github/issues-closed-raw/andeya/faygo.svg?style=flat-square)](https://github.com/andeya/faygo/issues?q=is%3Aissue+is%3Aclosed) [![GitHub release](https://img.shields.io/github/release/andeya/faygo.svg?style=flat-square)](https://github.com/andeya/faygo/releases) [![GoDoc](https://img.shields.io/badge/godoc-reference-blue.svg?style=flat-square)](http://godoc.org/github.com/andeya/faygo) [![view Go网络编程群](https://img.shields.io/badge/官方QQ群-Go网络编程(42730308)-27a5ea.svg?style=flat-square)](http://jq.qq.com/?_wv=1027&k=fzi4p1)
 
-![Faygo Favicon](https://github.com/henrylee2cn/faygo/raw/master/doc/faygo_96x96.png)
+![Faygo Favicon](https://github.com/andeya/faygo/raw/master/doc/faygo_96x96.png)
 
-Faygo is a fast and concise Go Web framework that can be used to develop high-performance web app(especially API) with fewer codes. Just define a struct Handler, Faygo will automatically bind/verify the request parameters and generate the online API doc. [Go to \<User Manual\>](https://github.com/henrylee2cn/faydoc)
+Faygo is a fast and concise Go Web framework that can be used to develop high-performance web app(especially API) with fewer codes. Just define a struct Handler, Faygo will automatically bind/verify the request parameters and generate the online API doc. [Go to \<User Manual\>](https://github.com/andeya/faydoc)
 
-[简体中文](https://github.com/henrylee2cn/faygo/blob/master/README_ZH.md)
+[简体中文](https://github.com/andeya/faygo/blob/master/README_ZH.md)
 
-![faygo index](https://github.com/henrylee2cn/faygo/raw/master/doc/index.png)
+![faygo index](https://github.com/andeya/faygo/raw/master/doc/index.png)
 
-![faygo apidoc](https://github.com/henrylee2cn/faygo/raw/master/doc/apidoc.png)
+![faygo apidoc](https://github.com/andeya/faygo/raw/master/doc/apidoc.png)
 
-![faygo server](https://github.com/henrylee2cn/faygo/raw/master/doc/server.png)
+![faygo server](https://github.com/andeya/faygo/raw/master/doc/server.png)
 
 
 ## Latest version
@@ -28,13 +28,13 @@ Go Version ≥ 1.8
 - Way 1: download source
 
 ```sh
-go get -u -v github.com/henrylee2cn/faygo
+go get -u -v github.com/andeya/faygo
 ```
 
-- Way 2: deployment tools ([Go to fay](https://github.com/henrylee2cn/fay))
+- Way 2: deployment tools ([Go to fay](https://github.com/andeya/fay))
 
 ```sh
-go get -u -v github.com/henrylee2cn/fay
+go get -u -v github.com/andeya/fay
 ```
 
 ```
@@ -84,7 +84,7 @@ HTTPS/HTTP2(TLS on UNIX socket)               | `unix_https`
 - Most features try to use simple ini configs to avoid unnecessary recompilation, and these profiles can be automatically assigned default values
 - Provide `gorm`, ` xorm`, `sqlx`, ` directSQL`, `Websocket`, ` ini`, `http client` and many other commonly used expansion packages
 
-![faygo handler multi-usage](https://github.com/henrylee2cn/faygo/raw/master/doc/MultiUsage.png)
+![faygo handler multi-usage](https://github.com/andeya/faygo/raw/master/doc/MultiUsage.png)
 
 ## Simple example
 
@@ -94,7 +94,7 @@ package main
 import (
     // "mime/multipart"
     "time"
-    "github.com/henrylee2cn/faygo"
+    "github.com/andeya/faygo"
 )
 
 type Index struct {
@@ -143,7 +143,7 @@ response:
 */
 ```
 
-[All samples](https://github.com/henrylee2cn/faygo/raw/master/samples)
+[All samples](https://github.com/andeya/faygo/raw/master/samples)
 
 ## Handler and middleware
 
@@ -413,19 +413,19 @@ float64 |  []float64 |
 
 package summary  |  import path
 -----------------|-----------------------------------------------------------------------------------------------------------------
-[barcode](https://github.com/henrylee2cn/faygo/raw/master/ext/barcode)             | `github.com/henrylee2cn/faygo/ext/barcode`
-[Bit unit conversion](https://github.com/henrylee2cn/faygo/raw/master/ext/bitconv) | `github.com/henrylee2cn/faygo/ext/bitconv`
-[gorm(DB ORM)](https://github.com/henrylee2cn/faygo/raw/master/ext/db/gorm)        | `github.com/henrylee2cn/faygo/ext/db/gorm`
-[sqlx(DB ext)](https://github.com/henrylee2cn/faygo/raw/master/ext/db/sqlx)        | `github.com/henrylee2cn/faygo/ext/db/sqlx`
-[xorm(DB ORM)](https://github.com/henrylee2cn/faygo/raw/master/ext/db/xorm)        | `github.com/henrylee2cn/faygo/ext/db/xorm`
-[directSQL(Configured SQL engine)](https://github.com/henrylee2cn/faygo/raw/master/ext/db/directsql) | `github.com/henrylee2cn/faygo/ext/db/directsql`
-[One-time Password](https://github.com/henrylee2cn/faygo/raw/master/ext/otp)       | `github.com/henrylee2cn/faygo/ext/otp`
-[UUID](https://github.com/henrylee2cn/faygo/raw/master/ext/uuid)                   | `github.com/henrylee2cn/faygo/ext/uuid`
-[Websocket](https://github.com/henrylee2cn/faygo/raw/master/ext/websocket)         | `github.com/henrylee2cn/faygo/ext/websocket`
-[ini](https://github.com/henrylee2cn/faygo/raw/master/ini)                         | `github.com/henrylee2cn/faygo/ini`
-[cron](https://github.com/henrylee2cn/faygo/raw/master/ext/cron)                   | `github.com/henrylee2cn/faygo/ext/cron`
-[task](https://github.com/henrylee2cn/faygo/raw/master/ext/task)                   | `github.com/henrylee2cn/faygo/ext/task`
-[http client](https://github.com/henrylee2cn/faygo/raw/master/ext/surfer)          | `github.com/henrylee2cn/faygo/ext/surfer`
+[barcode](https://github.com/andeya/faygo/raw/master/ext/barcode)             | `github.com/andeya/faygo/ext/barcode`
+[Bit unit conversion](https://github.com/andeya/faygo/raw/master/ext/bitconv) | `github.com/andeya/faygo/ext/bitconv`
+[gorm(DB ORM)](https://github.com/andeya/faygo/raw/master/ext/db/gorm)        | `github.com/andeya/faygo/ext/db/gorm`
+[sqlx(DB ext)](https://github.com/andeya/faygo/raw/master/ext/db/sqlx)        | `github.com/andeya/faygo/ext/db/sqlx`
+[xorm(DB ORM)](https://github.com/andeya/faygo/raw/master/ext/db/xorm)        | `github.com/andeya/faygo/ext/db/xorm`
+[directSQL(Configured SQL engine)](https://github.com/andeya/faygo/raw/master/ext/db/directsql) | `github.com/andeya/faygo/ext/db/directsql`
+[One-time Password](https://github.com/andeya/faygo/raw/master/ext/otp)       | `github.com/andeya/faygo/ext/otp`
+[UUID](https://github.com/andeya/faygo/raw/master/ext/uuid)                   | `github.com/andeya/faygo/ext/uuid`
+[Websocket](https://github.com/andeya/faygo/raw/master/ext/websocket)         | `github.com/andeya/faygo/ext/websocket`
+[ini](https://github.com/andeya/faygo/raw/master/ini)                         | `github.com/andeya/faygo/ini`
+[cron](https://github.com/andeya/faygo/raw/master/ext/cron)                   | `github.com/andeya/faygo/ext/cron`
+[task](https://github.com/andeya/faygo/raw/master/ext/task)                   | `github.com/andeya/faygo/ext/task`
+[http client](https://github.com/andeya/faygo/raw/master/ext/surfer)          | `github.com/andeya/faygo/ext/surfer`
 
 
 ## Know Cases
@@ -443,7 +443,7 @@ OneFor           | App           | https://fir.im/eqb
 
 <a href="https://tech.pingan.com/index.html" style="margin-right: -120px"><img src="http://pa-tech.hirede.com/templates/pa-tech/Images/logo.png" height="50" width="406" alt="平安科技"/></a>
 &nbsp;&nbsp;
-<a href="https://www.followme.cn/"><img src="https://raw.githubusercontent.com/henrylee2cn/imgs-repo/master/followme.png" height="60" alt="Followme"/></a>
+<a href="https://www.followme.cn/"><img src="https://raw.githubusercontent.com/andeya/imgs-repo/master/followme.png" height="60" alt="Followme"/></a>
 <br/>
 <a href="https://www.df-house.com/"><img src="https://www.df-house.com/dfhouse/img/logo.png" height="50" alt="杭州盯房科技有限公司"/></a>
 &nbsp;&nbsp;
@@ -453,4 +453,4 @@ OneFor           | App           | https://fir.im/eqb
 
 ## License
 
-Faygo is under Apache v2 License. See the [LICENSE](https://github.com/henrylee2cn/faygo/raw/master/LICENSE) file for the full license text
+Faygo is under Apache v2 License. See the [LICENSE](https://github.com/andeya/faygo/raw/master/LICENSE) file for the full license text

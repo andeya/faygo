@@ -19,23 +19,23 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/andeya/faygo"
 	"xorm.io/core"
-	"github.com/henrylee2cn/faygo"
 )
 
-//根据sqlid获取 *TSql
+// 根据sqlid获取 *TSql
 func (m *TModel) findSql(sqlid string) *TSql {
 	if se, ok := m.Sqls[sqlid]; ok {
-		//faygo.Debug("SqlId: " + sqlid)
+		// faygo.Debug("SqlId: " + sqlid)
 		return se
 	}
 	return nil
 }
 
-//执行普通的单个查询SQL  mp 是MAP类型命名参数 map[string]interface{},返回结果 []map[string][]interface{}
+// 执行普通的单个查询SQL  mp 是MAP类型命名参数 map[string]interface{},返回结果 []map[string][]interface{}
 func (m *TModel) selectMap(se *TSql, mp map[string]interface{}) ([]map[string]interface{}, error) {
 	faygo.Debug("selectMap parameters :", mp)
-	//执行sql
+	// 执行sql
 	rows, err := m.DB.QueryMap(se.Cmds[0].Sql, &mp)
 	if err != nil {
 		return nil, err
@@ -44,16 +44,16 @@ func (m *TModel) selectMap(se *TSql, mp map[string]interface{}) ([]map[string]in
 	return rows2mapObjects(rows)
 }
 
-//分頁查詢的返回結果
+// 分頁查詢的返回結果
 type PagingSelectResult struct {
 	Total int                      `json:"total"`
 	Data  []map[string]interface{} `json:"data"`
 }
 
-//执行分页查询SQL  mp 是MAP类型命名参数 返回结果 int,[]map[string][]interface{}
+// 执行分页查询SQL  mp 是MAP类型命名参数 返回结果 int,[]map[string][]interface{}
 func (m *TModel) pagingSelectMap(se *TSql, mp map[string]interface{}) (*PagingSelectResult, error) {
 	faygo.Debug("pagingSelectMap parameters :", mp)
-	//获取总页数，約定該SQL放到第二條，並且只返回一條記錄一個字段
+	// 获取总页数，約定該SQL放到第二條，並且只返回一條記錄一個字段
 	trows, err := m.DB.QueryMap(se.Cmds[0].Sql, &mp)
 	if err != nil {
 		return nil, err
@@ -68,7 +68,7 @@ func (m *TModel) pagingSelectMap(se *TSql, mp map[string]interface{}) (*PagingSe
 		if len(total) != 1 {
 			return nil, errors.New("错误：获取总页数的SQL执行结果非唯一记录！")
 		}
-		//2.获取当前页數據，約定該SQL放到第二條
+		// 2.获取当前页數據，約定該SQL放到第二條
 		rows, err := m.DB.QueryMap(se.Cmds[1].Sql, &mp)
 		if err != nil {
 			return nil, err
@@ -78,16 +78,16 @@ func (m *TModel) pagingSelectMap(se *TSql, mp map[string]interface{}) (*PagingSe
 		if err != nil {
 			return nil, err
 		}
-		return &PagingSelectResult{Total: total[0], Data: result}, nil //最終的結果
+		return &PagingSelectResult{Total: total[0], Data: result}, nil // 最終的結果
 	}
 	return nil, err
 }
 
-//执行返回多個結果集的多個查询SQL， mp 是MAP类型命名参数 返回结果 map[string][]map[string][]string
+// 执行返回多個結果集的多個查询SQL， mp 是MAP类型命名参数 返回结果 map[string][]map[string][]string
 func (m *TModel) multiSelectMap(se *TSql, mp map[string]interface{}) (map[string][]map[string]interface{}, error) {
 	result := make(map[string][]map[string]interface{})
 	faygo.Debug("MultiSelectMap parameters :", mp)
-	//循環每個sql定義
+	// 循環每個sql定義
 	for i, cmd := range se.Cmds {
 		faygo.Debug("MultiSelectMap :" + cmd.Sql)
 		rows, err := m.DB.QueryMap(cmd.Sql, &mp)
@@ -108,8 +108,8 @@ func (m *TModel) multiSelectMap(se *TSql, mp map[string]interface{}) (map[string
 	return result, nil
 }
 
-//执行单个查询SQL返回JSON父子嵌套結果集 mp 是MAP类型命名参数 map[string]interface{},返回结果 []map[string][]interface{}
-//根据 Idfield、Pidfield 构建嵌套的 map 结果集
+// 执行单个查询SQL返回JSON父子嵌套結果集 mp 是MAP类型命名参数 map[string]interface{},返回结果 []map[string][]interface{}
+// 根据 Idfield、Pidfield 构建嵌套的 map 结果集
 func (m *TModel) nestedSelectMap(se *TSql, mp map[string]interface{}) ([]map[string]interface{}, error) {
 	faygo.Debug("NestedSelectMap :" + se.Cmds[0].Sql)
 	rows, err := m.DB.QueryMap(se.Cmds[0].Sql, &mp)
@@ -127,7 +127,7 @@ type Execresult struct {
 	Info         string `json:"info"`
 }
 
-//执行 UPDATE、DELETE、INSERT，mp 是 map[string]interface{}, 返回结果 execresult
+// 执行 UPDATE、DELETE、INSERT，mp 是 map[string]interface{}, 返回结果 execresult
 /*func (m *TModel) execMap(se *TSql, mp map[string]interface{}) (*Execresult, error) {
 	faygo.Debug("ExecMap :" + se.Cmds[0].Sql)
 	faygo.Debug("map paras :", mp)
@@ -140,12 +140,12 @@ type Execresult struct {
 	return &Execresult{LastInsertId: LIId, RowsAffected: RAffected, Info: "Exec sql ok!"}, nil
 }
 */
-//说明，将执行sql的execMap修改该可以执行多个配置的cmd，采用相同的参数---2016.11.20
-//执行 UPDATE、DELETE、INSERT，mp 是 map[string]interface{}，可以配置多个sql语句，使用相同的参数执行。
+// 说明，将执行sql的execMap修改该可以执行多个配置的cmd，采用相同的参数---2016.11.20
+// 执行 UPDATE、DELETE、INSERT，mp 是 map[string]interface{}，可以配置多个sql语句，使用相同的参数执行。
 func (m *TModel) execMap(se *TSql, mp map[string]interface{}) error {
 	faygo.Debug("ExecMap parameters :", mp)
 	return transact(m.DB, func(tx *core.Tx) error {
-		//循環每個sql定義
+		// 循環每個sql定義
 		for _, cmd := range se.Cmds {
 			faygo.Debug("ExecMap sql:" + cmd.Sql)
 			_, err := tx.ExecMap(cmd.Sql, &mp)
@@ -157,15 +157,15 @@ func (m *TModel) execMap(se *TSql, mp map[string]interface{}) error {
 	})
 }
 
-//批量执行 UPDATE、INSERT、sp 是MAP类型命名参数
+// 批量执行 UPDATE、INSERT、sp 是MAP类型命名参数
 func (m *TModel) bacthExecMap(se *TSql, sp []map[string]interface{}) error {
 	faygo.Debug("BacthExecMap parameters :", sp)
 	// 如果执行sql的语句组使用每次循环使用单独的事务，则如下
 	if se.Eachtran {
 		for _, p := range sp {
 			transact(m.DB, func(tx *core.Tx) error {
-				////////////////////////////////
-				//循環每個sql定義
+				// //////////////////////////////
+				// 循環每個sql定義
 				for _, cmd := range se.Cmds {
 					faygo.Debug("BacthExecMap sql:" + cmd.Sql)
 					_, err := tx.ExecMap(cmd.Sql, &p)
@@ -174,15 +174,15 @@ func (m *TModel) bacthExecMap(se *TSql, sp []map[string]interface{}) error {
 					}
 				}
 				return nil
-				////////////////////////////////////
+				// //////////////////////////////////
 			})
 		}
-		//所有循环使用同一个事务
+		// 所有循环使用同一个事务
 	} else {
 		return transact(m.DB, func(tx *core.Tx) error {
 			for _, p := range sp {
-				////////////////////////////////
-				//循環每個sql定義
+				// //////////////////////////////
+				// 循環每個sql定義
 				for _, cmd := range se.Cmds {
 					faygo.Debug("BacthExecMap sql:" + cmd.Sql)
 					_, err := tx.ExecMap(cmd.Sql, &p)
@@ -231,20 +231,20 @@ func (m *TModel) bacthExecMap(se *TSql, sp []map[string]interface{}) error {
 	})
 }
 */
-//批量执行 BacthMultiExec、mp 是map[string][]map[string]interface{}参数,事务中依次执行
+// 批量执行 BacthMultiExec、mp 是map[string][]map[string]interface{}参数,事务中依次执行
 func (m *TModel) bacthMultiExecMap(se *TSql, mp map[string][]map[string]interface{}) error {
 	faygo.Debug("BacthMultiExecMap parameters : ", mp)
 	// 如果执行sql的语句组使用每次循环使用单独的事务，规则如下：
 	// 比如有4个SQL ，其中 1，2使用同一个参数组则1，2组合在一起每次循环使用一个事务，多次循环多个事务
 	// ，3，4分别使用不同的参数组则各自也在不同的事务，规则同1，2
 	if se.Eachtran {
-		//根据参数循环
+		// 根据参数循环
 		for key, sp := range mp {
 			for _, p := range sp {
 				transact(m.DB, func(tx *core.Tx) error {
-					//循環每個sql定義
+					// 循環每個sql定義
 					for _, cmd := range se.Cmds {
-						//将使用相同参数的在一个事务执行
+						// 将使用相同参数的在一个事务执行
 						if cmd.Pin == key {
 							faygo.Debug("BacthMultiExecMap-EachTran :" + cmd.Sql)
 							if _, err := tx.ExecMap(cmd.Sql, &p); err != nil {
@@ -256,11 +256,11 @@ func (m *TModel) bacthMultiExecMap(se *TSql, mp map[string][]map[string]interfac
 				})
 			}
 		}
-	} else { //原来的方式，在所有sql同一个事务中执行
+	} else { // 原来的方式，在所有sql同一个事务中执行
 		return transact(m.DB, func(tx *core.Tx) error {
-			//循環每個sql定義
+			// 循環每個sql定義
 			for _, cmd := range se.Cmds {
-				//循環其批量參數
+				// 循環其批量參數
 				if sp, ok := mp[cmd.Pin]; ok {
 					for _, p := range sp {
 						faygo.Debug("BacthMultiExecMap :" + cmd.Sql)
@@ -313,22 +313,22 @@ func (m *TModel) setBLOB(se *TSql, mp map[string]interface{}) error {
 	return nil
 }
 
-//执行普通的查询SQL返回一个二进制字段的值   mp 是MAP类型命名参数 map[string]interface{},返回结果 []byte
+// 执行普通的查询SQL返回一个二进制字段的值   mp 是MAP类型命名参数 map[string]interface{},返回结果 []byte
 func (m *TModel) getBLOB(se *TSql, mp map[string]interface{}) ([]byte, error) {
 	faygo.Debug("getBLOB parameters :", mp)
-	//执行sql
+	// 执行sql
 	rows, err := m.DB.QueryMap(se.Cmds[0].Sql, &mp)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	//字段slice
+	// 字段slice
 	fields, err := rows.Columns()
 	if err != nil {
 		faygo.Error(err)
 		return nil, err
 	}
-	//只能返回一个字段，即要获取的二进制字段
+	// 只能返回一个字段，即要获取的二进制字段
 	if len(fields) != 1 {
 		return nil, errors.New("error: getBLOB sql only return one field")
 	}
@@ -344,7 +344,7 @@ func (m *TModel) getBLOB(se *TSql, mp map[string]interface{}) ([]byte, error) {
 	return nil, errors.New("error: getBLOB sql result is empty!")
 }
 
-//ransaction handler 封装在一个事务中执行多个SQL语句
+// ransaction handler 封装在一个事务中执行多个SQL语句
 func transact(db *core.DB, txFunc func(*core.Tx) error) (err error) {
 	tx, err := db.Begin()
 	if err != nil {

@@ -29,7 +29,7 @@ import (
 	"time"
 	"unsafe"
 
-	"github.com/henrylee2cn/faygo/acceptencoder"
+	"github.com/andeya/faygo/acceptencoder"
 )
 
 // Size returns the current size, in bytes, of the response.
@@ -111,7 +111,7 @@ func (ctx *Context) SetHeader(key, val string) {
 func (ctx *Context) SetCookie(name string, value string, others ...interface{}) {
 	var b bytes.Buffer
 	fmt.Fprintf(&b, "%s=%s", sanitizeName(name), sanitizeValue(value))
-	//fix cookie not work in IE
+	// fix cookie not work in IE
 	if len(others) > 0 {
 		var maxAge int64
 		switch v := others[0].(type) {

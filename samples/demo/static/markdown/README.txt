@@ -1,16 +1,16 @@
-# Faygo    [![GoDoc](https://godoc.org/github.com/tsuna/gohbase?status.png)](https://godoc.org/github.com/henrylee2cn/faygo)
+# Faygo    [![GoDoc](https://godoc.org/github.com/tsuna/gohbase?status.png)](https://godoc.org/github.com/andeya/faygo)
 
-![Lessgo Favicon](https://github.com/henrylee2cn/faygo/raw/master/doc/faygo_96x96.png)
+![Lessgo Favicon](https://github.com/andeya/faygo/raw/master/doc/faygo_96x96.png)
 
 Faygo is a Golang Web framework that handler is middleware, supports intelligent parameter mapping and validation, and automates API documentation.
 
-[简体中文](https://github.com/henrylee2cn/faygo/blob/master/README_ZH.md)
+[简体中文](https://github.com/andeya/faygo/blob/master/README_ZH.md)
 
-![faygo server](https://github.com/henrylee2cn/faygo/raw/master/doc/server.png)
+![faygo server](https://github.com/andeya/faygo/raw/master/doc/server.png)
 
-![faygo apidoc](https://github.com/henrylee2cn/faygo/raw/master/doc/apidoc.png)
+![faygo apidoc](https://github.com/andeya/faygo/raw/master/doc/apidoc.png)
 
-![faygo index](https://github.com/henrylee2cn/faygo/raw/master/doc/index.png)
+![faygo index](https://github.com/andeya/faygo/raw/master/doc/index.png)
 
 ## Quick Start
 
@@ -21,7 +21,7 @@ Go Version ≥1.6
 ### Download and install
 
 ```sh
-go get -u -v github.com/henrylee2cn/faygo
+go get -u -v github.com/andeya/faygo
 ```
 
 ### Simple example
@@ -29,7 +29,7 @@ go get -u -v github.com/henrylee2cn/faygo
 package main
 
 import (
-    "github.com/henrylee2cn/faygo"
+    "github.com/andeya/faygo"
     "time"
 )
 
@@ -78,7 +78,7 @@ response:
     }
 */
 ```
-[Full example](https://github.com/henrylee2cn/faygo/raw/master/demo)
+[Full example](https://github.com/andeya/faygo/raw/master/demo)
 
 ## Features
 
@@ -221,17 +221,17 @@ float32 |  []float32 |
 float64 |  []float64 |
 
 # Expansion package
-- [barcode](https://github.com/henrylee2cn/faygo/raw/master/ext/barcode):       `github.com/henrylee2cn/faygo/ext/barcode`
-- [Bit unit conversion](https://github.com/henrylee2cn/faygo/raw/master/ext/bitconv):       `github.com/henrylee2cn/faygo/ext/bitconv`
-- [timer](https://github.com/henrylee2cn/faygo/raw/master/ext/cron):            `github.com/henrylee2cn/faygo/ext/cron`
-- [gorm(DB ORM)](https://github.com/henrylee2cn/faygo/raw/master/ext/db/gorm): `github.com/henrylee2cn/faygo/ext/db/gorm`
-- [sqlx(DB ext)](https://github.com/henrylee2cn/faygo/raw/master/ext/db/sqlx): `github.com/henrylee2cn/faygo/ext/db/sqlx`
-- [xorm(DB ORM)](https://github.com/henrylee2cn/faygo/raw/master/ext/db/xorm): `github.com/henrylee2cn/faygo/ext/db/xorm`
-- [One-time Password](https://github.com/henrylee2cn/faygo/raw/master/ext/otp):           `github.com/henrylee2cn/faygo/ext/otp`
-- [UUID](https://github.com/henrylee2cn/faygo/raw/master/ext/uuid):              `github.com/henrylee2cn/faygo/ext/uuid`
-- [Websocket](https://github.com/henrylee2cn/faygo/raw/master/ext/websocket):    `github.com/henrylee2cn/faygo/ext/websocket`
-- [ini](https://github.com/henrylee2cn/faygo/raw/master/ini):                `github.com/henrylee2cn/faygo/ini`
+- [barcode](https://github.com/andeya/faygo/raw/master/ext/barcode):       `github.com/andeya/faygo/ext/barcode`
+- [Bit unit conversion](https://github.com/andeya/faygo/raw/master/ext/bitconv):       `github.com/andeya/faygo/ext/bitconv`
+- [timer](https://github.com/andeya/faygo/raw/master/ext/cron):            `github.com/andeya/faygo/ext/cron`
+- [gorm(DB ORM)](https://github.com/andeya/faygo/raw/master/ext/db/gorm): `github.com/andeya/faygo/ext/db/gorm`
+- [sqlx(DB ext)](https://github.com/andeya/faygo/raw/master/ext/db/sqlx): `github.com/andeya/faygo/ext/db/sqlx`
+- [xorm(DB ORM)](https://github.com/andeya/faygo/raw/master/ext/db/xorm): `github.com/andeya/faygo/ext/db/xorm`
+- [One-time Password](https://github.com/andeya/faygo/raw/master/ext/otp):           `github.com/andeya/faygo/ext/otp`
+- [UUID](https://github.com/andeya/faygo/raw/master/ext/uuid):              `github.com/andeya/faygo/ext/uuid`
+- [Websocket](https://github.com/andeya/faygo/raw/master/ext/websocket):    `github.com/andeya/faygo/ext/websocket`
+- [ini](https://github.com/andeya/faygo/raw/master/ini):                `github.com/andeya/faygo/ini`
 
 
 # License
-Faygo is under Apache v2 License. See the [LICENSE](https://github.com/henrylee2cn/faygo/raw/master/LICENSE) file for the full license text.
+Faygo is under Apache v2 License. See the [LICENSE](https://github.com/andeya/faygo/raw/master/LICENSE) file for the full license text.

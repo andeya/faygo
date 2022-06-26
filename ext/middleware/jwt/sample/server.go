@@ -3,8 +3,8 @@ package main
 import (
 	"time"
 
-	"github.com/henrylee2cn/faygo"
-	"github.com/henrylee2cn/faygo/ext/middleware/jwt"
+	"github.com/andeya/faygo"
+	"github.com/andeya/faygo/ext/middleware/jwt"
 )
 
 func helloHandler(c *faygo.Context) error {
@@ -23,7 +23,7 @@ func main() {
 		Key:        []byte("secret key"),
 		Timeout:    time.Minute,
 		MaxRefresh: time.Minute * 3,
-		//登录响应
+		// 登录响应
 		LoginResponse: func(c *faygo.Context, code int, token string, expire time.Time) error {
 			faygo.Debug("LoginResponse")
 			return c.JSON(code, faygo.Map{
@@ -38,7 +38,7 @@ func main() {
 				"custom2": "custom info2 ",
 			}
 		},*/
-		//认证
+		// 认证
 		Authenticator: func(userId string, password string, c *faygo.Context) (interface{}, bool) {
 			faygo.Debug("Authenticator认证")
 			if (userId == "admin" && password == "admin") || (userId == "test" && password == "test") {
@@ -48,7 +48,7 @@ func main() {
 			return userId, false
 		},
 
-		//授权
+		// 授权
 		Authorizator: func(userId interface{}, c *faygo.Context) bool {
 			faygo.Debug("Authorizator 授权")
 			if userId == "admin" {
@@ -81,7 +81,7 @@ func main() {
 		// TimeFunc provides the current time. You can override it to use another time value. This is useful for testing or if your server uses a different time zone than your tokens.
 		TimeFunc: time.Now,
 	}
-	//调用初始设置函数，必须的。
+	// 调用初始设置函数，必须的。
 	err := authMiddleware.MiddlewareInit()
 	if err != nil {
 		faygo.Error(err)
@@ -89,7 +89,7 @@ func main() {
 
 	r.POST("/login", faygo.HandlerFunc(authMiddleware.LoginHandler))
 	auth := r.Group("/auth")
-	//auth.Use(authMiddleware.MiddlewareFunc())
+	// auth.Use(authMiddleware.MiddlewareFunc())
 	{
 		auth.GET("/hello", faygo.HandlerFunc(helloHandler)).Use(authMiddleware.MiddlewareFunc())
 		auth.GET("/refreshtoken", faygo.HandlerFunc(authMiddleware.RefreshHandler))

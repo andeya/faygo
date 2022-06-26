@@ -26,9 +26,9 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/henrylee2cn/faygo/acceptencoder"
-	"github.com/henrylee2cn/faygo/apiware"
-	"github.com/henrylee2cn/faygo/logging"
+	"github.com/andeya/faygo/acceptencoder"
+	"github.com/andeya/faygo/apiware"
+	"github.com/andeya/faygo/logging"
 )
 
 const (
@@ -43,7 +43,7 @@ const (
       | |  \/ /\ \/ / |/ / |/ /
       / / \_/\\ \  / \_ / \__/ 
      / /        / /  _\ \      
-    \_/        \_/  \_\_/   VERSION ` + VERSION + "  URL https://github.com/henrylee2cn/faygo\n"
+    \_/        \_/  \_\_/   VERSION ` + VERSION + "  URL https://github.com/andeya/faygo\n"
 )
 
 // New uses the faygo web framework to create a new application.

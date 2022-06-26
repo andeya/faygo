@@ -15,5 +15,5 @@
 package faygo
 
 import (
-	_ "github.com/henrylee2cn/faygo/_syso"
+	_ "github.com/andeya/faygo/_syso"
 )

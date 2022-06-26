@@ -3,7 +3,7 @@ package middleware
 import (
 	// "net/http"
 
-	"github.com/henrylee2cn/faygo"
+	"github.com/andeya/faygo"
 )
 
 func Root2Index(ctx *faygo.Context) error {

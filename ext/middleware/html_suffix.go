@@ -20,10 +20,10 @@ import (
 	"path"
 	"strings"
 
-	"github.com/henrylee2cn/faygo"
+	"github.com/andeya/faygo"
 )
 
-//AutoHTMLSuffix adds smartly .html suffix to static route
+// AutoHTMLSuffix adds smartly .html suffix to static route
 func AutoHTMLSuffix() faygo.HandlerFunc {
 	return func(c *faygo.Context) error {
 		ps := c.PathParamAll()

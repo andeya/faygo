@@ -26,7 +26,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/henrylee2cn/faygo/swagger"
+	"github.com/andeya/faygo/swagger"
 )
 
 type swaggerFS struct {

@@ -9,7 +9,7 @@ import (
 	"unicode"
 	"unicode/utf8"
 
-	"github.com/henrylee2cn/faygo/apiware"
+	"github.com/andeya/faygo/apiware"
 )
 
 // Handle is a function that can be registered to a route to handle HTTP requests.

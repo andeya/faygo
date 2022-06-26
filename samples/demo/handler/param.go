@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"sync"
 
-	"github.com/henrylee2cn/faygo"
+	"github.com/andeya/faygo"
 )
 
 type Param struct {

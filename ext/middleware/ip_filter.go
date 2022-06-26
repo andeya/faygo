@@ -20,7 +20,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/henrylee2cn/faygo"
+	"github.com/andeya/faygo"
 )
 
 // NewIPFilter creates middleware that intercepts the specified IP prefix.

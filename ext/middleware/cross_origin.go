@@ -17,7 +17,7 @@
 package middleware
 
 import (
-	"github.com/henrylee2cn/faygo"
+	"github.com/andeya/faygo"
 )
 
 // CrossOrigin creates Cross-Domain middleware.

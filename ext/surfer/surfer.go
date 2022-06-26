@@ -1,4 +1,4 @@
-// Copyright 2015 henrylee2cn Author. All Rights Reserved.
+// Copyright 2015 andeya Author. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@
 // package main
 
 // import (
-//     "github.com/henrylee2cn/surfer"
+//     "github.com/andeya/surfer"
 //     "io/ioutil"
 //     "log"
 // )
@@ -32,7 +32,7 @@
 // func main() {
 //     // Use surf engine
 //     resp, err := surfer.Download(&surfer.Request{
-//         Url: "http://github.com/henrylee2cn/surfer",
+//         Url: "http://github.com/andeya/surfer",
 //     })
 //     if err != nil {
 //         log.Fatal(err)
@@ -42,7 +42,7 @@
 //
 //     // Use phantomjs engine
 //     resp, err = surfer.Download(&surfer.Request{
-//         Url:          "http://github.com/henrylee2cn",
+//         Url:          "http://github.com/andeya",
 //         DownloaderID: 1,
 //     })
 //     if err != nil {
@@ -69,7 +69,7 @@ var (
 	once_surf    sync.Once
 	once_phantom sync.Once
 	tempJsDir    = "./tmp"
-	// phantomjsFile = filepath.Clean(path.Join(os.Getenv("GOPATH"), `/src/github.com/henrylee2cn/surfer/phantomjs/phantomjs`))
+	// phantomjsFile = filepath.Clean(path.Join(os.Getenv("GOPATH"), `/src/github.com/andeya/surfer/phantomjs/phantomjs`))
 	phantomjsFile = `./phantomjs`
 )
 

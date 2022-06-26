@@ -9,32 +9,33 @@
 package directsqlx
 
 import (
-	"github.com/henrylee2cn/faygo"
 	"sync"
 	"time"
+
+	"github.com/andeya/faygo"
 )
 
-//缓存结果对象
+// 缓存结果对象
 type memo struct {
 	Timeout time.Time
-	Result  []byte //interface{}
-	Suffix  string //附加的标识，对于有参数的sql使用该后缀标识参数差异，只缓存第一次查询默认参数的情况，其他的不缓存，缓存的刷新也依赖该
+	Result  []byte // interface{}
+	Suffix  string // 附加的标识，对于有参数的sql使用该后缀标识参数差异，只缓存第一次查询默认参数的情况，其他的不缓存，缓存的刷新也依赖该
 }
 
-//缓存池对象
+// 缓存池对象
 type MemoPool struct {
 	pool  map[string]*memo
 	mutex *sync.RWMutex
 }
 
-//全局缓存池
+// 全局缓存池
 var mp *MemoPool
 
 func init() {
 	mp = &MemoPool{pool: map[string]*memo{}, mutex: new(sync.RWMutex)}
 }
 
-//根据key以及suffix后缀获取缓存的结果 has 表示存在有效的result，result为结果
+// 根据key以及suffix后缀获取缓存的结果 has 表示存在有效的result，result为结果
 func GetCache(key string, suffix string) (ok bool, result []byte) {
 	mp.mutex.RLock()
 	memoized := mp.pool[key]
@@ -48,31 +49,31 @@ func GetCache(key string, suffix string) (ok bool, result []byte) {
 	return false, nil
 }
 
-//将key以及suffix后缀的值放入到缓存中，如果存在则替换，并记录失效日期
+// 将key以及suffix后缀的值放入到缓存中，如果存在则替换，并记录失效日期
 func SetCache(key string, suffix string, value []byte, timeout int) {
 	if value != nil {
 		mp.mutex.RLock()
 		memoized := mp.pool[key]
 		mp.mutex.RUnlock()
-		//缓存key存在值但后缀不同则退出
+		// 缓存key存在值但后缀不同则退出
 		if (memoized != nil) && (memoized.Suffix != suffix) {
 			return
 		}
-		//faygo.Debug("Set Cache:[" + key + " - " + suffix + "]")
-		//缓存不存在或虽然存在但suffix后缀相同则修改之
+		// faygo.Debug("Set Cache:[" + key + " - " + suffix + "]")
+		// 缓存不存在或虽然存在但suffix后缀相同则修改之
 		var duration time.Duration
-		//-1为一直有效，-2为一月，-3为一周 -4为一天，单位为分钟
+		// -1为一直有效，-2为一月，-3为一周 -4为一天，单位为分钟
 		switch timeout {
 		case -1:
-			duration = 365 * time.Duration(24) * time.Hour //一年
+			duration = 365 * time.Duration(24) * time.Hour // 一年
 		case -2:
-			duration = 30 * time.Duration(24) * time.Hour //一月
+			duration = 30 * time.Duration(24) * time.Hour // 一月
 		case -3:
-			duration = 7 * time.Duration(24) * time.Hour //一周
+			duration = 7 * time.Duration(24) * time.Hour // 一周
 		case -4:
-			duration = time.Duration(24) * time.Hour //一天
+			duration = time.Duration(24) * time.Hour // 一天
 		default:
-			duration = time.Duration(timeout) * time.Minute //分钟
+			duration = time.Duration(timeout) * time.Minute // 分钟
 		}
 		mp.mutex.Lock()
 		mp.pool[key] = &memo{
@@ -81,18 +82,18 @@ func SetCache(key string, suffix string, value []byte, timeout int) {
 			Result:  value,
 		}
 		mp.mutex.Unlock()
-		//faygo.Debug("Set Cache Result:["+key+" - "+suffix+"]", mp.pool[key])
+		// faygo.Debug("Set Cache Result:["+key+" - "+suffix+"]", mp.pool[key])
 	}
 }
 
-//清除key的缓存
+// 清除key的缓存
 func RemoveCache(key string) {
 	mp.mutex.Lock()
 	delete(mp.pool, key)
 	mp.mutex.Unlock()
 }
 
-//清除全部缓存
+// 清除全部缓存
 func ClearCache() {
 	mp.mutex.Lock()
 	for key, _ := range mp.pool {

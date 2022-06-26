@@ -19,8 +19,8 @@ import (
 	"os"
 	"strings"
 
-	"github.com/henrylee2cn/faygo/logging"
-	"github.com/henrylee2cn/faygo/logging/color"
+	"github.com/andeya/faygo/logging"
+	"github.com/andeya/faygo/logging/color"
 )
 
 // NewLog gets a global logger

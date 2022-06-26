@@ -18,8 +18,8 @@
 package totp
 
 import (
-	"github.com/henrylee2cn/faygo/ext/otp"
-	"github.com/henrylee2cn/faygo/ext/otp/hotp"
+	"github.com/andeya/faygo/ext/otp"
+	"github.com/andeya/faygo/ext/otp/hotp"
 
 	"crypto/rand"
 	"encoding/base32"

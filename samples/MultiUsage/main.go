@@ -1,9 +1,10 @@
 package main
 
 import (
-	"github.com/henrylee2cn/faygo"
-	"github.com/henrylee2cn/faygo/ext/db/xorm"
 	"mime/multipart"
+
+	"github.com/andeya/faygo"
+	"github.com/andeya/faygo/ext/db/xorm"
 )
 
 // MultiUsage multi usage handler

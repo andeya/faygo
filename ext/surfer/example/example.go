@@ -1,11 +1,12 @@
 package main
 
 import (
-	"github.com/henrylee2cn/faygo/ext/surfer"
 	"io/ioutil"
 	"log"
 	"net/url"
 	"time"
+
+	"github.com/andeya/faygo/ext/surfer"
 )
 
 func main() {

@@ -9,9 +9,9 @@ import (
 	"encoding/json"
 	"strings"
 
-	"github.com/henrylee2cn/faygo"
-	"github.com/henrylee2cn/faygo/ext/db/directsql"
-	"github.com/henrylee2cn/faygo/pongo2"
+	"github.com/andeya/faygo"
+	"github.com/andeya/faygo/ext/db/directsql"
+	"github.com/andeya/faygo/pongo2"
 )
 
 /* tpl
@@ -20,17 +20,17 @@ import (
    {% endfor %}
 
 */
-//单个查询 参数 map[string]interface{} 返回 []map[string]interface{}
+// 单个查询 参数 map[string]interface{} 返回 []map[string]interface{}
 func SimpleData(modelId, sqlId string, mp string) *pongo2.Value {
-	//参数处理
-	//faygo.Debug("SimpleData mp:", mp)
+	// 参数处理
+	// faygo.Debug("SimpleData mp:", mp)
 	para := make(map[string]interface{})
 	if err := json.Unmarshal([]byte(strings.Replace(mp, "`", `"`, -1)), &para); err != nil {
 		faygo.Error(err.Error())
 		return pongo2.AsValue(err.Error())
 	}
 	faygo.Debug("SimpleData para:", para)
-	//执行sql获取结果
+	// 执行sql获取结果
 	result, err := directsql.SelectMapToMap(modelId, sqlId, para)
 	if err != nil {
 		faygo.Error(err.Error())
@@ -40,22 +40,22 @@ func SimpleData(modelId, sqlId string, mp string) *pongo2.Value {
 	return pongo2.AsValue(result)
 }
 
-//单个查询 参数 map[string]interface{} 返回 []map[string]interface{}
+// 单个查询 参数 map[string]interface{} 返回 []map[string]interface{}
 func SimpleData2(modelId, sqlId string, mp string) []map[string]interface{} {
-	//参数处理
-	//faygo.Debug("SimpleData mp:", mp)
+	// 参数处理
+	// faygo.Debug("SimpleData mp:", mp)
 	result := make([]map[string]interface{}, 0)
 	para := make(map[string]interface{})
 	if err := json.Unmarshal([]byte(strings.Replace(mp, "`", `"`, -1)), &para); err != nil {
 		faygo.Error(err.Error())
-		//result=append(result,err)
+		// result=append(result,err)
 	}
 	faygo.Debug("SimpleData para:", para)
-	//执行sql获取结果
+	// 执行sql获取结果
 	result, err := directsql.SelectMapToMap(modelId, sqlId, para)
 	if err != nil {
 		faygo.Error(err.Error())
-		//result=append(result,err.Error())
+		// result=append(result,err.Error())
 	}
 	faygo.Debug("SimpleData result :", result)
 	return result
@@ -71,7 +71,7 @@ func Test(str1, str2, str3 string) string {
 func init() {
 	// 测试函数
 	faygo.RenderVar("Test", Test)
-	//获取单表数据 返回 []map[string]interface{}
+	// 获取单表数据 返回 []map[string]interface{}
 	faygo.RenderVar("SimpleData", SimpleData)
 	faygo.RenderVar("SimpleData2", SimpleData2)
 }

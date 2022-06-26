@@ -1,10 +1,10 @@
 package router
 
 import (
-	"github.com/henrylee2cn/faygo"
-	mw "github.com/henrylee2cn/faygo/ext/middleware"
-	"github.com/henrylee2cn/faygo/samples/demo/handler"
-	"github.com/henrylee2cn/faygo/samples/demo/middleware"
+	"github.com/andeya/faygo"
+	mw "github.com/andeya/faygo/ext/middleware"
+	"github.com/andeya/faygo/samples/demo/handler"
+	"github.com/andeya/faygo/samples/demo/middleware"
 )
 
 // Register the route in a tree style

@@ -36,9 +36,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/henrylee2cn/faygo/acceptencoder"
-	"github.com/henrylee2cn/faygo/freecache"
-	"github.com/henrylee2cn/faygo/markdown"
+	"github.com/andeya/faygo/acceptencoder"
+	"github.com/andeya/faygo/freecache"
+	"github.com/andeya/faygo/markdown"
 )
 
 const indexPage = "/index.html"

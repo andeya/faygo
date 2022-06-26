@@ -3,8 +3,8 @@ package xorm
 import (
 	"xorm.io/core"
 
-	"github.com/henrylee2cn/faygo"
-	"github.com/henrylee2cn/faygo/logging"
+	"github.com/andeya/faygo"
+	"github.com/andeya/faygo/logging"
 )
 
 // ILogger logger

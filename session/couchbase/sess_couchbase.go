@@ -39,8 +39,8 @@ import (
 
 	couchbase "github.com/couchbase/go-couchbase"
 
-	"github.com/henrylee2cn/faygo"
-	"github.com/henrylee2cn/faygo/session"
+	"github.com/andeya/faygo"
+	"github.com/andeya/faygo/session"
 )
 
 var couchbpder = &Provider{}

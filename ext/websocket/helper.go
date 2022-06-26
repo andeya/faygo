@@ -1,8 +1,9 @@
 package websocket
 
 import (
-	"github.com/henrylee2cn/faygo"
 	"net/http"
+
+	"github.com/andeya/faygo"
 )
 
 // FayUpgrade upgrades the faygo server connection to the WebSocket protocol.

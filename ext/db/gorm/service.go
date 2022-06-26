@@ -8,11 +8,11 @@ import (
 	"github.com/jinzhu/gorm"
 
 	// _ "github.com/jinzhu/gorm/dialects/mssql"    //github.com/denisenkom/go-mssqldb
-	_ "github.com/jinzhu/gorm/dialects/mysql"    //github.com/go-sql-driver/mysql
-	_ "github.com/jinzhu/gorm/dialects/postgres" //github.com/lib/pq
+	_ "github.com/jinzhu/gorm/dialects/mysql"    // github.com/go-sql-driver/mysql
+	_ "github.com/jinzhu/gorm/dialects/postgres" // github.com/lib/pq
 	// _ "github.com/jinzhu/gorm/dialects/sqlite"   //github.com/mattn/go-sqlite3
 
-	"github.com/henrylee2cn/faygo"
+	"github.com/andeya/faygo"
 )
 
 // DBService is a database engine object.

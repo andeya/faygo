@@ -22,7 +22,7 @@ import (
 	"net/url"
 	"sync"
 
-	"github.com/henrylee2cn/goutil"
+	"github.com/andeya/goutil"
 )
 
 var cookiepder = &CookieProvider{}

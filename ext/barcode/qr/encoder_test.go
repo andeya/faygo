@@ -6,7 +6,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/henrylee2cn/faygo/ext/barcode"
+	"github.com/andeya/faygo/ext/barcode"
 )
 
 type test struct {

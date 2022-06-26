@@ -1,7 +1,7 @@
 package datamatrix
 
 import (
-	"github.com/henrylee2cn/faygo/ext/barcode/utils"
+	"github.com/andeya/faygo/ext/barcode/utils"
 )
 
 type errorCorrection struct {

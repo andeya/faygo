@@ -18,7 +18,7 @@
 package totp
 
 import (
-	"github.com/henrylee2cn/faygo/ext/otp"
+	"github.com/andeya/faygo/ext/otp"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 

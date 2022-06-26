@@ -6,7 +6,7 @@ package directsql
 
 /*
 import (
-	"github.com/henrylee2cn/faygo"
+	"github.com/andeya/faygo"
 )
 
 //注册路由

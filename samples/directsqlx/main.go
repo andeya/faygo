@@ -1,10 +1,10 @@
 package main
 
 import (
-	_ "github.com/go-sql-driver/mysql" //mysql driver
-	"github.com/henrylee2cn/faygo"
-	_ "github.com/henrylee2cn/faygo/samples/directsqlx/common"
-	"github.com/henrylee2cn/faygo/samples/directsqlx/router"
+	"github.com/andeya/faygo"
+	_ "github.com/andeya/faygo/samples/directsqlx/common"
+	"github.com/andeya/faygo/samples/directsqlx/router"
+	_ "github.com/go-sql-driver/mysql" // mysql driver
 )
 
 func main() {

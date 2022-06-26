@@ -1,4 +1,4 @@
-// Copyright 2015 henrylee2cn Author. All Rights Reserved.
+// Copyright 2015 andeya Author. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -32,9 +32,9 @@ type (
 	// 效率较surfer会慢很多，但是因为模拟浏览器，破防性更好
 	// 支持UserAgent/TryTimes/RetryPause/自定义js
 	Phantom struct {
-		PhantomjsFile string            //Phantomjs完整文件名
-		TempJsDir     string            //临时js存放目录
-		jsFileMap     map[string]string //已存在的js文件
+		PhantomjsFile string            // Phantomjs完整文件名
+		TempJsDir     string            // 临时js存放目录
+		jsFileMap     map[string]string // 已存在的js文件
 	}
 	// Response 用于解析Phantomjs的响应内容
 	Response struct {
