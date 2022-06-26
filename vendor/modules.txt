@@ -37,7 +37,7 @@ github.com/garyburd/redigo/redis
 github.com/go-sql-driver/mysql
 # github.com/golang/snappy v0.0.0-20180518054509-2e65f85255db
 github.com/golang/snappy
-# github.com/gorilla/websocket v1.4.0
+# github.com/gorilla/websocket v1.4.1
 github.com/gorilla/websocket
 # github.com/henrylee2cn/goutil v0.0.0-20190807075143-e8afa09140e9
 github.com/henrylee2cn/goutil

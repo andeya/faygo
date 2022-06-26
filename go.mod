@@ -19,7 +19,7 @@ require (
 	github.com/garyburd/redigo v1.6.0
 	github.com/go-sql-driver/mysql v1.4.1
 	github.com/golang/protobuf v1.3.1 // indirect
-	github.com/gorilla/websocket v1.4.0
+	github.com/gorilla/websocket v1.4.1
 	github.com/henrylee2cn/goutil v0.0.0-20190807075143-e8afa09140e9
 	github.com/henrylee2cn/ini v1.29.0
 	github.com/jinzhu/gorm v1.9.10
