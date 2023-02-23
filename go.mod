@@ -22,7 +22,7 @@ require (
 	github.com/stretchr/testify v1.7.5
 	golang.org/x/crypto v0.0.0-20220622213112-05595931fe9d
 	golang.org/x/net v0.0.0-20220624214902-1bab6f366d9e
-	golang.org/x/sys v0.0.0-20220624220833-87e55d714810
+	golang.org/x/sys v0.0.0-20220722155257-8c9f86f7a55f
 	gopkg.in/check.v1 v1.0.0-20180628173108-788fd7840127
 	gopkg.in/dgrijalva/jwt-go.v3 v3.2.0
 	xorm.io/core v0.7.2
@@ -52,7 +52,7 @@ require (
 	github.com/siddontang/go v0.0.0-20180604090527-bdc77568d726 // indirect
 	github.com/siddontang/rdb v0.0.0-20150307021120-fc89ed2e418d // indirect
 	github.com/syndtr/goleveldb v1.0.0 // indirect
-	golang.org/x/text v0.3.7 // indirect
+	golang.org/x/text v0.3.8 // indirect
 	google.golang.org/appengine v1.6.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	xorm.io/builder v0.3.6 // indirect
